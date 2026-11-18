@@ -1,0 +1,1 @@
+export { WorkflowShell as TabbedPage, type WorkflowTab } from "@/shared/layout/WorkflowShell";

@@ -1,0 +1,1124 @@
+/* Scoped styles from lms-ui-kit (Jobs / Courses catalog). Use wrapper: .lms-ui-kit-catalog */
+
+.lms-ui-kit-catalog .page-title-row,
+.lms-ui-kit-catalog .section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.lms-ui-kit-catalog .page-title-row {
+  margin-bottom: 25px;
+}
+
+.lms-ui-kit-catalog .page-title-row h1 {
+  font-size: 28px;
+  letter-spacing: -1.1px;
+  margin: 8px 0 7px;
+  font-weight: 750;
+  color: #172033;
+}
+
+.lms-ui-kit-catalog .eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  color: #98a1b4;
+}
+
+.lms-ui-kit-catalog .muted {
+  color: #8993a6;
+  margin: 0;
+  line-height: 1.55;
+  font-size: 13px;
+}
+
+.lms-ui-kit-catalog .catalog-count {
+  text-align: right;
+  background: #fff;
+  border: 1px solid #e9edf4;
+  border-radius: 11px;
+  padding: 10px 16px;
+  min-width: 100px;
+}
+
+.lms-ui-kit-catalog .catalog-count b {
+  display: block;
+  font-size: 19px;
+  color: #655bff;
+}
+
+.lms-ui-kit-catalog .catalog-count small {
+  font-size: 10px;
+  color: #9099aa;
+}
+
+.lms-ui-kit-catalog .course-search-banner,
+.lms-ui-kit-catalog .job-hero {
+  background: linear-gradient(105deg, #f0efff, #f7f6ff 58%, #e9efff);
+  border: 1px solid #e8e7ff;
+  border-radius: 15px;
+  padding: 26px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 165px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lms-ui-kit-catalog .job-hero {
+  background: linear-gradient(105deg, #eef2ff, #f4f1ff 60%, #e8efff);
+}
+
+.lms-ui-kit-catalog .hero-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  color: #6a61dc;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lms-ui-kit-catalog .course-search-banner h2,
+.lms-ui-kit-catalog .job-hero h2 {
+  font-size: 25px;
+  color: #20294a;
+  letter-spacing: -1.1px;
+  line-height: 1.18;
+  margin: 10px 0 7px;
+  font-weight: 750;
+}
+
+.lms-ui-kit-catalog .course-search-banner h2 em,
+.lms-ui-kit-catalog .job-hero h2 em {
+  font-style: normal;
+  color: #655bff;
+}
+
+.lms-ui-kit-catalog .course-search-banner p,
+.lms-ui-kit-catalog .job-hero p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #7e879b;
+  max-width: 490px;
+  margin: 0;
+}
+
+.lms-ui-kit-catalog .banner-orbit,
+.lms-ui-kit-catalog .job-hero-graphic {
+  width: 160px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+  color: #655bff;
+  position: relative;
+}
+
+.lms-ui-kit-catalog .banner-orbit::before {
+  content: "";
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #dedcff;
+}
+
+.lms-ui-kit-catalog .banner-orbit svg {
+  position: relative;
+  z-index: 1;
+}
+
+.lms-ui-kit-catalog .banner-orbit span {
+  position: absolute;
+  right: 15px;
+  top: 0;
+  font-size: 25px;
+}
+
+.lms-ui-kit-catalog .job-hero-graphic {
+  height: 130px;
+}
+
+.lms-ui-kit-catalog .briefcase-shape {
+  width: 105px;
+  height: 88px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 15px 35px #6860c72b;
+  display: grid;
+  place-items: center;
+  transform: rotate(-8deg);
+  z-index: 1;
+}
+
+.lms-ui-kit-catalog .float-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: #b7b2ff;
+}
+
+.lms-ui-kit-catalog .float-dot.d1 {
+  width: 13px;
+  height: 13px;
+  right: 22px;
+  top: 4px;
+}
+
+.lms-ui-kit-catalog .float-dot.d2 {
+  width: 8px;
+  height: 8px;
+  left: 14px;
+  bottom: 4px;
+}
+
+.lms-ui-kit-catalog .job-search-box {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  border-radius: 12px;
+  margin-top: 18px;
+  box-shadow: 0 5px 20px #25345a08;
+}
+
+.lms-ui-kit-catalog .job-search-box .search-field {
+  border: 0;
+  background: #fafbfe;
+}
+
+.lms-ui-kit-catalog .job-search-box .btn {
+  min-width: 125px;
+}
+
+.lms-ui-kit-catalog .catalog-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.lms-ui-kit-catalog .search-field {
+  height: 44px;
+  border: 1px solid #e5e9f1;
+  border-radius: 9px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  color: #99a3b5;
+  flex: 1;
+}
+
+.lms-ui-kit-catalog .search-field input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 100%;
+  font-size: 12px;
+  color: #29334b;
+}
+
+.lms-ui-kit-catalog .search-field input::placeholder {
+  color: #a2aabb;
+}
+
+.lms-ui-kit-catalog .select-field {
+  height: 44px;
+  border: 1px solid #e5e9f1;
+  border-radius: 9px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: #7d879a;
+  min-width: 160px;
+}
+
+.lms-ui-kit-catalog .select-field select {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #5d667a;
+  font-size: 12px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .job-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lms-ui-kit-catalog .category-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 17px 0 24px;
+}
+
+.lms-ui-kit-catalog .job-filter-row .category-pills {
+  margin-bottom: 18px;
+}
+
+.lms-ui-kit-catalog .category-pill {
+  height: 32px;
+  border: 1px solid #e8ebf2;
+  background: #fff;
+  border-radius: 20px;
+  padding: 0 14px;
+  color: #68738a;
+  font-size: 11px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: 0.18s;
+}
+
+.lms-ui-kit-catalog .category-pill.selected {
+  background: #635bff;
+  border-color: #635bff;
+  color: #fff;
+}
+
+.lms-ui-kit-catalog .filter-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  border-radius: 8px;
+  height: 32px;
+  padding: 0 12px;
+  color: #68738a;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .section-head {
+  margin: 31px 0 16px;
+  align-items: flex-end;
+}
+
+.lms-ui-kit-catalog .section-head h2 {
+  font-size: 17px;
+  letter-spacing: -0.4px;
+  margin: 0 0 5px;
+  color: #172033;
+}
+
+.lms-ui-kit-catalog .section-head p {
+  font-size: 12px;
+}
+
+.lms-ui-kit-catalog .result-count {
+  font-size: 11px;
+  color: #8d97a9;
+}
+
+.lms-ui-kit-catalog .btn {
+  border: 0;
+  border-radius: 9px;
+  min-height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 650;
+  transition: 0.18s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .btn-primary {
+  background: #635bff;
+  color: white;
+  box-shadow: 0 4px 12px #635bff25;
+}
+
+.lms-ui-kit-catalog .btn-primary:hover {
+  background: #5148e8;
+  transform: translateY(-1px);
+}
+
+.lms-ui-kit-catalog .btn-outline {
+  background: #fff;
+  border: 1px solid #e1e5ee;
+  color: #46516a;
+}
+
+.lms-ui-kit-catalog .btn-outline:hover {
+  border-color: #bcb8ff;
+  color: #554bea;
+}
+
+.lms-ui-kit-catalog .btn-small {
+  min-height: 32px;
+  padding: 0 11px;
+  font-size: 11px;
+}
+
+.lms-ui-kit-catalog .job-list {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lms-ui-kit-catalog .job-card {
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  position: relative;
+  transition: 0.2s;
+}
+
+.lms-ui-kit-catalog .job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px #29365b0c;
+}
+
+.lms-ui-kit-catalog .company-logo {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border: 1px solid #edf0f5;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 750;
+  background: #fff;
+  overflow: hidden;
+}
+
+.lms-ui-kit-catalog .company-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lms-ui-kit-catalog .job-card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.lms-ui-kit-catalog .job-company-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lms-ui-kit-catalog .job-company-line b {
+  font-size: 11px;
+}
+
+.lms-ui-kit-catalog .job-company-line span,
+.lms-ui-kit-catalog .job-company-line small {
+  color: #9ba4b4;
+  font-size: 10px;
+}
+
+.lms-ui-kit-catalog .job-role {
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 5px 0 9px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #202a40;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .job-role:hover {
+  color: #635bff;
+}
+
+.lms-ui-kit-catalog a.job-role {
+  text-decoration: none;
+}
+
+.lms-ui-kit-catalog .job-card-meta {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.lms-ui-kit-catalog .job-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #778297;
+  font-size: 10px;
+}
+
+.lms-ui-kit-catalog .job-card-meta svg {
+  width: 13px;
+  height: 13px;
+}
+
+.lms-ui-kit-catalog .skill-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.lms-ui-kit-catalog .skill-pills span {
+  background: #f3f5fa;
+  border-radius: 5px;
+  padding: 6px 9px;
+  color: #69758a;
+  font-size: 10px;
+}
+
+.lms-ui-kit-catalog .skill-pills.compact {
+  margin-top: 11px;
+}
+
+.lms-ui-kit-catalog .skill-pills.compact span {
+  padding: 4px 7px;
+  font-size: 9px;
+}
+
+.lms-ui-kit-catalog .job-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 3px 24px 0 10px;
+}
+
+.lms-ui-kit-catalog .job-salary {
+  font-size: 13px;
+}
+
+.lms-ui-kit-catalog .job-card-side small {
+  font-size: 9px;
+  color: #9ba4b4;
+  margin-bottom: 8px;
+}
+
+.lms-ui-kit-catalog .bookmark-button {
+  position: absolute;
+  right: 15px;
+  top: 16px;
+  border: 0;
+  background: transparent;
+  color: #a1aabb;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .bookmark-button.saved {
+  color: #635bff;
+}
+
+.lms-ui-kit-catalog .bookmark-button.saved svg {
+  fill: #efedff;
+}
+
+.lms-ui-kit-catalog .course-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.lms-ui-kit-catalog .course-card {
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: 0.2s;
+}
+
+.lms-ui-kit-catalog .course-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px #29365b0c;
+}
+
+.lms-ui-kit-catalog .course-image-wrap {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .course-image {
+  height: 145px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  font-size: 56px;
+}
+
+.lms-ui-kit-catalog .course-image.blue {
+  background: linear-gradient(135deg, #d9edff, #b9d9ff);
+  color: #2475be;
+}
+
+.lms-ui-kit-catalog .course-image.yellow {
+  background: linear-gradient(135deg, #fff4d9, #ffe3a1);
+  color: #92691e;
+}
+
+.lms-ui-kit-catalog .course-image.pink {
+  background: linear-gradient(135deg, #fbe8f3, #e8d7ff);
+  color: #9c62a6;
+}
+
+.lms-ui-kit-catalog .course-image.navy {
+  background: linear-gradient(135deg, #dfe5ff, #c7d1fa);
+  color: #3b4fa0;
+}
+
+.lms-ui-kit-catalog .course-image.green {
+  background: linear-gradient(135deg, #dcf7ed, #bce9d9);
+  color: #26866b;
+}
+
+.lms-ui-kit-catalog .course-image.orange {
+  background: linear-gradient(135deg, #ffeadc, #ffd2b1);
+  color: #bd6d37;
+}
+
+.lms-ui-kit-catalog .course-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #fff;
+  color: #645be8;
+  border-radius: 5px;
+  padding: 5px 8px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.lms-ui-kit-catalog .course-card-body {
+  padding: 14px;
+}
+
+.lms-ui-kit-catalog .course-category {
+  font-size: 10px;
+  color: #655bff;
+  font-weight: 650;
+  margin-bottom: 7px;
+}
+
+.lms-ui-kit-catalog .course-title {
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+  color: #202a40;
+  min-height: 37px;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .course-title:hover {
+  color: #635bff;
+}
+
+.lms-ui-kit-catalog .instructor {
+  font-size: 10px;
+  color: #98a1b1;
+  margin: 6px 0 12px;
+}
+
+.lms-ui-kit-catalog .rating-line,
+.lms-ui-kit-catalog .course-facts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: #8d97a9;
+}
+
+.lms-ui-kit-catalog .rating-line b {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #3e4960;
+}
+
+.lms-ui-kit-catalog .course-facts {
+  border-top: 1px solid #f0f2f6;
+  margin-top: 12px;
+  padding-top: 11px;
+  justify-content: space-between;
+}
+
+.lms-ui-kit-catalog .course-facts span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lms-ui-kit-catalog .course-card-footer {
+  border-top: 1px solid #f0f2f6;
+  margin-top: 12px;
+  padding-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lms-ui-kit-catalog .course-card-footer b {
+  font-size: 14px;
+}
+
+.lms-ui-kit-catalog .course-card-footer del {
+  font-size: 10px;
+  color: #a3aaba;
+  margin-left: 6px;
+}
+
+.lms-ui-kit-catalog .empty-state {
+  text-align: center;
+  padding: 65px 20px;
+  background: #fff;
+  border: 1px dashed #dfe4ee;
+  border-radius: 14px;
+  color: #8e98aa;
+}
+
+.lms-ui-kit-catalog .empty-state h3 {
+  color: #25304a;
+  margin: 12px 0 5px;
+}
+
+.lms-ui-kit-catalog .empty-state p {
+  font-size: 12px;
+}
+
+.lms-ui-kit-catalog .text-link {
+  border: 0;
+  background: transparent;
+  color: #5e55ed;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.lms-ui-kit-catalog .soft-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #f1f0ff;
+  color: #635bdb;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.lms-ui-kit-catalog .filter-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  border-radius: 11px;
+  font-size: 11px;
+  color: #556078;
+}
+
+.lms-ui-kit-catalog .filter-panel label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.lms-ui-kit-catalog .filter-panel select {
+  border: 1px solid #e4e8f0;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  background: #fff;
+}
+
+.lms-ui-kit-catalog .loading-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: #8d97a9;
+  font-size: 12px;
+}
+
+.lms-ui-kit-catalog .loading-state .spinner {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  border: 2px solid #635bff;
+  border-top-color: transparent;
+  animation: lms-kit-spin 0.8s linear infinite;
+}
+
+@keyframes lms-kit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.lms-ui-kit-catalog .pagination-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+@media (max-width: 1100px) {
+  .lms-ui-kit-catalog .course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .lms-ui-kit-catalog .page-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lms-ui-kit-catalog .page-title-row h1 {
+    font-size: 24px;
+  }
+
+  .lms-ui-kit-catalog .job-search-box {
+    flex-wrap: wrap;
+  }
+
+  .lms-ui-kit-catalog .job-search-box .search-field {
+    flex-basis: 100%;
+  }
+
+  .lms-ui-kit-catalog .job-search-box .btn {
+    width: 100%;
+  }
+
+  .lms-ui-kit-catalog .job-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .lms-ui-kit-catalog .job-card-side {
+    padding-right: 16px;
+  }
+
+  .lms-ui-kit-catalog .course-search-banner,
+  .lms-ui-kit-catalog .job-hero {
+    padding: 22px;
+  }
+
+  .lms-ui-kit-catalog .banner-orbit,
+  .lms-ui-kit-catalog .job-hero-graphic {
+    width: 75px;
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 480px) {
+  .lms-ui-kit-catalog .course-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lms-ui-kit-catalog .catalog-toolbar {
+    flex-direction: column;
+  }
+
+  .lms-ui-kit-catalog .select-field {
+    width: 100%;
+  }
+
+  .lms-ui-kit-catalog .job-card {
+    flex-wrap: wrap;
+  }
+
+  .lms-ui-kit-catalog .job-card-main {
+    min-width: calc(100% - 60px);
+  }
+
+  .lms-ui-kit-catalog .job-card-side {
+    width: 100%;
+    padding: 10px 0 0 56px;
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .lms-ui-kit-catalog .job-card-side small {
+    display: none;
+  }
+
+  .lms-ui-kit-catalog .course-card-footer {
+    align-items: flex-start;
+    gap: 7px;
+    flex-direction: column;
+  }
+
+  .lms-ui-kit-catalog .course-card-footer .btn {
+    width: 100%;
+  }
+}
+
+.lms-ui-kit-catalog .back-link {
+  border: 0;
+  background: transparent;
+  color: #657087;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 18px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .course-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 22px;
+  align-items: start;
+}
+
+.lms-ui-kit-catalog .detail-cover {
+  height: 215px;
+  border-radius: 14px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.lms-ui-kit-catalog .detail-cover.blue {
+  background: linear-gradient(135deg, #d9edff, #b9d9ff);
+}
+
+.lms-ui-kit-catalog .detail-cover.yellow {
+  background: linear-gradient(135deg, #fff4d9, #ffe3a1);
+}
+
+.lms-ui-kit-catalog .detail-cover.pink {
+  background: linear-gradient(135deg, #fbe8f3, #e8d7ff);
+}
+
+.lms-ui-kit-catalog .detail-cover.navy {
+  background: linear-gradient(135deg, #dfe5ff, #c7d1fa);
+}
+
+.lms-ui-kit-catalog .detail-cover.green {
+  background: linear-gradient(135deg, #dcf7ed, #bce9d9);
+}
+
+.lms-ui-kit-catalog .detail-cover.orange {
+  background: linear-gradient(135deg, #ffeadc, #ffd2b1);
+}
+
+.lms-ui-kit-catalog .detail-symbol {
+  font-size: 90px;
+  z-index: 1;
+}
+
+.lms-ui-kit-catalog .cover-label {
+  position: absolute;
+  top: 17px;
+  left: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #52607a;
+}
+
+.lms-ui-kit-catalog .detail-main {
+  background: #fff;
+  border: 1px solid #e9edf4;
+  border-radius: 13px;
+  margin-top: 16px;
+  padding: 25px;
+}
+
+.lms-ui-kit-catalog .detail-main h1 {
+  font-size: 25px;
+  letter-spacing: -0.8px;
+  margin: 8px 0;
+  color: #172033;
+}
+
+.lms-ui-kit-catalog .detail-desc {
+  max-width: 720px;
+}
+
+.lms-ui-kit-catalog .detail-meta {
+  display: flex;
+  gap: 22px;
+  margin: 17px 0 20px;
+  color: #69758a;
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+
+.lms-ui-kit-catalog .detail-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lms-ui-kit-catalog .detail-main h3 {
+  font-size: 15px;
+  margin: 22px 0 13px;
+  color: #172033;
+}
+
+.lms-ui-kit-catalog .learn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.lms-ui-kit-catalog .learn-grid span {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: #66728a;
+  font-size: 11px;
+}
+
+.lms-ui-kit-catalog .learn-grid svg {
+  color: #16a37b;
+  flex-shrink: 0;
+}
+
+.lms-ui-kit-catalog .enroll-card {
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  border-radius: 13px;
+  padding: 17px;
+  position: sticky;
+  top: 88px;
+}
+
+.lms-ui-kit-catalog .enroll-thumb {
+  height: 145px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 58px;
+}
+
+.lms-ui-kit-catalog .enroll-thumb.blue {
+  background: linear-gradient(135deg, #d9edff, #b9d9ff);
+}
+
+.lms-ui-kit-catalog .enroll-thumb.yellow {
+  background: linear-gradient(135deg, #fff4d9, #ffe3a1);
+}
+
+.lms-ui-kit-catalog .enroll-thumb.pink {
+  background: linear-gradient(135deg, #fbe8f3, #e8d7ff);
+}
+
+.lms-ui-kit-catalog .enroll-thumb.navy {
+  background: linear-gradient(135deg, #dfe5ff, #c7d1fa);
+}
+
+.lms-ui-kit-catalog .enroll-thumb.green {
+  background: linear-gradient(135deg, #dcf7ed, #bce9d9);
+}
+
+.lms-ui-kit-catalog .enroll-thumb.orange {
+  background: linear-gradient(135deg, #ffeadc, #ffd2b1);
+}
+
+.lms-ui-kit-catalog .price-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 18px 0 8px;
+}
+
+.lms-ui-kit-catalog .price-line strong {
+  font-size: 22px;
+  color: #172033;
+}
+
+.lms-ui-kit-catalog .enroll-card .btn {
+  margin-bottom: 9px;
+}
+
+.lms-ui-kit-catalog .full {
+  width: 100%;
+}
+
+.lms-ui-kit-catalog .includes {
+  border-top: 1px solid #edf0f5;
+  margin-top: 13px;
+  padding-top: 15px;
+  display: grid;
+  gap: 12px;
+}
+
+.lms-ui-kit-catalog .includes b {
+  font-size: 12px;
+  margin-bottom: 3px;
+  color: #172033;
+}
+
+.lms-ui-kit-catalog .includes span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  color: #778297;
+}
+
+.lms-ui-kit-catalog .includes svg {
+  width: 15px;
+  height: 15px;
+  color: #858eaa;
+}
+
+.lms-ui-kit-catalog .enroll-card > small {
+  display: block;
+  margin-top: 15px;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .lms-ui-kit-catalog .course-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .lms-ui-kit-catalog .enroll-card {
+    position: static;
+  }
+
+  .lms-ui-kit-catalog .learn-grid {
+    grid-template-columns: 1fr;
+  }
+}

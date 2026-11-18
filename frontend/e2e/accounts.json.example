@@ -1,0 +1,22 @@
+{
+  "superAdmin": {
+    "username": "demo.superadmin1@example.com",
+    "password": "Sup3r!Admin#Demo1"
+  },
+  "admin": {
+    "username": "demo.admin1@example.com",
+    "password": "Adm1n!Demo#Acct1"
+  },
+  "head": {
+    "username": "demo.head1@example.com",
+    "password": "H3ad!Inst#Demo1"
+  },
+  "staff": {
+    "username": "demo.staff1@example.com",
+    "password": "St4ff!Prof#Demo1"
+  },
+  "student": {
+    "username": "demo.student1@example.com",
+    "password": "Stud3nt!Lms#Demo1"
+  }
+}

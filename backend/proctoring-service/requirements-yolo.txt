@@ -1,0 +1,3 @@
+# Object detection (phone, book, laptop, extra person). Pulls in PyTorch (~1 GB of disk, ~500 MB of RAM):
+# install only on a server with room for it:  pip install -r requirements-yolo.txt
+ultralytics>=8.3,<9

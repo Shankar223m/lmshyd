@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Secrets
+.env
+.env.*
+!.env.example
+!.env.docker.example
+keys/
+*.pem
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Runtime files (export jobs)
+var/
+data_checkpoint_*/
+
+# Local runtime data
+data/
+
+# Local databases & storage
+*.db
+*.sqlite
+*.sqlite3
+media_storage/
+# Local media uploads (docker bind mount for media-service)
+docker/media-storage/*
+!docker/media-storage/.gitkeep
+create_dbs.py
+seed_mock_plans.py
+media_storage/

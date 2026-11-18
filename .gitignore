@@ -1,0 +1,60 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+!.env.docker.example
+*.pem
+keys/
+
+# Node / Frontend
+node_modules/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+e2e/accounts.json
+e2e/report/
+e2e/results/
+e2e/run.log
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+*.egg-info/
+create_dbs.py
+seed_mock_plans.py
+
+# Databases & local media storage
+*.db
+*.sqlite
+*.sqlite3
+data/
+var/
+data_checkpoint_*/
+media_storage/
+backend/docker/media-storage/*
+!backend/docker/media-storage/.gitkeep
+
+# Operating System & Editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary & Deprecated
+_deprecated/
+*.log
