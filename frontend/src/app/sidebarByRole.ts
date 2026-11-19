@@ -25,15 +25,6 @@ function item(
   return { ...opts };
 }
 
-const support: NavItem = {
-  menu: "support",
-  label: "Support",
-  icon: "mail",
-  to: "/support",
-  group: "help",
-  hint: "Tickets and help",
-};
-
 const jobsStudentChildren: NavSubItem[] = [
   { label: "Find jobs", to: "/jobs/student/jobs", icon: "search" },
   { label: "Applications", to: "/jobs/student/applications", icon: "fileText" },
@@ -119,7 +110,6 @@ function studentNav(): NavItem[] {
       hint: "Discover roles, apply and track placement",
       children: jobsStudentChildren,
     }),
-    support,
   ];
 }
 
@@ -175,7 +165,6 @@ function staffNav(): NavItem[] {
       group: "curriculum",
       hint: "Problem bank and review",
     }),
-    support,
   ];
 }
 
@@ -239,7 +228,6 @@ function institutionHeadNav(): NavItem[] {
       group: "exams",
       hint: "Issued certificates",
     }),
-    support,
   ];
 }
 
@@ -279,7 +267,6 @@ function scopedAdminNav(): NavItem[] {
       group: "admin",
       hint: "Dashboards in your scope",
     }),
-    support,
   ];
 }
 
@@ -321,7 +308,6 @@ function platformAdminJcmsNav(): NavItem[] {
       group: "careers",
       hint: "Moderation audit trail",
     }),
-    support,
   ];
 }
 
@@ -419,7 +405,6 @@ function superAdminNav(): NavItem[] {
         { label: "Settings", to: "/ai", icon: "bot" },
       ],
     }),
-    support,
   ];
 }
 
@@ -459,7 +444,6 @@ function employerNav(): NavItem[] {
       group: "careers",
       hint: "Employer organisation profile",
     }),
-    support,
   ];
 }
 

@@ -1,6 +1,5 @@
 import type { NavItem } from "@/app/navigation";
 import { jobsNavigation } from "@/modules/jobs/navigation";
-import { supportNavigation } from "@/modules/support/navigation";
 import type { Role } from "@/modules/user-management/common/types";
 import { assessmentsNavigation } from "@/modules/assessments/navigation";
 import { catalogNavigation } from "@/modules/catalog/navigation";
@@ -33,7 +32,6 @@ export const STAFF_NAVIGATION: NavItem[] = [
   ...aiTutorNavigation,
   ...certificatesNavigation,
   ...jobsNavigation,
-  ...supportNavigation,
 ];
 
 /** Institution head — runs the college: people, structure, batches, subscriptions, outcomes, placements. */
@@ -53,14 +51,12 @@ export const INSTITUTION_HEAD_NAVIGATION: NavItem[] = [
   ...certificatesNavigation,
   ...jobsNavigation,
   ...aiInterviewNavigation,
-  ...supportNavigation,
 ];
 
-/** Employer / recruiter — hiring only (plus support). */
+/** Employer / recruiter — hiring only. */
 export const EMPLOYER_NAVIGATION: NavItem[] = [
   homeDashboard,
   ...jobsNavigation,
-  ...supportNavigation,
 ];
 
 export function navigationBaseForRole(role: Role | string | undefined): "student" | "employer" | "staff" | "head" | "platform" {

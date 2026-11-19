@@ -70,7 +70,6 @@ export function SideNav({
   };
 
   const isSettingsActive = pathname.startsWith("/account");
-  const isSupportActive = pathname.startsWith("/support");
 
   return (
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
@@ -241,40 +240,6 @@ export function SideNav({
             {collapsed && (
               <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3.5 z-50 hidden rounded-xl bg-white border border-slate-200 px-3 py-1.5 shadow-pop group-hover/navitem:block whitespace-nowrap text-xs font-bold text-slate-900">
                 Settings
-              </div>
-            )}
-          </li>
-
-          <li className="relative group/navitem">
-            <div className={cn("flex items-center", collapsed && "justify-center")}>
-              <Link
-                to="/support"
-                onClick={onItemClick}
-                className={cn(
-                  "flex items-center transition-all duration-150",
-                  collapsed
-                    ? "h-10 w-10 shrink-0 justify-center mx-auto rounded-xl"
-                    : "flex-1 gap-3.5 px-3.5 py-2.5 rounded-xl text-[14px] font-medium",
-                  isSupportActive
-                    ? "bg-[#EAE8FF] font-semibold text-[#635BFF] shadow-xs"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
-                )}
-                title={collapsed ? "Help & Support" : undefined}
-              >
-                <Icon
-                  name="helpCircle"
-                  size={collapsed ? 20 : 19}
-                  className={cn(
-                    "shrink-0 transition-colors",
-                    isSupportActive ? "text-[#635BFF]" : "text-slate-400 group-hover/navitem:text-slate-700",
-                  )}
-                />
-                {!collapsed && <span className="truncate flex-1">Help & Support</span>}
-              </Link>
-            </div>
-            {collapsed && (
-              <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3.5 z-50 hidden rounded-xl bg-white border border-slate-200 px-3 py-1.5 shadow-pop group-hover/navitem:block whitespace-nowrap text-xs font-bold text-slate-900">
-                Help & Support
               </div>
             )}
           </li>

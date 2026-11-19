@@ -14,7 +14,6 @@ import { certificatesNavigation } from "@/modules/certificates/navigation";
 import { codeExecutionNavigation } from "@/modules/code-execution/navigation";
 import { jobsNavigation } from "@/modules/jobs/navigation";
 import { learningNavigation } from "@/modules/learning/navigation";
-import { supportNavigation } from "@/modules/support/navigation";
 import { subscriptionsNavigation } from "@/modules/subscriptions/navigation";
 import type { IconName } from "@/shared/ui";
 
@@ -28,7 +27,6 @@ export const NAV_GROUPS = [
   { key: "academics", label: "Batches & Institutions" },
   { key: "careers", label: "Career & Placements" },
   { key: "admin", label: "System Administration" },
-  { key: "help", label: "Support & Help" },
 ] as const;
 
 export type NavGroup = (typeof NAV_GROUPS)[number]["key"];
@@ -85,7 +83,6 @@ export const STUDENT_NAVIGATION: NavItem[] = [
   ...codeExecutionNavigation.map(asStudentAcademics),
   ...aiTutorNavigation.map(asStudentAcademics),
   ...certificatesNavigation.map(asStudentAcademics),
-  ...supportNavigation.map((i) => ({ ...i, group: "help" as const })),
   {
     menu: "jobs",
     label: "Jobs & career",
@@ -117,5 +114,4 @@ export const NAVIGATION: NavItem[] = [
   ...billingNavigation,
   ...analyticsNavigation,
   ...aiSettingsNavigation,
-  ...supportNavigation,
 ];
