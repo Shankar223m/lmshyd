@@ -70,10 +70,6 @@ function studentNav(): NavItem[] {
       to: "/courses/my",
       group: "learn",
       hint: "Enrolled courses and progress",
-      children: [
-        { label: "Courses", to: "/courses/my", icon: "graduation" },
-        { label: "Learning paths", to: "/learning-paths", icon: "layers" },
-      ],
     }),
     item({
       menu: "my_tests",
@@ -137,7 +133,6 @@ function staffNav(): NavItem[] {
       hint: "Catalogue, media and requests",
       children: [
         { label: "My courses", to: "/courses", icon: "graduation" },
-        { label: "Learning paths", to: "/learning-paths", icon: "layers" },
         { label: "Media library", to: "/media-library", icon: "fileText" },
         { label: "Request a course", to: "/course-requests", icon: "mail" },
       ],
@@ -348,7 +343,6 @@ function superAdminNav(): NavItem[] {
       hint: "Courses, paths and batches",
       children: [
         { label: "Courses", to: "/courses", icon: "fileText" },
-        { label: "Learning paths", to: "/learning-paths", icon: "layers" },
         { label: "Batches", to: "/batches", icon: "users" },
         { label: "Coding problems", to: "/problems", icon: "terminal" },
       ],
