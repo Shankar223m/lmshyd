@@ -85,17 +85,12 @@ function studentNav(): NavItem[] {
       ],
     }),
     item({
-      menu: "problems",
-      label: "Coding practice",
+      menu: "compiler",
+      label: "Compiler",
       icon: "terminal",
-      to: "/problems",
+      to: "/compiler",
       group: "learn",
-      hint: "Problems, submissions and compiler",
-      children: [
-        { label: "Problems", to: "/problems", icon: "terminal" },
-        { label: "My submissions", to: "/submissions", icon: "upload" },
-        { label: "Compiler", to: "/compiler", icon: "play" },
-      ],
+      hint: "Online compiler for different languages",
     }),
     item({
       menu: "jobs",
@@ -153,12 +148,12 @@ function staffNav(): NavItem[] {
       ],
     }),
     item({
-      menu: "problems",
-      label: "Coding practice",
+      menu: "compiler",
+      label: "Compiler",
       icon: "terminal",
-      to: "/problems",
+      to: "/compiler",
       group: "curriculum",
-      hint: "Problem bank and review",
+      hint: "Online compiler for different languages",
     }),
   ];
 }
@@ -223,6 +218,14 @@ function institutionHeadNav(): NavItem[] {
       group: "exams",
       hint: "Issued certificates",
     }),
+    item({
+      menu: "compiler",
+      label: "Compiler",
+      icon: "terminal",
+      to: "/compiler",
+      group: "academics",
+      hint: "Online compiler for different languages",
+    }),
   ];
 }
 
@@ -253,6 +256,14 @@ function scopedAdminNav(): NavItem[] {
         { label: "Batches", to: "/batches", icon: "layers" },
         { label: "Course requests", to: "/course-requests", icon: "mail" },
       ],
+    }),
+    item({
+      menu: "compiler",
+      label: "Compiler",
+      icon: "terminal",
+      to: "/compiler",
+      group: "admin",
+      hint: "Online compiler for different languages",
     }),
     item({
       menu: "analytics",
@@ -344,7 +355,7 @@ function superAdminNav(): NavItem[] {
       children: [
         { label: "Courses", to: "/courses", icon: "fileText" },
         { label: "Batches", to: "/batches", icon: "users" },
-        { label: "Coding problems", to: "/problems", icon: "terminal" },
+        { label: "Compiler", to: "/compiler", icon: "terminal" },
       ],
     }),
     item({

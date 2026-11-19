@@ -19,7 +19,7 @@ describe("sidebarByRole", () => {
 
   it("scoped admin with careers.manage gets platform JCMS nav", () => {
     const items = sidebarItemsForRole("admin", { jobsModerator: true }) ?? [];
-    expect(items).toHaveLength(5);
+    expect(items).toHaveLength(4);
     expect(items[0]?.to).toBe("/jobs/admin/dashboard");
     expect(items.some((i) => i.label === "Review inbox")).toBe(true);
   });
@@ -28,6 +28,25 @@ describe("sidebarByRole", () => {
     const items = sidebarItemsForRole("super_admin") ?? [];
     const jobs = items.find((i) => i.menu === "jobs" && i.label.includes("moderation"));
     expect(jobs?.children?.some((c) => c.to === "/jobs/admin/postings")).toBe(true);
+  });
+
+  it("student sees Compiler only without problems or submissions", () => {
+    const items = sidebarItemsForRole("student") ?? [];
+    const compiler = items.find((i) => i.to === "/compiler" || i.label === "Compiler");
+    expect(compiler).toBeDefined();
+    expect(compiler?.label).toBe("Compiler");
+    expect(compiler?.children).toBeUndefined();
+    expect(items.some((i) => i.label === "Coding practice")).toBe(false);
+    expect(items.some((i) => i.to === "/problems")).toBe(false);
+  });
+
+  it("staff sees Compiler only without problems bank", () => {
+    const items = sidebarItemsForRole("staff") ?? [];
+    const compiler = items.find((i) => i.to === "/compiler" || i.label === "Compiler");
+    expect(compiler).toBeDefined();
+    expect(compiler?.label).toBe("Compiler");
+    expect(items.some((i) => i.label === "Coding practice")).toBe(false);
+    expect(items.some((i) => i.to === "/problems")).toBe(false);
   });
 
   it("no PLATFORM_ADMINISTRATOR label in sidebar", () => {
