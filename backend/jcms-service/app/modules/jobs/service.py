@@ -12,9 +12,10 @@ from app.models.entities import (
     RecruiterAssignment,
     User,
 )
+from app.modules.applications.service import application_visible_in_employer_pipeline
 from app.modules.audit.service import record_audit
 from app.modules.notifications.service import notify_user
-from app.shared.enums import ApplicationStatus, JobStatus, UserRole, VerificationStatus
+from app.shared.enums import ApplicationStatus, JobPostingChannel, JobStatus, OrganizationType, UserRole, VerificationStatus
 
 
 def ensure_verified_employer(org: Organization) -> None:
@@ -28,6 +29,11 @@ def create_job(db: Session, employer: User, data: dict) -> Job:
     org = db.get(Organization, employer.organization_id)
     if not org:
         raise ValueError("ORG_NOT_FOUND")
+    if org.org_type != OrganizationType.EMPLOYER.value:
+        raise ValueError("FORBIDDEN")
+    posting_channel = str(data.get("posting_channel") or JobPostingChannel.OPEN.value).upper()
+    if posting_channel != JobPostingChannel.OPEN.value:
+        raise ValueError("FORBIDDEN")
     job = Job(
         organization_id=org.id,
         title=data["title"],
@@ -45,6 +51,8 @@ def create_job(db: Session, employer: User, data: dict) -> Job:
         questions=data.get("questions", []),
         status=JobStatus.DRAFT.value,
         requires_moderation=data.get("requires_moderation", True),
+        posting_channel=JobPostingChannel.OPEN.value,
+        campus_institution_id=None,
     )
     db.add(job)
     db.flush()
@@ -54,6 +62,42 @@ def create_job(db: Session, employer: User, data: dict) -> Job:
 
     seed_eligibility_from_payload(db, job, data.get("eligibility"))
     record_audit(db, actor_id=employer.id, action="job.create", resource_type="job", resource_id=job.id)
+    return job
+
+
+def create_campus_job(db: Session, head: User, data: dict) -> Job:
+    """Institution head: campus placement posting scoped to their institution only."""
+    if head.role != UserRole.INSTITUTION.value or not head.organization_id:
+        raise ValueError("FORBIDDEN")
+    org = db.get(Organization, head.organization_id)
+    if not org or org.org_type != OrganizationType.INSTITUTION.value:
+        raise ValueError("FORBIDDEN")
+    job = Job(
+        organization_id=org.id,
+        title=data["title"],
+        description=data.get("description", ""),
+        location=data.get("location"),
+        employment_type=data.get("employment_type", "FULL_TIME"),
+        work_mode=data.get("work_mode", "HYBRID"),
+        salary_min=data.get("salary_min"),
+        salary_max=data.get("salary_max"),
+        salary_currency=data.get("salary_currency", "INR"),
+        openings=data.get("openings", 1),
+        closes_on=data.get("closes_on"),
+        skills=data.get("skills", []),
+        hiring_stages=data.get("hiring_stages", []),
+        questions=data.get("questions", []),
+        status=JobStatus.DRAFT.value,
+        requires_moderation=data.get("requires_moderation", True),
+        posting_channel=JobPostingChannel.CAMPUS.value,
+        campus_institution_id=org.id,
+    )
+    db.add(job)
+    db.flush()
+    from app.modules.eligibility.service import seed_eligibility_from_payload
+
+    seed_eligibility_from_payload(db, job, data.get("eligibility"))
+    record_audit(db, actor_id=head.id, action="job.create.campus", resource_type="job", resource_id=job.id)
     return job
 
 
@@ -130,7 +174,7 @@ def moderate_job(db: Session, job: Job, admin: User, action: str, note: str | No
 def publish_job(db: Session, job: Job, actor: User) -> Job:
     _assert_job_owner(db, job, actor)
     org = db.get(Organization, job.organization_id)
-    if org:
+    if org and org.org_type == OrganizationType.EMPLOYER.value:
         ensure_verified_employer(org)
     if job.status not in (JobStatus.APPROVED.value, JobStatus.DRAFT.value):
         if job.status != JobStatus.PUBLISHED.value:
@@ -153,13 +197,12 @@ def employer_job_stats(db: Session, org_id: str) -> dict:
     pending = sum(1 for j in jobs if j.status in (JobStatus.UNDER_REVIEW.value, JobStatus.SUBMITTED.value))
     job_ids = [j.id for j in jobs] or ["none"]
     
-    app_count = db.scalar(
-        select(func.count(Application.id)).where(Application.job_id.in_(job_ids))
-    ) or 0
-    
-    app_ids = list(
-        db.scalars(select(Application.id).where(Application.job_id.in_(job_ids))).all()
-    ) or ["none"]
+    active_apps = list(
+        db.scalars(select(Application).where(Application.job_id.in_(job_ids))).all()
+    )
+    active_apps = [a for a in active_apps if application_visible_in_employer_pipeline(a)]
+    app_count = len(active_apps)
+    app_ids = [a.id for a in active_apps] or ["none"]
     
     interview_count = db.scalar(
         select(func.count(Interview.id)).where(Interview.application_id.in_(app_ids))
@@ -185,6 +228,7 @@ def pipeline_for_job(db: Session, job_id: str, actor: User) -> dict:
         raise ValueError("NOT_FOUND")
     _assert_job_access(db, job, actor)
     apps = db.scalars(select(Application).where(Application.job_id == job_id)).all()
+    apps = [a for a in apps if application_visible_in_employer_pipeline(a)]
     stages = job.hiring_stages or ["Screening", "Shortlisted", "Assessment", "Interview", "Selected"]
     columns = {s: [] for s in stages}
     for app in apps:
@@ -209,6 +253,10 @@ def _status_to_stage(status: str, stages: list) -> str:
 def _assert_job_owner(db: Session, job: Job, user: User) -> None:
     if user.role == UserRole.PLATFORM_ADMINISTRATOR.value:
         return
+    if user.role == UserRole.INSTITUTION.value:
+        if user.organization_id == job.organization_id and (job.campus_institution_id or job.organization_id) == user.organization_id:
+            return
+        raise ValueError("FORBIDDEN")
     if user.role != UserRole.EMPLOYER.value or user.organization_id != job.organization_id:
         raise ValueError("FORBIDDEN")
 
@@ -218,15 +266,11 @@ def _assert_job_access(db: Session, job: Job, user: User) -> None:
         return
     if user.role == UserRole.EMPLOYER.value and user.organization_id == job.organization_id:
         return
-    if user.role == UserRole.RECRUITER.value:
-        assigned = db.scalar(
-            select(RecruiterAssignment).where(
-                RecruiterAssignment.job_id == job.id,
-                RecruiterAssignment.recruiter_id == user.id,
-            )
-        )
-        if assigned:
-            return
+    # Legacy JCMS rows may still be RECRUITER until the user signs in again (LMS maps recruiter → EMPLOYER).
+    if user.role == UserRole.RECRUITER.value and user.organization_id == job.organization_id:
+        return
+    if user.role == UserRole.INSTITUTION.value and user.organization_id == job.organization_id:
+        return
     raise ValueError("FORBIDDEN")
 
 

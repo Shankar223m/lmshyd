@@ -13,7 +13,9 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.exceptions import AppError
 from app.core.security import hash_password
-from app.models.entities import Organization, User
+from sqlalchemy import select
+
+from app.models.entities import Organization, StudentProfile, User
 from app.shared.enums import OrganizationType, UserRole, VerificationStatus
 
 # LMS scoped `admin` is intentionally unmapped: careers.manage is super-admin-only,
@@ -21,7 +23,8 @@ from app.shared.enums import OrganizationType, UserRole, VerificationStatus
 _ROLE_MAP = {
     "student": UserRole.STUDENT.value,
     "employer_admin": UserRole.EMPLOYER.value,
-    "recruiter": UserRole.RECRUITER.value,
+    # Recruiter seats use the same JCMS hiring persona as employer admin (merged hiring role).
+    "recruiter": UserRole.EMPLOYER.value,
     "institution_head": UserRole.INSTITUTION.value,
     "staff": UserRole.INSTITUTION.value,
     "super_admin": UserRole.PLATFORM_ADMINISTRATOR.value,
@@ -153,20 +156,31 @@ def upsert_user_from_lms_token(db: Session, token: str) -> User:
     if institution and not org_id_claim:
         org_id_claim = institution.get("organization_id") or institution.get("id")
 
+    org_type_claim = str(claims.get("organization_type") or "").strip().lower()
+    inst = institution if isinstance(institution, dict) else None
+    inst_type = str(inst.get("organization_type") or inst.get("org_type") or "").strip().lower() if inst else ""
+    scope_set = {str(s) for s in scopes}
+    student_open_market = (
+        role == UserRole.STUDENT.value
+        and (
+            org_type_claim == "individual"
+            or inst_type == "individual"
+            or "store.buy" in scope_set
+        )
+    )
+
     org: Organization | None = None
-    if org_id_claim and role in {
-        UserRole.EMPLOYER.value,
-        UserRole.RECRUITER.value,
-        UserRole.INSTITUTION.value,
-    }:
+    needs_org = org_id_claim and (
+        role in {UserRole.EMPLOYER.value, UserRole.INSTITUTION.value}
+        or (role == UserRole.STUDENT.value and not student_open_market)
+    )
+    if needs_org:
         org_key = f"lms-org-{org_id_claim}"
         org = db.query(Organization).filter(Organization.registration_number == org_key).one_or_none()
         if org is None:
-            org_type = (
-                OrganizationType.INSTITUTION.value
-                if role == UserRole.INSTITUTION.value
-                else OrganizationType.EMPLOYER.value
-            )
+            org_type = OrganizationType.EMPLOYER.value
+            if role in {UserRole.INSTITUTION.value, UserRole.STUDENT.value}:
+                org_type = OrganizationType.INSTITUTION.value
             org = Organization(
                 name=str(org_name or f"Organization {org_id_claim}"),
                 org_type=org_type,
@@ -176,12 +190,8 @@ def upsert_user_from_lms_token(db: Session, token: str) -> User:
             db.add(org)
             db.flush()
 
-    # Stable identity: LMS public user id is the JCMS primary key.
+    # Stable identity: LMS public user id is the JCMS primary key (do not substitute a different row by email).
     user = db.get(User, user_id)
-    if user is None:
-        by_email = db.query(User).filter(User.email == email).one_or_none()
-        if by_email is not None:
-            user = by_email
 
     if user is None:
         user = User(
@@ -204,6 +214,21 @@ def upsert_user_from_lms_token(db: Session, token: str) -> User:
         user.is_active = True
         if org is not None:
             user.organization_id = org.id
+
+    if role == UserRole.STUDENT.value:
+        profile = db.scalar(select(StudentProfile).where(StudentProfile.user_id == user.id))
+        if profile is None:
+            profile = StudentProfile(user_id=user.id, skills=[])
+            db.add(profile)
+        profile.open_market_only = student_open_market
+        if not open_market_only and org is not None:
+            profile.institution_id = org.id
+        elif not open_market_only and org_id_claim:
+            org_key = f"lms-org-{org_id_claim}"
+            campus_org = db.query(Organization).filter(Organization.registration_number == org_key).one_or_none()
+            if campus_org is not None:
+                profile.institution_id = campus_org.id
+
     db.commit()
     db.refresh(user)
     return user

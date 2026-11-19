@@ -21,7 +21,7 @@ export function RequireJobsPersona({ persona }: { persona: Persona }) {
   const ok =
     (persona === "student" && access.isStudent) ||
     (persona === "employer" && access.isEmployer) ||
-    (persona === "recruiter" && access.isRecruiter) ||
+    (persona === "recruiter" && access.isEmployer) ||
     (persona === "institution" && access.isInstitution) ||
     (persona === "moderator" && access.isModerator);
   return ok ? <Outlet /> : <Navigate to="/jobs" replace />;

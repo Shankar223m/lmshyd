@@ -11,12 +11,12 @@ def notification_link_path(*, role: str, resource_type: str | None, resource_id:
         if r == "STUDENT":
             return "/student/applications"
         if r in ("RECRUITER", "EMPLOYER"):
-            return "/recruiter/screening" if r == "RECRUITER" else "/employer/pipeline"
+            return "/jobs/employer/pipeline"
     if rt == "interview":
         if r == "STUDENT":
             return "/student/interviews"
         if r in ("RECRUITER", "EMPLOYER"):
-            return "/recruiter/interviews" if r == "RECRUITER" else "/employer/interviews"
+            return "/jobs/employer/interviews"
     if rt == "offer":
         if r == "STUDENT":
             return "/student/offers"

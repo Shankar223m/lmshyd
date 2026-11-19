@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { MapPin, Briefcase, Clock, Check, ArrowLeft, DollarSign, Copy, Building2 } from "lucide-react";
 import { JobThumbnail } from "../../../components/JobThumbnail";
 import { formatSalaryRange, SALARY_DISCLOSURE } from "../../../utils/formatSalary";
+import { JobPostingTagline } from "../../../components/JobPostingTagline";
 import { apiFetch, type ApiResponse } from "../../../services/api";
 
 type JobDetail = {
@@ -27,6 +28,8 @@ type JobDetail = {
   active_applicant_count?: number;
   eligibility?: Record<string, unknown>;
   eligibility_details?: Array<{ rule: string; passed: boolean; message: string }>;
+  posting_channel?: string;
+  posting_tagline?: string;
 };
 
 export function JobDetailPage({ audience = "student" }: { audience?: "student" | "admin" }) {
@@ -164,6 +167,7 @@ export function JobDetailPage({ audience = "student" }: { audience?: "student" |
             <>
               <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
                 <h2 className="text-base font-bold text-slate-900">About the role</h2>
+                <JobPostingTagline postingChannel={job.posting_channel} tagline={job.posting_tagline} />
                 <p className="whitespace-pre-line text-sm leading-relaxed text-slate-600">
                   {job.description?.trim() || "The employer has not added a detailed description yet."}
                 </p>

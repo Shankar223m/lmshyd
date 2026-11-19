@@ -10,6 +10,7 @@ import { AppBreadcrumb } from "@/shared/layout/AppBreadcrumb";
 import { Brand } from "@/shared/layout/Brand";
 import { QuickJump } from "@/shared/layout/QuickJump";
 import { SideNav } from "@/shared/layout/SideNav";
+import { SidebarWorkspace } from "@/shared/layout/SidebarWorkspace";
 import { Avatar, Icon, Menu } from "@/shared/ui";
 import { cn } from "@/core/lib/cn";
 
@@ -88,7 +89,7 @@ export function AppLayout() {
   );
 
   return (
-    <div className="app-shell min-h-screen bg-canvas lg:flex lg:gap-0 lg:p-3 lg:pr-3">
+    <div className="lms-campus-shell app-shell min-h-screen bg-canvas lg:flex">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">
         Skip to content
       </a>
@@ -96,15 +97,23 @@ export function AppLayout() {
       {/* Desktop Collapsible Sidebar — soft floating panel */}
       <aside
         className={cn(
-          "sidebar-panel sticky top-3 hidden h-[calc(100vh-1.5rem)] shrink-0 flex-col rounded-3xl border border-white/90 bg-white/95 shadow-lift backdrop-blur-sm transition-all duration-300 ease-in-out lg:flex z-20",
-          desktopCollapsed ? "w-[76px]" : "w-[268px]",
+          "sidebar-panel hidden h-screen shrink-0 flex-col transition-all duration-300 ease-in-out lg:flex lg:sticky lg:top-0 z-20",
+          desktopCollapsed ? "w-[76px]" : "w-[250px]",
         )}
       >
         <Brand collapsed={desktopCollapsed} />
+        <SidebarWorkspace collapsed={desktopCollapsed} />
         <SideNav
           collapsed={desktopCollapsed}
           onToggleCollapse={toggleDesktopCollapsed}
         />
+        {!desktopCollapsed && (
+          <div className="cd-sidebar-help">
+            <b>Need a hand?</b>
+            Visit support for guides on placements, courses, and campus drives.
+            <a href="/support">Get support ↗</a>
+          </div>
+        )}
         {userFooter}
       </aside>
 
@@ -133,8 +142,8 @@ export function AppLayout() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex min-w-0 flex-1 flex-col lg:pl-3">
-        <header className="sticky top-0 z-30 flex min-h-16 flex-col gap-2 px-4 py-3 sm:px-6 lg:top-3 lg:rounded-3xl lg:border lg:border-white/90 lg:bg-white/95 lg:px-6 lg:py-3 lg:shadow-lift lg:backdrop-blur-sm">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="shell-header sticky top-0 z-30 flex min-h-16 flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex h-10 items-center gap-3">
           <button
             type="button"
@@ -191,9 +200,9 @@ export function AppLayout() {
         <main
           id="main"
           className={cn(
-            "mx-auto w-full flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-5 lg:py-6",
+            "shell-main mx-auto w-full flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8",
             mainWidth,
-            jobsFocus && "bg-gradient-to-b from-indigo-50/50 via-white to-white lg:rounded-t-3xl",
+            jobsFocus && "bg-gradient-to-b from-indigo-50/40 via-canvas to-canvas",
           )}
         >
           <Outlet />

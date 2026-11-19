@@ -1,7 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiFetch, filesApi, type ApiResponse } from '../../../services/api';
+
+function defaultOfferDates() {
+  const today = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const iso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const respondBy = new Date(today);
+  respondBy.setDate(respondBy.getDate() + 14);
+  const joining = new Date(today);
+  joining.setDate(joining.getDate() + 45);
+  return { respondBy: iso(respondBy), joiningDate: iso(joining) };
+}
 
 type CandidateOption = {
   id: string;
@@ -15,26 +26,46 @@ export function CreateOfferPage() {
   const nav = useNavigate();
   const [params] = useSearchParams();
   const initialAppId = params.get('applicationId') || '';
+  const pipelineJobId = params.get('jobId') || '';
 
   const [selectedAppId, setSelectedAppId] = useState(initialAppId);
-  const [roleTitle, setRoleTitle] = useState('Frontend Engineer');
+  const [roleTitle, setRoleTitle] = useState('Role offer');
   const [location, setLocation] = useState('Bengaluru, Karnataka');
   const [annualPackage, setAnnualPackage] = useState(1100000);
-  const [joiningDate, setJoiningDate] = useState('2026-12-01');
-  const [respondBy, setRespondBy] = useState('2026-11-20');
-  const [requiresApproval, setRequiresApproval] = useState(true);
+  const offerDefaults = defaultOfferDates();
+  const [joiningDate, setJoiningDate] = useState(offerDefaults.joiningDate);
+  const [respondBy, setRespondBy] = useState(offerDefaults.respondBy);
   const [offerFileId, setOfferFileId] = useState<string | null>(null);
   const [offerFileName, setOfferFileName] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   // Fetch available applicants to populate selector if not passed via param
+  useEffect(() => {
+    if (initialAppId) setSelectedAppId(initialAppId);
+  }, [initialAppId]);
+
   const { data: candidatesData } = useQuery({
-    queryKey: ['recruiter-queue'],
-    queryFn: () => apiFetch<ApiResponse<CandidateOption[]>>('/jobs/recruiter/applications'),
+    queryKey: ['employer-applications-queue', pipelineJobId],
+    queryFn: () =>
+      apiFetch<ApiResponse<CandidateOption[]>>(
+        pipelineJobId ? `/recruiter/applications?job_id=${encodeURIComponent(pipelineJobId)}` : '/recruiter/applications',
+      ),
   });
+
+  const { data: pickedAppData } = useQuery({
+    queryKey: ['application', initialAppId],
+    enabled: !!initialAppId,
+    queryFn: () => apiFetch<ApiResponse<CandidateOption>>(`/applications/${initialAppId}`),
+  });
+
   const candidates = candidatesData?.data || [];
-  const activeAppId = selectedAppId || candidates[0]?.id || '';
+  const activeAppId = selectedAppId || pickedAppData?.data?.id || candidates[0]?.id || '';
+
+  useEffect(() => {
+    const title = pickedAppData?.data?.job_title;
+    if (title && !roleTitle) setRoleTitle(title);
+  }, [pickedAppData?.data?.job_title, roleTitle]);
 
   const createOfferMutation = useMutation({
     mutationFn: () =>
@@ -46,14 +77,17 @@ export function CreateOfferPage() {
           annual_package: Number(annualPackage),
           joining_date: joiningDate || undefined,
           respond_by: respondBy || undefined,
-          requires_approval: requiresApproval,
           offer_letter_file_id: offerFileId || undefined,
         }),
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['employer-jobs'] });
-      qc.invalidateQueries({ queryKey: ['pipeline'] });
-      nav('/jobs/employer/jobs');
+      if (pipelineJobId) {
+        qc.invalidateQueries({ queryKey: ['pipeline', pipelineJobId] });
+        nav(`/jobs/employer/pipeline/${pipelineJobId}`);
+      } else {
+        nav('/jobs/employer/jobs');
+      }
     },
     onError: (err: Error) => setError(err.message),
   });
@@ -95,13 +129,24 @@ export function CreateOfferPage() {
     createOfferMutation.mutate();
   };
 
-  const selectedCandidate = candidates.find((c) => c.id === activeAppId);
+  const selectedCandidate =
+    candidates.find((c) => c.id === activeAppId) || (pickedAppData?.data?.id === activeAppId ? pickedAppData.data : undefined);
 
   return (
     <div className="space-y-6">
+      {pipelineJobId ? (
+        <Link
+          to={`/jobs/employer/pipeline/${pipelineJobId}`}
+          className="text-xs font-semibold text-indigo-600 hover:underline"
+        >
+          ← Back to role pipeline
+        </Link>
+      ) : null}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Prepare Job Offer</h1>
-        <p className="text-sm text-slate-500">Draft compensation, terms, and route for leadership approval before delivery.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Issue job offer</h1>
+        <p className="text-sm text-slate-500">
+          Set compensation and terms — the offer is sent to the candidate as soon as you submit (one employer account per company).
+        </p>
       </div>
 
       {error && (
@@ -125,7 +170,11 @@ export function CreateOfferPage() {
               onChange={(e) => setSelectedAppId(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium focus:border-indigo-500 focus:outline-none"
             >
-              {candidates.length === 0 ? (
+              {activeAppId && selectedCandidate ? (
+                <option value={activeAppId}>
+                  {selectedCandidate.student_name} — {selectedCandidate.job_title} ({selectedCandidate.status})
+                </option>
+              ) : candidates.length === 0 ? (
                 <option value="">No candidate queue available</option>
               ) : (
                 candidates.map((c) => (
@@ -198,19 +247,6 @@ export function CreateOfferPage() {
           </div>
 
           <div className="border-t border-slate-100 pt-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="reqApp"
-                checked={requiresApproval}
-                onChange={(e) => setRequiresApproval(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <label htmlFor="reqApp" className="text-xs font-medium text-slate-700">
-                Require secondary leadership approval before issuing to candidate
-              </label>
-            </div>
-
             <div>
               <label htmlFor="offer-file-upload" className="block text-xs font-semibold uppercase text-slate-600">Official Offer Letter Document (PDF)</label>
               <div className="mt-1 flex items-center gap-3">
@@ -233,11 +269,7 @@ export function CreateOfferPage() {
               disabled={createOfferMutation.isPending || !activeAppId}
               className="w-full rounded-lg bg-indigo-600 py-2.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition shadow-xs"
             >
-              {createOfferMutation.isPending
-                ? 'Processing…'
-                : requiresApproval
-                ? 'Submit Offer for Internal Approval'
-                : 'Directly Issue Offer to Student'}
+              {createOfferMutation.isPending ? 'Issuing…' : 'Issue offer to student'}
             </button>
           </div>
         </form>
@@ -272,8 +304,8 @@ export function CreateOfferPage() {
                   <span className="font-semibold text-slate-800">{respondBy || 'TBD'}</span>
                 </div>
                 <div className="py-1.5 flex justify-between">
-                  <span className="text-slate-500">Approval Workflow:</span>
-                  <span className="font-semibold text-indigo-600">{requiresApproval ? 'Department Head → HR' : 'Pre-approved'}</span>
+                  <span className="text-slate-500">Delivery:</span>
+                  <span className="font-semibold text-indigo-600">Sent to student on submit</span>
                 </div>
               </div>
             </div>

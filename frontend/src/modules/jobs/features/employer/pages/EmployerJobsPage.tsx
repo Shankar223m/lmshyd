@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
+import { BriefcaseBusiness, Plus, Users } from 'lucide-react';
+import { CampusPageHeader } from '@/shared/ui/CampusPageHeader';
 import { apiFetch, type ApiResponse } from '../../../services/api';
 
 type JobItem = {
@@ -14,6 +16,7 @@ type JobItem = {
   openings: number;
   closes_on?: string;
   applicant_count: number;
+  active_applicant_count?: number;
 };
 
 type EmployerJobsData = {
@@ -46,12 +49,18 @@ export function EmployerJobsPage() {
   });
 
   if (isLoading) {
-    return <p className="py-16 text-center text-sm text-slate-500">Loading jobs…</p>;
+    return (
+      <div className="lms-ui-kit-catalog loading-state">
+        <div className="spinner" />
+        Loading jobs…
+      </div>
+    );
   }
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Could not load jobs.
+      <div className="lms-ui-kit-catalog empty-state">
+        <h3>Could not load jobs</h3>
+        <p>Try refreshing the page.</p>
       </div>
     );
   }
@@ -85,20 +94,75 @@ export function EmployerJobsPage() {
     return 'Draft';
   };
 
+  const pillClass = (status: string) => {
+    if (status === 'PUBLISHED') return 'status-pill published';
+    if (status === 'UNDER_REVIEW' || status === 'SUBMITTED') return 'status-pill review';
+    if (status === 'CLOSED') return 'status-pill draft';
+    return 'status-pill pending';
+  };
+
+  const published = allJobs.filter((j) => j.status === 'PUBLISHED').length;
+  const inReview = allJobs.filter((j) => j.status === 'UNDER_REVIEW' || j.status === 'SUBMITTED').length;
+  const applicants = allJobs.reduce((n, j) => n + (j.active_applicant_count ?? j.applicant_count), 0);
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Jobs</h1>
-        <Link
-          to="/jobs/employer/jobs/new"
-          className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-        >
-          Create job
-        </Link>
+    <div className="lms-ui-kit-catalog mx-auto w-full max-w-[1450px] pb-16">
+      <CampusPageHeader
+        eyebrow="Hiring management"
+        title="Jobs & campus postings"
+        description="Create roles, manage pipelines, and track applicants in one employer workspace."
+        actions={
+          <Link to="/jobs/employer/jobs/new" className="btn btn-primary">
+            <Plus size={16} />
+            Create job
+          </Link>
+        }
+      />
+
+      <div className="stat-grid">
+        <div className="stat-tile">
+          <div className="stat-icon t0">
+            <BriefcaseBusiness size={18} />
+          </div>
+          <small>Total roles</small>
+          <strong>{allJobs.length}</strong>
+          <span>● {published} live</span>
+        </div>
+        <div className="stat-tile">
+          <div className="stat-icon t1">
+            <Users size={18} />
+          </div>
+          <small>Active applicants</small>
+          <strong>{applicants.toLocaleString()}</strong>
+          <span>● Across open pipelines</span>
+        </div>
+        <div className="stat-tile">
+          <div className="stat-icon t2">
+            <BriefcaseBusiness size={18} />
+          </div>
+          <small>Published</small>
+          <strong>{published}</strong>
+          <span>● Accepting applications</span>
+        </div>
+        <div className="stat-tile">
+          <div className="stat-icon t3">
+            <BriefcaseBusiness size={18} />
+          </div>
+          <small>In review</small>
+          <strong>{inReview}</strong>
+          <span>● Awaiting moderation</span>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-1">
+      <div className="section-head" style={{ marginBottom: 14 }}>
+        <div>
+          <h2>All job postings</h2>
+          <p>Filter by status or search by title and location</p>
+        </div>
+      </div>
+
+      <div className="catalog-toolbar" style={{ marginBottom: 13 }}>
+        <div className="category-pills">
           {[
             ['ALL', 'All'],
             ['PUBLISHED', 'Published'],
@@ -110,96 +174,83 @@ export function EmployerJobsPage() {
               key={key}
               type="button"
               onClick={() => setFilter(key!)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
-                filter === key ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className={`category-pill ${filter === key ? 'selected' : ''}`}
             >
               {label}
             </button>
           ))}
         </div>
-        <input
-          type="search"
-          placeholder="Search…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:w-56"
-        />
+        <div className="search-field" style={{ flex: 1, maxWidth: 320 }}>
+          <input
+            type="search"
+            placeholder="Search company or role…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500">
+      <div className="data-table-wrap">
+        <table className="data-table">
+          <thead>
             <tr>
-              <th className="px-4 py-3">Job</th>
-              <th className="px-4 py-3">Applicants</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th>Role</th>
+              <th>Applicants</th>
+              <th>Status</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {filteredJobs.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-slate-500">
+                <td colSpan={4} className="empty-state" style={{ padding: '35px 16px' }}>
                   No jobs yet.{' '}
-                  <Link to="/jobs/employer/jobs/new" className="font-semibold text-slate-900 underline">
+                  <Link to="/jobs/employer/jobs/new" className="text-link">
                     Create one
                   </Link>
                 </td>
               </tr>
             ) : (
               filteredJobs.map((j) => (
-                <tr key={j.id} className="hover:bg-slate-50/80">
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-slate-900">{j.title}</div>
-                    <div className="text-xs text-slate-500">
+                <tr key={j.id}>
+                  <td>
+                    <b style={{ display: 'block', fontSize: 11, color: '#29364b' }}>{j.title}</b>
+                    <small style={{ fontSize: 9, color: '#8c96a6' }}>
                       {j.location || 'Remote'} · {j.employment_type.replace(/_/g, ' ')}
-                    </div>
+                    </small>
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <button
                       type="button"
-                      onClick={() => nav(`/jobs/employer/pipeline?jobId=${j.id}`)}
-                      className="font-medium text-slate-800 hover:underline"
+                      onClick={() => nav(`/jobs/employer/pipeline/${j.id}`)}
+                      className="text-link"
+                      style={{ marginTop: 0 }}
                     >
-                      {j.applicant_count}
+                      {j.active_applicant_count ?? j.applicant_count}
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-xs font-medium text-slate-600">{statusLabel(j.status)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-1.5">
+                  <td>
+                    <span className={pillClass(j.status)}>● {statusLabel(j.status)}</span>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, flexWrap: 'wrap' }}>
                       {j.status !== 'CLOSED' && j.status !== 'CANCELLED' && (
-                        <Link
-                          to={`/jobs/employer/jobs/new?edit=${j.id}`}
-                          className="rounded-md border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700"
-                        >
+                        <Link to={`/jobs/employer/jobs/new?edit=${j.id}`} className="btn btn-outline btn-small">
                           Edit
                         </Link>
                       )}
                       {j.status === 'DRAFT' && (
-                        <button
-                          type="button"
-                          onClick={() => submitMutation.mutate(j.id)}
-                          className="rounded-md bg-slate-900 px-2 py-1 text-xs font-semibold text-white"
-                        >
+                        <button type="button" onClick={() => submitMutation.mutate(j.id)} className="btn btn-primary btn-small">
                           Submit
                         </button>
                       )}
                       {(j.status === 'APPROVED' || j.status === 'DRAFT') && (
-                        <button
-                          type="button"
-                          onClick={() => publishMutation.mutate(j.id)}
-                          className="rounded-md border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700"
-                        >
+                        <button type="button" onClick={() => publishMutation.mutate(j.id)} className="btn btn-outline btn-small">
                           Publish
                         </button>
                       )}
                       {j.status === 'PUBLISHED' && (
-                        <button
-                          type="button"
-                          onClick={() => closeMutation.mutate(j.id)}
-                          className="rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600"
-                        >
+                        <button type="button" onClick={() => closeMutation.mutate(j.id)} className="btn btn-outline btn-small">
                           Close
                         </button>
                       )}

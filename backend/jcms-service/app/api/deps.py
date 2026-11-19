@@ -55,8 +55,10 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 def require_roles(*roles: UserRole):
+    allowed = {(r.value or "").upper() for r in roles}
+
     def checker(user: CurrentUser) -> User:
-        if user.role not in {r.value for r in roles}:
+        if (user.role or "").strip().upper() not in allowed:
             raise AppError("FORBIDDEN", "Insufficient permissions", 403)
         return user
 

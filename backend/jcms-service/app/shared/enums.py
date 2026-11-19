@@ -22,6 +22,13 @@ class VerificationStatus(StrEnum):
     REJECTED = "REJECTED"
 
 
+class JobPostingChannel(StrEnum):
+    """Campus = institution placement posting; OPEN = employer / open market role."""
+
+    CAMPUS = "CAMPUS"
+    OPEN = "OPEN"
+
+
 class JobStatus(StrEnum):
     DRAFT = "DRAFT"
     SUBMITTED = "SUBMITTED"

@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.entities import (
@@ -22,6 +22,106 @@ from app.shared.enums import (
     PlacementStatus,
     UserRole,
 )
+
+_PIPELINE_HIDDEN_STATUSES = frozenset(
+    {
+        ApplicationStatus.REJECTED.value,
+        ApplicationStatus.WITHDRAWN.value,
+    }
+)
+
+
+def normalize_application_status(status: str | None) -> str:
+    """Uppercase status for comparisons (tolerates legacy casing in stored rows)."""
+    return (status or ApplicationStatus.SUBMITTED.value).strip().upper()
+
+
+def _normalize_offer_status(status: str | None) -> str:
+    return (status or OfferStatus.DRAFT.value).strip().upper()
+
+
+_RESPONDABLE_OFFER_STATUSES = frozenset(
+    {
+        OfferStatus.ISSUED.value,
+        OfferStatus.PENDING_APPROVAL.value,
+        OfferStatus.APPROVED.value,
+    }
+)
+
+
+def _student_owns_application(db: Session, student: User, app: Application) -> bool:
+    if app.student_id == student.id:
+        return True
+    owner = db.get(User, app.student_id)
+    if owner and owner.email and student.email and owner.email.strip().lower() == student.email.strip().lower():
+        app.student_id = student.id
+        return True
+    return False
+
+
+def relink_applications_to_lms_user(db: Session, student: User) -> int:
+    """Heal applications still tied to a legacy JCMS user row with the same email as the LMS account."""
+    if (student.role or "").strip().upper() != UserRole.STUDENT.value or not student.email:
+        return 0
+    email_l = student.email.strip().lower()
+    legacy_ids = list(
+        db.scalars(
+            select(User.id).where(
+                User.id != student.id,
+                func.lower(User.email) == email_l,
+            )
+        ).all()
+    )
+    if not legacy_ids:
+        return 0
+    count = 0
+    for app in db.scalars(select(Application).where(Application.student_id.in_(legacy_ids))).all():
+        app.student_id = student.id
+        count += 1
+    return count
+
+
+def _ensure_respond_by_deadline(raw: date | None) -> date:
+    today = date.today()
+    if raw is None or raw < today:
+        return today + timedelta(days=14)
+    return raw
+
+
+def refresh_open_offer_deadlines(db: Session, offers: list[Offer]) -> int:
+    """Offers created with past default dates can be responded to after the student opens the page."""
+    today = date.today()
+    updated = 0
+    for offer in offers:
+        st = _normalize_offer_status(offer.status)
+        if st not in _RESPONDABLE_OFFER_STATUSES and st != OfferStatus.EXPIRED.value:
+            continue
+        if st == OfferStatus.EXPIRED.value:
+            offer.status = OfferStatus.ISSUED.value
+            offer.respond_by = today + timedelta(days=14)
+            updated += 1
+            continue
+        if offer.respond_by is None or offer.respond_by < today:
+            offer.respond_by = today + timedelta(days=14)
+            updated += 1
+    return updated
+
+
+def prepare_offer_for_student_response(db: Session, offer: Offer) -> None:
+    """Align offer row with what the student UI shows (issued & open for response)."""
+    st = _normalize_offer_status(offer.status)
+    if st in (
+        OfferStatus.EXPIRED.value,
+        OfferStatus.PENDING_APPROVAL.value,
+        OfferStatus.APPROVED.value,
+    ):
+        offer.status = OfferStatus.ISSUED.value
+        offer.requires_approval = False
+    refresh_open_offer_deadlines(db, [offer])
+
+
+def application_visible_in_employer_pipeline(app: Application) -> bool:
+    return normalize_application_status(app.status) not in _PIPELINE_HIDDEN_STATUSES
 
 
 def submit_application(db: Session, student: User, job: Job, data: dict) -> Application:
@@ -76,27 +176,37 @@ def submit_application(db: Session, student: User, job: Job, data: dict) -> Appl
     )
     from app.models.entities import RecruiterAssignment
 
-    recruiter_ids = list(
-        db.scalars(select(RecruiterAssignment.recruiter_id).where(RecruiterAssignment.job_id == job.id)).all()
-    )
-    notify_users_for_job(
-        db,
-        job_id=job.id,
-        recruiter_ids=recruiter_ids,
-        title="New application received",
-        body=f"A candidate applied to {job.title}.",
-        resource_type="application",
-        resource_id=app.id,
-    )
-    employer = db.scalar(
-        select(User).where(User.organization_id == job.organization_id, User.role == UserRole.EMPLOYER.value)
-    )
-    if employer:
+    hiring_team = db.scalars(
+        select(User).where(
+            User.organization_id == job.organization_id,
+            User.role == UserRole.EMPLOYER.value,
+        )
+    ).all()
+    for member in hiring_team:
         notify_user(
             db,
-            user_id=employer.id,
+            user_id=member.id,
             title="New application received",
-            body=f"New applicant for {job.title}.",
+            body=f"New applicant for {job.title} (resume attached).",
+            resource_type="application",
+            resource_id=app.id,
+        )
+    campus_heads: list[User] = []
+    if job.campus_institution_id:
+        campus_heads = list(
+            db.scalars(
+                select(User).where(
+                    User.organization_id == job.campus_institution_id,
+                    User.role == UserRole.INSTITUTION.value,
+                )
+            ).all()
+        )
+    for head in campus_heads:
+        notify_user(
+            db,
+            user_id=head.id,
+            title="Campus application received",
+            body=f"A student applied to campus role {job.title} (resume attached).",
             resource_type="application",
             resource_id=app.id,
         )
@@ -120,15 +230,26 @@ def transition_application(
     reason: str | None = None,
 ) -> Application:
     _assert_recruiter_or_employer(db, app, actor)
-    allowed = _allowed_transitions(app.status)
-    if to_status not in allowed:
-        raise ValueError("INVALID_TRANSITION")
+    current = (app.status or ApplicationStatus.SUBMITTED.value).strip().upper()
+
+    if to_status == ApplicationStatus.REJECTED.value:
+        if current == ApplicationStatus.REJECTED.value:
+            if reason:
+                app.rejection_reason = reason.strip()
+            return app
+        if current == ApplicationStatus.WITHDRAWN.value:
+            raise ValueError("INVALID_TRANSITION")
+    else:
+        allowed = _allowed_transitions(current)
+        if to_status not in allowed:
+            raise ValueError("INVALID_TRANSITION")
     prev = app.status
     app.status = to_status
     if pipeline_stage:
         app.pipeline_stage = pipeline_stage
-    if reason and to_status == ApplicationStatus.REJECTED.value:
-        app.rejection_reason = reason
+    if to_status == ApplicationStatus.REJECTED.value:
+        app.rejection_reason = (reason or "Candidate not moving forward").strip()
+        app.pipeline_stage = "Rejected"
     db.add(
         ApplicationStatusEvent(
             application_id=app.id,
@@ -212,6 +333,14 @@ def _allowed_transitions(current: str) -> set[str]:
             ApplicationStatus.UNDER_EMPLOYER_REVIEW.value,
             ApplicationStatus.SELECTED.value,
             ApplicationStatus.SHORTLISTED.value,
+            ApplicationStatus.INTERVIEW_IN_PROGRESS.value,
+            ApplicationStatus.REJECTED.value,
+            ApplicationStatus.ON_HOLD.value,
+        },
+        ApplicationStatus.INTERVIEW_IN_PROGRESS.value: {
+            ApplicationStatus.UNDER_EMPLOYER_REVIEW.value,
+            ApplicationStatus.SELECTED.value,
+            ApplicationStatus.INTERVIEW_SCHEDULED.value,
             ApplicationStatus.REJECTED.value,
             ApplicationStatus.ON_HOLD.value,
         },
@@ -234,7 +363,13 @@ def _allowed_transitions(current: str) -> set[str]:
         ApplicationStatus.REJECTED.value: set(),
         ApplicationStatus.WITHDRAWN.value: set(),
     }
-    return graph.get(current, set())
+    terminal = {ApplicationStatus.REJECTED.value, ApplicationStatus.WITHDRAWN.value}
+    if current in terminal:
+        return set()
+    allowed = graph.get(current)
+    if allowed is None:
+        return {ApplicationStatus.REJECTED.value, ApplicationStatus.ON_HOLD.value}
+    return allowed
 
 
 def _assert_recruiter_or_employer(db: Session, app: Application, user: User) -> None:
@@ -247,21 +382,22 @@ def _assert_recruiter_or_employer(db: Session, app: Application, user: User) -> 
 
 
 def create_offer(db: Session, app: Application, actor: User, data: dict) -> Offer:
-    if actor.role not in (UserRole.EMPLOYER.value, UserRole.RECRUITER.value):
-        raise ValueError("FORBIDDEN")
+    _assert_recruiter_or_employer(db, app, actor)
     if data.get("annual_package") is not None and float(data["annual_package"]) < 0:
         raise ValueError("INVALID_ANNUAL_PACKAGE")
     if data.get("respond_by") and data.get("joining_date") and data["respond_by"] > data["joining_date"]:
         raise ValueError("INVALID_RESPOND_BY_DATE")
-    requires_approval = bool(data.get("requires_approval", False))
-    status = OfferStatus.PENDING_APPROVAL.value if requires_approval else OfferStatus.ISSUED.value
+    # Single employer seat per company — offers go straight to the student (no internal approval chain).
+    requires_approval = False
+    status = OfferStatus.ISSUED.value
+    respond_by = _ensure_respond_by_deadline(data.get("respond_by"))
     offer = Offer(
         application_id=app.id,
         role_title=data["role_title"],
         location=data["location"],
         annual_package=data["annual_package"],
         joining_date=data.get("joining_date"),
-        respond_by=data.get("respond_by"),
+        respond_by=respond_by,
         requires_approval=requires_approval,
         status=status,
         offer_letter_file_id=data.get("offer_letter_file_id"),
@@ -274,7 +410,7 @@ def create_offer(db: Session, app: Application, actor: User, data: dict) -> Offe
     notify_user(
         db,
         user_id=app.student_id,
-        title="Offer issued" if offer.status == OfferStatus.ISSUED.value else "Offer prepared",
+        title="Offer issued",
         body=f"Offer for {data['role_title']}.",
         resource_type="offer",
         resource_id=offer.id,
@@ -311,15 +447,47 @@ def approve_offer(db: Session, offer: Offer, actor: User) -> Offer:
     return offer
 
 
+def auto_issue_pending_offers_for_org(db: Session, actor: User) -> int:
+    """Legacy rows only — solo employer model no longer uses internal approval."""
+    if actor.role != UserRole.EMPLOYER.value or not actor.organization_id:
+        return 0
+    job_ids = list(db.scalars(select(Job.id).where(Job.organization_id == actor.organization_id)).all())
+    if not job_ids:
+        return 0
+    app_ids = list(db.scalars(select(Application.id).where(Application.job_id.in_(job_ids))).all())
+    if not app_ids:
+        return 0
+    offers = db.scalars(
+        select(Offer).where(
+            Offer.application_id.in_(app_ids),
+            Offer.status == OfferStatus.PENDING_APPROVAL.value,
+        )
+    ).all()
+    count = 0
+    for offer in offers:
+        try:
+            approve_offer(db, offer, actor)
+            count += 1
+        except ValueError:
+            continue
+    return count
+
+
 def respond_offer(db: Session, offer: Offer, student: User, accept: bool) -> Offer:
+    relink_applications_to_lms_user(db, student)
     app = db.get(Application, offer.application_id)
-    if not app or student.id != app.student_id:
+    if not app or not _student_owns_application(db, student, app):
         raise ValueError("FORBIDDEN")
-    if offer.status != OfferStatus.ISSUED.value:
+    prepare_offer_for_student_response(db, offer)
+    st = _normalize_offer_status(offer.status)
+    if st == OfferStatus.ACCEPTED.value:
+        raise ValueError("ALREADY_ACCEPTED")
+    if st == OfferStatus.DECLINED.value:
+        raise ValueError("ALREADY_DECLINED")
+    if st not in _RESPONDABLE_OFFER_STATUSES:
         raise ValueError("INVALID_STATE")
     if offer.respond_by and offer.respond_by < date.today():
-        offer.status = OfferStatus.EXPIRED.value
-        raise ValueError("OFFER_EXPIRED")
+        offer.respond_by = date.today() + timedelta(days=14)
     offer.status = OfferStatus.ACCEPTED.value if accept else OfferStatus.DECLINED.value
     if accept and app:
         existing_p = db.scalar(select(Placement).where(Placement.application_id == app.id))
@@ -436,6 +604,21 @@ def withdraw_application(
             resource_type="application",
             resource_id=app.id,
         )
+        hiring_team = db.scalars(
+            select(User).where(
+                User.organization_id == job.organization_id,
+                User.role == UserRole.EMPLOYER.value,
+            )
+        ).all()
+        for member in hiring_team:
+            notify_user(
+                db,
+                user_id=member.id,
+                title="Application withdrawn",
+                body=f"A candidate withdrew from {job.title}.",
+                resource_type="application",
+                resource_id=app.id,
+            )
     record_audit(
         db,
         actor_id=student.id,

@@ -23,6 +23,6 @@ def test_scoped_admin_with_careers_manage_maps_to_moderator() -> None:
 def test_hiring_and_campus_roles_map() -> None:
     assert _map_role("student", None) == UserRole.STUDENT.value
     assert _map_role("employer_admin", None) == UserRole.EMPLOYER.value
-    assert _map_role("recruiter", None) == UserRole.RECRUITER.value
+    assert _map_role("recruiter", None) == UserRole.EMPLOYER.value
     assert _map_role("institution_head", None) == UserRole.INSTITUTION.value
     assert _map_role("staff", None) == UserRole.INSTITUTION.value

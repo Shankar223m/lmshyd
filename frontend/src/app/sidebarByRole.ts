@@ -59,6 +59,7 @@ const jobsEmployerChildren: NavSubItem[] = [
 const placementsHeadChildren: NavSubItem[] = [
   { label: "Companies", to: "/employers", icon: "building" },
   { label: "Jobs", to: "/jobs/institution/placements", icon: "briefcase" },
+  { label: "Campus posting", to: "/jobs/institution/jobs/new", icon: "plus" },
   { label: "Student applications", to: "/jobs/institution/students", icon: "fileText" },
   { label: "Placement stats", to: "/jobs/institution/analytics", icon: "chart" },
 ];
@@ -440,7 +441,7 @@ function employerNav(): NavItem[] {
       icon: "layers",
       to: "/jobs/employer/pipeline",
       group: "careers",
-      hint: "Candidates by stage",
+      hint: "Pick a role, then manage its pipeline",
     }),
     item({
       menu: "jobs",
@@ -457,29 +458,6 @@ function employerNav(): NavItem[] {
       to: "/jobs/employer/profile",
       group: "careers",
       hint: "Employer organisation profile",
-    }),
-    support,
-  ];
-}
-
-function recruiterNav(): NavItem[] {
-  return [
-    home,
-    item({
-      menu: "jobs",
-      label: "Screening",
-      icon: "users",
-      to: "/jobs/recruiter/screening",
-      group: "careers",
-      hint: "Review applications",
-    }),
-    item({
-      menu: "jobs",
-      label: "Interviews",
-      icon: "calendar",
-      to: "/jobs/recruiter/interviews",
-      group: "careers",
-      hint: "Upcoming interviews",
     }),
     support,
   ];
@@ -507,7 +485,7 @@ export function sidebarItemsForRole(role: Role | undefined, options?: SidebarOpt
     case "employer_admin":
       return employerNav();
     case "recruiter":
-      return recruiterNav();
+      return employerNav();
     default:
       return null;
   }

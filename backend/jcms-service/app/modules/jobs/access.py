@@ -23,8 +23,15 @@ def accessible_job_ids_for_user(db: Session, user: User) -> list[str] | None:
         return None
     if user.role == UserRole.EMPLOYER.value and user.organization_id:
         return employer_org_job_ids(db, user.organization_id)
-    if user.role == UserRole.RECRUITER.value:
-        return recruiter_assigned_job_ids(db, user.id)
+    if user.role == UserRole.INSTITUTION.value and user.organization_id:
+        return list(
+            db.scalars(
+                select(Job.id).where(
+                    Job.organization_id == user.organization_id,
+                    Job.posting_channel == "CAMPUS",
+                )
+            ).all()
+        )
     return []
 
 

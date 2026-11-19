@@ -12,10 +12,16 @@ import { PageLoader } from "@/shared/ui";
 
 const EmployerJobsPage = lazyNamed(() => import("./features/employer/pages/EmployerJobsPage"), "EmployerJobsPage");
 const CreateJobPage = lazyNamed(() => import("./features/employer/pages/CreateJobPage"), "CreateJobPage");
-const HiringPipelinePage = lazyNamed(() => import("./features/employer/pages/HiringPipelinePage"), "HiringPipelinePage");
+const EmployerPipelineHubPage = lazyNamed(
+  () => import("./features/employer/pages/EmployerPipelineHubPage"),
+  "EmployerPipelineHubPage",
+);
+const JobHiringPipelinePage = lazyNamed(
+  () => import("./features/employer/pages/JobHiringPipelinePage"),
+  "JobHiringPipelinePage",
+);
 const CreateOfferPage = lazyNamed(() => import("./features/employer/pages/CreateOfferPage"), "CreateOfferPage");
 const EmployerProfilePage = lazyNamed(() => import("./features/employer/pages/EmployerProfilePage"), "EmployerProfilePage");
-const CandidateReviewPage = lazyNamed(() => import("./features/recruiter/pages/CandidateReviewPage"), "CandidateReviewPage");
 const RecruiterInterviewsPage = lazyNamed(() => import("./features/recruiter/pages/RecruiterInterviewsPage"), "RecruiterInterviewsPage");
 const StudentDashboardPage = lazyNamed(() => import("./features/student/pages/StudentDashboardPage"), "StudentDashboardPage");
 const FindJobsPage = lazyNamed(() => import("./features/student/pages/FindJobsPage"), "FindJobsPage");
@@ -30,6 +36,10 @@ const InstitutionPlacementsPage = lazyNamed(() => import("./features/institution
 const InstitutionStudentsPage = lazyNamed(() => import("./features/institution/pages/InstitutionStudentsPage"), "InstitutionStudentsPage");
 const InstitutionAnalyticsPage = lazyNamed(() => import("./features/institution/pages/InstitutionAnalyticsPage"), "InstitutionAnalyticsPage");
 const InstitutionProfilePage = lazyNamed(() => import("./features/institution/pages/InstitutionProfilePage"), "InstitutionProfilePage");
+const CreateCampusJobPage = lazyNamed(
+  () => import("./features/institution/pages/CreateCampusJobPage"),
+  "CreateCampusJobPage",
+);
 const AdminDashboardPage = lazyNamed(() => import("./features/administration/pages/AdminDashboardPage"), "AdminDashboardPage");
 const AdminAuditPage = lazyNamed(() => import("./features/administration/pages/AdminAuditPage"), "AdminAuditPage");
 const AdminReviewInboxPage = lazyNamed(() => import("./features/administration/pages/AdminReviewInboxPage"), "AdminReviewInboxPage");
@@ -59,17 +69,18 @@ export const jobsModuleRoutes: RouteObject[] = [
           children: [
             { path: "/jobs/employer/jobs", element: page(<EmployerJobsPage />) },
             { path: "/jobs/employer/jobs/new", element: page(<CreateJobPage />) },
-            { path: "/jobs/employer/pipeline", element: page(<HiringPipelinePage />) },
+            { path: "/jobs/employer/pipeline", element: page(<EmployerPipelineHubPage />) },
+            { path: "/jobs/employer/pipeline/:jobId", element: page(<JobHiringPipelinePage />) },
             { path: "/jobs/employer/interviews", element: page(<RecruiterInterviewsPage />) },
             { path: "/jobs/employer/offers/new", element: page(<CreateOfferPage />) },
             { path: "/jobs/employer/profile", element: page(<EmployerProfilePage />) },
           ],
         },
         {
-          element: <RequireJobsPersona persona="recruiter" />,
+          element: <RequireJobsPersona persona="employer" />,
           children: [
-            { path: "/jobs/recruiter/screening", element: page(<CandidateReviewPage />) },
-            { path: "/jobs/recruiter/interviews", element: page(<RecruiterInterviewsPage />) },
+            { path: "/jobs/recruiter/screening", element: <Navigate to="/jobs/employer/pipeline" replace /> },
+            { path: "/jobs/recruiter/interviews", element: <Navigate to="/jobs/employer/interviews" replace /> },
           ],
         },
         {
@@ -93,6 +104,7 @@ export const jobsModuleRoutes: RouteObject[] = [
             { path: "/jobs/institution/students", element: page(<InstitutionStudentsPage />) },
             { path: "/jobs/institution/analytics", element: page(<InstitutionAnalyticsPage />) },
             { path: "/jobs/institution/profile", element: page(<InstitutionProfilePage />) },
+            { path: "/jobs/institution/jobs/new", element: page(<CreateCampusJobPage />) },
           ],
         },
         {

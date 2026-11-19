@@ -50,7 +50,7 @@ export function CandidateReviewPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['recruiter-queue'],
-    queryFn: () => apiFetch<ApiResponse<CandidateApplication[]>>('/jobs/recruiter/applications'),
+    queryFn: () => apiFetch<ApiResponse<CandidateApplication[]>>('/recruiter/applications'),
   });
 
   const apps = data?.data || [];

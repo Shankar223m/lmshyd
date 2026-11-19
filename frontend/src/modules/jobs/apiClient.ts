@@ -116,13 +116,15 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   if (res.status === 204) return {} as T;
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
+    const errObj = (json as { error?: { code?: string; message?: string } })?.error;
+    const code = errObj?.code;
     const msg =
-      (json as { message?: string; error?: { message?: string }; detail?: Array<{ msg?: string }> })?.message ||
-      (json as { error?: { message?: string } })?.error?.message ||
+      errObj?.message ||
+      (json as { message?: string })?.message ||
       (json as { detail?: Array<{ msg?: string }> })?.detail?.[0]?.msg ||
       res.statusText ||
       "Request failed";
-    throw new Error(String(msg));
+    throw new Error(code && !String(msg).includes(code) ? `${code}: ${msg}` : String(msg));
   }
   return unwrap<unknown>(json) as T;
 }

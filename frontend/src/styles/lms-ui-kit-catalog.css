@@ -1122,3 +1122,220 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* —— Campus drive kit (stats, tables, student welcome, tabs) —— */
+
+.lms-ui-kit-catalog .page-title-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.lms-ui-kit-catalog .stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.lms-ui-kit-catalog .stat-tile {
+  background: #fff;
+  border: 1px solid #e9edf4;
+  border-radius: 11px;
+  padding: 16px;
+  min-height: 133px;
+}
+
+.lms-ui-kit-catalog .stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 12px;
+}
+
+.lms-ui-kit-catalog .stat-icon.t0 {
+  background: #efedff;
+  color: #635bff;
+}
+.lms-ui-kit-catalog .stat-icon.t1 {
+  background: #eaf4ff;
+  color: #3985d8;
+}
+.lms-ui-kit-catalog .stat-icon.t2 {
+  background: #e7f8f1;
+  color: #22a477;
+}
+.lms-ui-kit-catalog .stat-icon.t3 {
+  background: #fff3e7;
+  color: #e18a37;
+}
+
+.lms-ui-kit-catalog .stat-tile small {
+  display: block;
+  font-size: 9px;
+  color: #808b9d;
+}
+.lms-ui-kit-catalog .stat-tile strong {
+  display: block;
+  font-size: 22px;
+  letter-spacing: -0.7px;
+  margin: 4px 0;
+  color: #172033;
+}
+.lms-ui-kit-catalog .stat-tile span {
+  display: block;
+  font-size: 9px;
+  color: #8b95a5;
+}
+
+.lms-ui-kit-catalog .panel-card {
+  background: #fff;
+  border: 1px solid #e9edf4;
+  border-radius: 11px;
+  padding: 18px;
+}
+
+.lms-ui-kit-catalog .data-table-wrap {
+  background: #fff;
+  border: 1px solid #e9edf4;
+  border-radius: 11px;
+  overflow: auto;
+}
+
+.lms-ui-kit-catalog .data-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.lms-ui-kit-catalog .data-table th {
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  color: #a0a8b5;
+  background: #fbfcfe;
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf0f5;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lms-ui-kit-catalog .data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f2f6;
+  font-size: 10px;
+  color: #536075;
+  vertical-align: middle;
+}
+
+.lms-ui-kit-catalog .data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.lms-ui-kit-catalog .status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 20px;
+  padding: 5px 8px;
+  font-size: 9px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.lms-ui-kit-catalog .status-pill.published {
+  background: #eaf8f1;
+  color: #20956b;
+}
+.lms-ui-kit-catalog .status-pill.draft {
+  background: #f1f3f6;
+  color: #7e8796;
+}
+.lms-ui-kit-catalog .status-pill.ongoing,
+.lms-ui-kit-catalog .status-pill.pending {
+  background: #fff5e7;
+  color: #c48127;
+}
+.lms-ui-kit-catalog .status-pill.review {
+  background: #edf2ff;
+  color: #5573c9;
+}
+
+.lms-ui-kit-catalog .welcome-banner {
+  background: #fff;
+  border: 1px solid #e9edf4;
+  border-radius: 13px;
+  padding: 25px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 23px;
+}
+
+.lms-ui-kit-catalog .welcome-banner h1 {
+  font-size: 24px;
+  letter-spacing: -0.9px;
+  margin: 8px 0 0;
+}
+
+.lms-ui-kit-catalog .welcome-orb {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  background: #f0efff;
+  color: #756dff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.lms-ui-kit-catalog .tab-strip {
+  display: flex;
+  gap: 22px;
+  border-bottom: 1px solid #e6eaf1;
+  margin-bottom: 18px;
+}
+
+.lms-ui-kit-catalog .tab-strip button {
+  border: 0;
+  background: none;
+  padding: 0 2px 12px;
+  color: #929bac;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lms-ui-kit-catalog .tab-strip button.sel {
+  color: #635bff;
+  border-bottom: 2px solid #635bff;
+}
+
+.lms-ui-kit-catalog .list-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 0;
+  border-bottom: 1px solid #eff1f5;
+}
+
+.lms-ui-kit-catalog .list-row:last-child {
+  border-bottom: none;
+}
+
+.lms-ui-kit-catalog .offer-grid-card {
+  background: #fff;
+  border: 1px solid #e9edf4;
+  border-radius: 11px;
+  padding: 16px;
+}
+
+@media (max-width: 1050px) {
+  .lms-ui-kit-catalog .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

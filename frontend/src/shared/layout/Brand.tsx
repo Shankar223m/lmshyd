@@ -22,7 +22,10 @@ export function Brand({
         </span>
         {!collapsed && (
           <div className="min-w-0 leading-tight">
-            <p className="font-display truncate text-base font-bold text-slate-900 tracking-tight">LMS</p>
+            <p className="font-display truncate text-lg font-bold text-slate-900 tracking-tight" style={{ letterSpacing: "-0.04em" }}>
+              LMS
+            </p>
+            <p className="brand-tagline">Learning platform</p>
           </div>
         )}
       </div>

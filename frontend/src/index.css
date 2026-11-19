@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./styles/lms-ui-kit-catalog.css";
+@import "./styles/campus-drive-shell.css";
 /* Typography: Figtree (UI) + Bricolage Grotesque (display), loaded from Google Fonts in index.html */
 
 /*

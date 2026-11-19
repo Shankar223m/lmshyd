@@ -9,7 +9,7 @@ import {
   useGrantSubscriptionMutation,
   useListSubscriptionsQuery,
 } from "@/modules/subscriptions/subscriptions/api/subscriptionsApi";
-import { usePermissions } from "@/modules/user-management/common/permissions/usePermissions";
+import { useCan } from "@/modules/user-management/common/permissions/useCan";
 import { Button, PageLoader } from "@/shared/ui";
 
 type InstitutionAccessRow = {
@@ -26,8 +26,8 @@ type Props = {
 
 export function CourseInstitutionAccessPanel({ courseId }: Props) {
   const notify = useNotify();
-  const { holds } = usePermissions();
-  const canGrant = holds("accounts.manage");
+  const { can } = useCan();
+  const canGrant = can("accounts.manage");
 
   const { data: course, isLoading: courseLoading } = useGetCourseQuery(courseId);
   const { data: subsData, isLoading: subsLoading, refetch } = useListSubscriptionsQuery(

@@ -44,6 +44,7 @@ import { AdminPdfPreviewModal } from "@/modules/catalog/courses/components/modal
 import { ConfirmModal } from "@/modules/catalog/courses/components/common/ConfirmModal";
 import { CourseInstitutionAccessPanel } from "@/modules/catalog/courses/components/admin/CourseInstitutionAccessPanel";
 import { Button, PageLoader } from "@/shared/ui";
+import { useCan } from "@/modules/user-management/common/permissions/useCan";
 import { usePermissions } from "@/modules/user-management/common/permissions/usePermissions";
 import { useAuth } from "@/modules/user-management/auth/hooks/useAuth";
 import { useListEnrollmentsQuery } from "@/modules/learning/enrollments/api/enrollmentsApi";
@@ -100,8 +101,9 @@ interface TabDefinition {
 }
 
 export function CourseHubPage() {
-  const { permissions, holds } = usePermissions();
-  const canAssignColleges = holds("accounts.manage");
+  const { permissions } = usePermissions();
+  const { can } = useCan();
+  const canAssignColleges = can("accounts.manage");
   const { user } = useAuth();
   const isSuperAdminOrAdmin = permissions.role === "super_admin" || permissions.role === "admin";
   const { courseId } = useParams<{ courseId: string }>();

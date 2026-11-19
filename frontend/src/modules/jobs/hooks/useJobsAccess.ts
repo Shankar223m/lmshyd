@@ -18,7 +18,7 @@ export function useJobsAccess() {
     return {
       role,
       isStudent: role === "student",
-      isEmployer: role === "employer_admin",
+      isEmployer: role === "employer_admin" || role === "recruiter",
       isRecruiter: role === "recruiter",
       isInstitution: role === "institution_head" || role === "staff",
       isModerator,
@@ -35,7 +35,7 @@ export function jobsHomePath(role: Role | undefined, isModerator: boolean): stri
     case "employer_admin":
       return "/jobs/employer/jobs";
     case "recruiter":
-      return "/jobs/recruiter/screening";
+      return "/jobs/employer/jobs";
     case "institution_head":
     case "staff":
       return "/jobs/institution/placements";

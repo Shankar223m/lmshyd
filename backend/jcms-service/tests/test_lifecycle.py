@@ -236,7 +236,7 @@ def test_full_recruitment_and_placement_lifecycle(client: TestClient, db_session
     )
     assert feedback_resp.status_code == 200
 
-    # 17. Employer creates offer requiring approval
+    # 17. Employer creates and issues offer (no internal approval chain)
     offer_resp = client.post(
         f"/api/v1/applications/{app_id}/offers",
         json={
@@ -251,14 +251,9 @@ def test_full_recruitment_and_placement_lifecycle(client: TestClient, db_session
     )
     assert offer_resp.status_code == 200
     offer_id = offer_resp.json()["data"]["id"]
-    assert offer_resp.json()["data"]["status"] == "PENDING_APPROVAL"
+    assert offer_resp.json()["data"]["status"] == "ISSUED"
 
-    # 18. Employer approves offer
-    approve_offer_resp = client.post(f"/api/v1/offers/{offer_id}/approve", headers=emp_headers)
-    assert approve_offer_resp.status_code == 200
-    assert approve_offer_resp.json()["data"]["status"] == "ISSUED"
-
-    # 19. Student views offer and accepts
+    # 18. Student views offer and accepts
     my_offers = client.get("/api/v1/offers/me", headers=student_headers)
     assert my_offers.status_code == 200
     assert any(o["id"] == offer_id for o in my_offers.json()["data"])

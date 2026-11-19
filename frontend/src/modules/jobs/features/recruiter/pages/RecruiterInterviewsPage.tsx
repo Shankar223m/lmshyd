@@ -68,7 +68,7 @@ export function RecruiterInterviewsPage() {
   // Fetch candidate queue to populate application selector
   const { data: queueData } = useQuery({
     queryKey: ['recruiter-queue'],
-    queryFn: () => apiFetch<ApiResponse<QueueCandidate[]>>('/jobs/recruiter/applications'),
+    queryFn: () => apiFetch<ApiResponse<QueueCandidate[]>>('/recruiter/applications'),
   });
   const candidates = queueData?.data || [];
 

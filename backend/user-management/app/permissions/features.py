@@ -309,6 +309,15 @@ PERMISSIONS: tuple[Permission, ...] = (
         ("job_portal",),
         "employer",
         _EA,
+        _R,
+    ),
+    _p(
+        "jobs.campus.post",
+        "Campus job postings",
+        "Create and publish placement roles for their institution's students only.",
+        ("job_portal",),
+        "institution",
+        _H,
     ),
     _p(
         "jobs.interviews",
@@ -361,7 +370,7 @@ PERMISSIONS: tuple[Permission, ...] = (
     _p(
         "jobs.hire",
         "Hiring",
-        "Post their company's jobs and move applicants through the pipeline.",
+        "Run hiring for their company: jobs, pipeline, screening, and interviews (merged employer hiring seat).",
         ("job_portal",),
         "employer",
         _EA,
@@ -374,6 +383,7 @@ PERMISSIONS: tuple[Permission, ...] = (
         ("job_portal",),
         "employer",
         _EA,
+        _R,
     ),
     _p(
         "interviews.practice",
@@ -503,6 +513,7 @@ MENU: dict[str, tuple[str, ...]] = {
         "jobs.pipeline",
         "jobs.interviews",
         "jobs.screening",
+        "jobs.campus.post",
         "jobs.moderate",
         "jobs.activity",
         "jobs.company.manage",

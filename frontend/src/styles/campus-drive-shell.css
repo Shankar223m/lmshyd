@@ -1,0 +1,133 @@
+/* App shell patterns from campus-drive-lms-ui (nexora / #635bff kit) */
+
+.lms-campus-shell {
+  --cd-border: #e9edf4;
+  --cd-muted: #8792a3;
+  --cd-ink: #192338;
+  --cd-primary: #635bff;
+  --cd-primary-soft: #f0efff;
+}
+
+.lms-campus-shell.app-shell {
+  background: var(--color-canvas, #f7f8fc);
+}
+
+.lms-campus-shell .sidebar-panel {
+  border-radius: 0;
+  border-right: 1px solid var(--cd-border);
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  box-shadow: none;
+  background: #fff;
+  width: 250px;
+}
+
+.lms-campus-shell .shell-header {
+  min-height: 65px;
+  border-bottom: 1px solid var(--cd-border);
+  border-radius: 0;
+  box-shadow: none;
+  background: #fff;
+  backdrop-filter: none;
+}
+
+.lms-campus-shell .shell-main {
+  max-width: 1450px;
+}
+
+.lms-campus-shell .cd-workspace {
+  margin: 0 0.5rem 1.25rem;
+  height: 57px;
+  border: 1px solid #edf0f5;
+  border-radius: 10px;
+  padding: 9px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.lms-campus-shell .cd-workspace-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #efeeff;
+  color: var(--cd-primary);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.lms-campus-shell .cd-workspace b,
+.lms-campus-shell .cd-workspace small {
+  display: block;
+}
+
+.lms-campus-shell .cd-workspace b {
+  font-size: 10px;
+  color: #384459;
+  font-weight: 650;
+}
+
+.lms-campus-shell .cd-workspace small {
+  font-size: 9px;
+  color: #929bad;
+  margin-top: 2px;
+}
+
+.lms-campus-shell .cd-nav-caption {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: #a0a8b6;
+  font-weight: 700;
+  padding: 0 0.75rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.lms-campus-shell .cd-sidebar-help {
+  background: #f7f8fc;
+  border: 1px solid #edf0f5;
+  border-radius: 11px;
+  padding: 13px;
+  margin: 0 0.5rem 0.75rem;
+  font-size: 9px;
+  color: #8d97a8;
+  line-height: 1.5;
+}
+
+.lms-campus-shell .cd-sidebar-help b {
+  display: block;
+  font-size: 10px;
+  color: #384459;
+  margin-bottom: 4px;
+}
+
+.lms-campus-shell .cd-sidebar-help a {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 9px;
+  color: var(--cd-primary);
+  font-weight: 700;
+}
+
+.lms-campus-shell .brand-tagline {
+  font-size: 8px;
+  letter-spacing: 1.4px;
+  color: #929bad;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lms-campus-shell .brand-mark {
+  width: 35px;
+  height: 35px;
+  border-radius: 11px;
+  background: var(--cd-primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 15px;
+}

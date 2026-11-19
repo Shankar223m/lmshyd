@@ -11,8 +11,10 @@ from app.core.responses import success_data
 from app.models.entities import Application, EligibilityRule, Job, Organization, RecruiterAssignment, User
 from app.modules.eligibility import service as eligibility_service
 from app.modules.eligibility.service import evaluate_eligibility
+from app.modules.applications import service as app_service
 from app.modules.jobs import service as job_service
-from app.shared.enums import EligibilityResult, JobStatus, UserRole
+from app.modules.jobs.discover import job_visible_to_student, posting_channel_tagline
+from app.shared.enums import EligibilityResult, JobPostingChannel, JobStatus, UserRole
 
 router = APIRouter(tags=["jobs"])
 
@@ -45,18 +47,17 @@ class JobCreate(BaseModel):
     eligibility: EligibilityBody | None = None
     organization_id: str | None = None
     thumbnail_file_id: str | None = None
+    posting_channel: str | None = None
 
 
 def _job_dict(db, job: Job, org_name: str | None = None) -> dict[str, Any]:
     applicant_count = db.scalar(
         select(func.count(Application.id)).where(Application.job_id == job.id)
     ) or 0
-    active_applicant_count = db.scalar(
-        select(func.count(Application.id)).where(
-            Application.job_id == job.id,
-            Application.status != "WITHDRAWN",
-        )
-    ) or 0
+    from app.modules.applications.service import application_visible_in_employer_pipeline
+
+    pipeline_apps = db.scalars(select(Application).where(Application.job_id == job.id)).all()
+    active_applicant_count = sum(1 for a in pipeline_apps if application_visible_in_employer_pipeline(a))
     recruiter_ids = [
         ra.recruiter_id for ra in db.scalars(
             select(RecruiterAssignment).where(RecruiterAssignment.job_id == job.id)
@@ -90,6 +91,9 @@ def _job_dict(db, job: Job, org_name: str | None = None) -> dict[str, Any]:
         "recruiter_ids": recruiter_ids,
         "eligibility": eligibility,
         "created_at": job.created_at.isoformat() if job.created_at else None,
+        "posting_channel": job.posting_channel or JobPostingChannel.OPEN.value,
+        "campus_institution_id": job.campus_institution_id,
+        "posting_tagline": posting_channel_tagline(job.posting_channel),
     }
 
 
@@ -109,6 +113,27 @@ def create_job(
         db.rollback()
         code = str(e)
         status = 403 if code in ("FORBIDDEN", "ORG_NOT_VERIFIED") else 400
+        raise AppError(code, code, status)
+    org = db.get(Organization, job.organization_id)
+    return success_data(_job_dict(db, job, org.name if org else None), request)
+
+
+@router.post("/institutions/me/campus-jobs")
+def create_campus_job(
+    body: JobCreate,
+    db: DbSession,
+    user: CurrentUser,
+    request: Request,
+    _: str = Depends(attach_request_id),
+):
+    require_roles(UserRole.INSTITUTION)(user)
+    try:
+        job = job_service.create_campus_job(db, user, body.model_dump())
+        db.commit()
+    except ValueError as e:
+        db.rollback()
+        code = str(e)
+        status = 403 if code == "FORBIDDEN" else 400
         raise AppError(code, code, status)
     org = db.get(Organization, job.organization_id)
     return success_data(_job_dict(db, job, org.name if org else None), request)
@@ -148,6 +173,8 @@ def discover_jobs(
 
     out = []
     for job in jobs:
+        if not is_admin and not job_visible_to_student(db, job, user):
+            continue
         org = db.get(Organization, job.organization_id)
         item = _job_dict(db, job, org.name if org else None)
         if is_admin:
@@ -198,6 +225,8 @@ def discover_jobs(
 @router.get("/employers/me/jobs")
 def employer_jobs(db: DbSession, user: CurrentUser, request: Request, _: str = Depends(attach_request_id)):
     require_roles(UserRole.EMPLOYER)(user)
+    app_service.auto_issue_pending_offers_for_org(db, user)
+    db.commit()
     jobs = db.scalars(
         select(Job).where(Job.organization_id == user.organization_id).order_by(Job.created_at.desc())
     ).all()
@@ -215,8 +244,15 @@ def get_job(job_id: str, db: DbSession, user: CurrentUser, request: Request, _: 
     if not job:
         raise AppError("NOT_FOUND", "Job not found", 404)
     org = db.get(Organization, job.organization_id)
+    if user.role in (UserRole.EMPLOYER.value, UserRole.INSTITUTION.value):
+        try:
+            job_service._assert_job_access(db, job, user)
+        except ValueError:
+            raise AppError("NOT_FOUND", "Job not found", 404)
     data = _job_dict(db, job, org.name if org else None)
     if user.role == UserRole.STUDENT.value:
+        if not job_visible_to_student(db, job, user):
+            raise AppError("NOT_FOUND", "Job not found", 404)
         ev = evaluate_eligibility(db, job, user)
         db.commit()
         data["match_percent"] = ev.match_percent

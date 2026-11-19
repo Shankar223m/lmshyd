@@ -146,6 +146,10 @@ def apply(
     job = db.get(Job, job_id)
     if not job:
         raise AppError("NOT_FOUND", "Job not found", 404)
+    from app.modules.jobs.discover import job_visible_to_student
+
+    if not job_visible_to_student(db, job, user):
+        raise AppError("NOT_FOUND", "Job not found", 404)
     try:
         app = app_service.submit_application(db, user, job, body.model_dump())
         db.commit()
@@ -556,6 +560,10 @@ def create_offer(
     if not app:
         raise AppError("NOT_FOUND", "Not found", 404)
     try:
+        app_service._assert_recruiter_or_employer(db, app, user)
+    except ValueError:
+        raise AppError("FORBIDDEN", "Forbidden", 403)
+    try:
         offer = app_service.create_offer(db, app, user, body.model_dump())
         db.commit()
     except ValueError as e:
@@ -563,6 +571,15 @@ def create_offer(
         code = str(e)
         raise AppError(code, code, 400 if code.startswith("INVALID_") else 403)
     return success_data({"id": offer.id, "status": offer.status}, request)
+
+
+@router.get("/employers/me/offers/pending")
+def employer_pending_offers(db: DbSession, user: CurrentUser, request: Request, _: str = Depends(attach_request_id)):
+    """Deprecated: single employer seat — pending offers are auto-issued on load."""
+    require_roles(UserRole.EMPLOYER)(user)
+    app_service.auto_issue_pending_offers_for_org(db, user)
+    db.commit()
+    return success_data([], request)
 
 
 @router.post("/offers/{offer_id}/approve")
@@ -584,11 +601,14 @@ def approve_offer_endpoint(
 @router.get("/offers/me")
 def my_offers(db: DbSession, user: CurrentUser, request: Request, _: str = Depends(attach_request_id)):
     require_roles(UserRole.STUDENT)(user)
+    app_service.relink_applications_to_lms_user(db, user)
     apps = db.scalars(select(Application).where(Application.student_id == user.id)).all()
     app_ids = [a.id for a in apps]
     offers = db.scalars(
         select(Offer).where(Offer.application_id.in_(app_ids or ["none"])).order_by(Offer.created_at.desc())
     ).all()
+    app_service.refresh_open_offer_deadlines(db, list(offers))
+    db.commit()
     out = []
     for o in offers:
         app = db.get(Application, o.application_id)
@@ -597,7 +617,7 @@ def my_offers(db: DbSession, user: CurrentUser, request: Request, _: str = Depen
         out.append(
             {
                 "id": o.id,
-                "status": o.status,
+                "status": app_service._normalize_offer_status(o.status),
                 "role_title": o.role_title,
                 "company_name": org.name if org else None,
                 "location": o.location,
@@ -761,13 +781,17 @@ def respond_offer(
     request: Request,
     _: str = Depends(attach_request_id),
 ):
+    require_roles(UserRole.STUDENT)(user)
     offer = db.get(Offer, offer_id)
     if not offer:
         raise AppError("NOT_FOUND", "Not found", 404)
     try:
+        app_service.relink_applications_to_lms_user(db, user)
         app_service.respond_offer(db, offer, user, body.accept)
         db.commit()
     except ValueError as e:
         db.rollback()
-        raise AppError(str(e), str(e), 400)
+        code = str(e)
+        status = 403 if code == "FORBIDDEN" else 409 if code in ("ALREADY_ACCEPTED", "ALREADY_DECLINED") else 400
+        raise AppError(code, code, status)
     return success_data({"status": offer.status}, request)

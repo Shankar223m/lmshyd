@@ -95,7 +95,10 @@ class Organization(Base, TimestampMixin):
     verification_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     members: Mapped[list[User]] = relationship(back_populates="organization")
-    jobs: Mapped[list["Job"]] = relationship(back_populates="organization")
+    jobs: Mapped[list["Job"]] = relationship(
+        back_populates="organization",
+        foreign_keys="Job.organization_id",
+    )
     verification_documents: Mapped[list["VerificationDocument"]] = relationship(
         back_populates="organization"
     )
@@ -133,6 +136,7 @@ class StudentProfile(Base, TimestampMixin):
     certifications: Mapped[list | None] = mapped_column(JSON, default=list)
     experience: Mapped[list | None] = mapped_column(JSON, default=list)
     resume_file_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("files.id"), nullable=True)
+    open_market_only: Mapped[bool] = mapped_column(Boolean, default=False)
 
     user: Mapped[User] = relationship(back_populates="student_profile")
 
@@ -158,8 +162,15 @@ class Job(Base, TimestampMixin):
     questions: Mapped[list | None] = mapped_column(JSON, default=list)
     moderation_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     requires_moderation: Mapped[bool] = mapped_column(Boolean, default=True)
+    posting_channel: Mapped[str] = mapped_column(String(20), default="OPEN", index=True)
+    campus_institution_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("organizations.id"), nullable=True, index=True
+    )
 
-    organization: Mapped[Organization] = relationship(back_populates="jobs")
+    organization: Mapped[Organization] = relationship(
+        back_populates="jobs",
+        foreign_keys=[organization_id],
+    )
     applications: Mapped[list["Application"]] = relationship(back_populates="job")
     recruiter_assignments: Mapped[list["RecruiterAssignment"]] = relationship(back_populates="job")
 
