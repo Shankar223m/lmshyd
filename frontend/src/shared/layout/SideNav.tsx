@@ -25,13 +25,11 @@ export interface SideNavProps {
 }
 
 /**
- * Enhanced Modular SideNav:
- * - Flat list of role items (group keys only control sort order)
- * - Accordion expand/collapse per item with children
- * - Multi-level sub-navigation support (e.g. AI Resume Builder, Jobs)
- * - Real-time navigation search filter
- * - Collapsible desktop icon-only mode with floating tooltips
- * - Light surface; the active item uses the logo green, text the logo navy
+ * Modern SaaS SideNav matching LMS UI Kit:
+ * - Clean icon + label layout
+ * - Lavender-tinted active pill container (#EAE8FF / #635BFF)
+ * - Fixed bounds to strictly prevent horizontal overflow
+ * - Integrated Settings and Help & Support footer links
  */
 export function SideNav({
   collapsed = false,
@@ -45,7 +43,7 @@ export function SideNav({
 
   const [expandedSubmenus, setExpandedSubmenus] = useState<Record<string, boolean>>({});
 
-  // Keep the submenu open for the active route (without re-rendering forever when `items` is re-created).
+  // Keep the submenu open for the active route
   useEffect(() => {
     setExpandedSubmenus((prev) => {
       let changed = false;
@@ -71,13 +69,16 @@ export function SideNav({
     setExpandedSubmenus((prev) => ({ ...prev, [to]: !prev[to] }));
   };
 
+  const isSettingsActive = pathname.startsWith("/account");
+  const isSupportActive = pathname.startsWith("/support");
+
   return (
-    <div className="flex flex-1 flex-col min-h-0">
-      {/* Navigation List */}
+    <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
+      {/* Primary Navigation List */}
       <nav
         className={cn(
-          "flex-1 space-y-4 overflow-y-auto px-2.5 py-4 [scrollbar-color:var(--color-slate-300)_transparent] [scrollbar-width:thin]",
-          collapsed && "px-2 py-3 space-y-3",
+          "flex-1 overflow-y-auto overflow-x-hidden py-3 [scrollbar-color:var(--color-slate-200)_transparent] [scrollbar-width:thin]",
+          collapsed ? "px-2 space-y-1.5" : "px-3.5 space-y-1",
         )}
         aria-label="Main Navigation"
       >
@@ -86,155 +87,217 @@ export function SideNav({
           if (entries.length === 0) return null;
 
           return (
-            <ul key={group.key} className="space-y-0.5">
-                  {entries.map((item) => {
-                    const isActive = item === active;
-                    const hasChildren = Boolean(item.children && item.children.length > 0);
-                    const isSubmenuOpen = Boolean(expandedSubmenus[item.to]);
+            <ul key={group.key} className="space-y-1">
+              {entries.map((item) => {
+                const isActive = item === active;
+                const hasChildren = Boolean(item.children && item.children.length > 0);
+                const isSubmenuOpen = Boolean(expandedSubmenus[item.to]);
 
-                    return (
-                      <li key={item.to} className="relative group/navitem">
-                        <div className="flex items-center">
-                          <Link
-                            to={item.to}
-                            onClick={() => {
-                              if (hasChildren && !collapsed) {
-                                setExpandedSubmenus((prev) => ({
-                                  ...prev,
-                                  [item.to]: isActive ? !prev[item.to] : true,
-                                }));
-                              }
-                              onItemClick?.();
-                            }}
-                            aria-current={isActive ? "page" : undefined}
-                            className={cn(
-                              "relative flex flex-1 items-center rounded-2xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400",
-                              collapsed
-                                ? "h-11 w-11 justify-center mx-auto"
-                                : "gap-3 px-3 py-2.5",
-                              isActive
-                                ? "bg-[#EAE8FF] font-semibold text-[#635BFF] shadow-xs ring-1 ring-[#D6D3FF]/60"
-                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
-                            )}
-                          >
-                            <Icon
-                              name={item.icon}
-                              size={collapsed ? 20 : 18}
-                              className={cn(
-                                "shrink-0 transition-colors",
-                                isActive
-                                  ? "text-[#635BFF]"
-                                  : "text-slate-400 transition-colors group-hover/navitem:text-slate-700",
-                              )}
-                            />
-
-                            {!collapsed && (
-                              <span className="truncate text-xs sm:text-sm font-medium flex-1">
-                                {item.label}
-                              </span>
-                            )}
-                          </Link>
-
-                          {/* Submenu toggle button when expanded */}
-                          {!collapsed && hasChildren && (
-                            <button
-                              type="button"
-                              onClick={(e) => toggleSubmenu(item.to, e)}
-                              className="p-2 text-slate-400 hover:text-navy-900 rounded-lg transition-colors cursor-pointer"
-                              aria-label={`Toggle ${item.label} submenu`}
-                            >
-                              <Icon
-                                name={isSubmenuOpen ? "chevronDown" : "chevronRight"}
-                                size={14}
-                              />
-                            </button>
+                return (
+                  <li key={item.to} className="relative group/navitem">
+                    <div className={cn("flex items-center", collapsed && "justify-center")}>
+                      <Link
+                        to={item.to}
+                        onClick={() => {
+                          if (hasChildren && !collapsed) {
+                            setExpandedSubmenus((prev) => ({
+                              ...prev,
+                              [item.to]: isActive ? !prev[item.to] : true,
+                            }));
+                          }
+                          onItemClick?.();
+                        }}
+                        aria-current={isActive ? "page" : undefined}
+                        className={cn(
+                          "relative flex items-center transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#635BFF]",
+                          collapsed
+                            ? "h-10 w-10 shrink-0 justify-center mx-auto rounded-xl"
+                            : "flex-1 gap-3.5 px-3.5 py-2.5 rounded-xl text-[14px] font-medium",
+                          isActive
+                            ? "bg-[#EAE8FF] font-semibold text-[#635BFF] shadow-xs"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+                        )}
+                        title={collapsed ? item.label : undefined}
+                      >
+                        <Icon
+                          name={item.icon}
+                          size={collapsed ? 20 : 19}
+                          className={cn(
+                            "shrink-0 transition-colors",
+                            isActive
+                              ? "text-[#635BFF]"
+                              : "text-slate-400 group-hover/navitem:text-slate-700",
                           )}
-                        </div>
+                        />
 
-                        {/* Expanded Mode: Nested Submenu */}
-                        {!collapsed && hasChildren && isSubmenuOpen && item.children && (
-                          <ul className="ml-7 mt-1 space-y-0.5 border-l-2 border-slate-200/80 pl-2">
-                            {item.children.map((child) => {
-                              const isChildActive = pathname === child.to || (child.to !== item.to && pathname.startsWith(`${child.to}/`));
-                              return (
-                                <li key={child.to}>
-                                  <Link
-                                    to={child.to}
-                                    onClick={onItemClick}
+                        {!collapsed && (
+                          <span className="truncate flex-1">
+                            {item.label}
+                          </span>
+                        )}
+                      </Link>
+
+                      {/* Submenu toggle button when expanded */}
+                      {!collapsed && hasChildren && (
+                        <button
+                          type="button"
+                          onClick={(e) => toggleSubmenu(item.to, e)}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition-colors cursor-pointer ml-1"
+                          aria-label={`Toggle ${item.label} submenu`}
+                        >
+                          <Icon
+                            name={isSubmenuOpen ? "chevronDown" : "chevronRight"}
+                            size={14}
+                          />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Expanded Mode: Nested Submenu */}
+                    {!collapsed && hasChildren && isSubmenuOpen && item.children && (
+                      <ul className="ml-7 mt-1 space-y-0.5 border-l-2 border-slate-200/80 pl-2">
+                        {item.children.map((child) => {
+                          const isChildActive = pathname === child.to || (child.to !== item.to && pathname.startsWith(`${child.to}/`));
+                          return (
+                            <li key={child.to}>
+                              <Link
+                                to={child.to}
+                                onClick={onItemClick}
+                                className={cn(
+                                  "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
+                                  isChildActive
+                                    ? "bg-[#EAE8FF]/70 font-semibold text-[#635BFF]"
+                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-950 font-medium",
+                                )}
+                              >
+                                {child.icon && (
+                                  <Icon
+                                    name={child.icon}
+                                    size={13}
                                     className={cn(
-                                      "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
-                                      isChildActive
-                                        ? "bg-[#EAE8FF]/70 font-semibold text-[#635BFF]"
-                                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-950 font-medium",
+                                      "shrink-0",
+                                      isChildActive ? "text-[#635BFF]" : "text-slate-400",
                                     )}
-                                  >
-                                    {child.icon && (
-                                      <Icon
-                                        name={child.icon}
-                                        size={13}
-                                        className={cn(
-                                          "shrink-0",
-                                          isChildActive ? "text-[#635BFF]" : "text-slate-400",
-                                        )}
-                                      />
-                                    )}
-                                    <span className="truncate flex-1">{child.label}</span>
-                                    {typeof child.badge === "number" && child.badge > 0 ? (
-                                      <span className="ml-auto shrink-0 rounded-full bg-[#635BFF] px-1.5 py-0.5 text-[10px] font-bold text-white tabular-nums">
-                                        {child.badge > 99 ? "99+" : child.badge}
-                                      </span>
-                                    ) : null}
-                                  </Link>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-
-                        {/* Collapsed Mode Floating Tooltip */}
-                        {collapsed && (
-                          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3.5 z-50 hidden rounded-xl bg-white border border-slate-200 px-3 py-2 shadow-pop group-hover/navitem:flex flex-col gap-1 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-navy-950">{item.label}</span>
-                            </div>
-                            <span className="text-[11px] text-slate-500 font-normal">{item.hint}</span>
-
-                            {hasChildren && item.children && (
-                              <div className="mt-1 border-t border-slate-100 pt-1 flex flex-col gap-0.5">
-                                {item.children.map((child) => (
-                                  <span key={child.to} className="text-[11px] text-slate-600 font-medium">
-                                    • {child.label}
+                                  />
+                                )}
+                                <span className="truncate flex-1">{child.label}</span>
+                                {typeof child.badge === "number" && child.badge > 0 ? (
+                                  <span className="ml-auto shrink-0 rounded-full bg-[#635BFF] px-1.5 py-0.5 text-[10px] font-bold text-white tabular-nums">
+                                    {child.badge > 99 ? "99+" : child.badge}
                                   </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
+                                ) : null}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+
+                    {/* Collapsed Mode Floating Tooltip */}
+                    {collapsed && (
+                      <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3.5 z-50 hidden rounded-xl bg-white border border-slate-200 px-3 py-2 shadow-pop group-hover/navitem:flex flex-col gap-0.5 whitespace-nowrap">
+                        <span className="text-xs font-bold text-slate-900">{item.label}</span>
+                        {item.hint && <span className="text-[11px] text-slate-500">{item.hint}</span>}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           );
         })}
       </nav>
 
-      {/* Bottom Desktop Collapse/Expand Toggle Button */}
-      {onToggleCollapse && (
-        <div className="hidden lg:block border-t border-slate-100 p-2">
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            className={cn(
-              "flex items-center rounded-xl text-slate-500 hover:bg-slate-50 hover:text-navy-900 transition-colors cursor-pointer text-xs font-medium w-full",
-              collapsed ? "h-10 justify-center" : "gap-3 px-3 py-2",
+      {/* Secondary Bottom Links: Settings & Help (Matching LMS UI Kit Reference) */}
+      <div className={cn("mt-auto border-t border-[#E8ECF4] pt-2 pb-1", collapsed ? "px-2" : "px-3.5")}>
+        <ul className="space-y-1">
+          <li className="relative group/navitem">
+            <div className={cn("flex items-center", collapsed && "justify-center")}>
+              <Link
+                to="/account/profile"
+                onClick={onItemClick}
+                className={cn(
+                  "flex items-center transition-all duration-150",
+                  collapsed
+                    ? "h-10 w-10 shrink-0 justify-center mx-auto rounded-xl"
+                    : "flex-1 gap-3.5 px-3.5 py-2.5 rounded-xl text-[14px] font-medium",
+                  isSettingsActive
+                    ? "bg-[#EAE8FF] font-semibold text-[#635BFF] shadow-xs"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+                )}
+                title={collapsed ? "Settings" : undefined}
+              >
+                <Icon
+                  name="settings"
+                  size={collapsed ? 20 : 19}
+                  className={cn(
+                    "shrink-0 transition-colors",
+                    isSettingsActive ? "text-[#635BFF]" : "text-slate-400 group-hover/navitem:text-slate-700",
+                  )}
+                />
+                {!collapsed && <span className="truncate flex-1">Settings</span>}
+              </Link>
+            </div>
+            {collapsed && (
+              <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3.5 z-50 hidden rounded-xl bg-white border border-slate-200 px-3 py-1.5 shadow-pop group-hover/navitem:block whitespace-nowrap text-xs font-bold text-slate-900">
+                Settings
+              </div>
             )}
-            title={collapsed ? "Expand sidebar (Ctrl+\\)" : "Collapse sidebar (Ctrl+\\)"}
-          >
-            <Icon name={collapsed ? "chevronRight" : "chevronLeft"} size={16} />
-            {!collapsed && <span>Collapse sidebar</span>}
-          </button>
-        </div>
-      )}
+          </li>
+
+          <li className="relative group/navitem">
+            <div className={cn("flex items-center", collapsed && "justify-center")}>
+              <Link
+                to="/support"
+                onClick={onItemClick}
+                className={cn(
+                  "flex items-center transition-all duration-150",
+                  collapsed
+                    ? "h-10 w-10 shrink-0 justify-center mx-auto rounded-xl"
+                    : "flex-1 gap-3.5 px-3.5 py-2.5 rounded-xl text-[14px] font-medium",
+                  isSupportActive
+                    ? "bg-[#EAE8FF] font-semibold text-[#635BFF] shadow-xs"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+                )}
+                title={collapsed ? "Help & Support" : undefined}
+              >
+                <Icon
+                  name="helpCircle"
+                  size={collapsed ? 20 : 19}
+                  className={cn(
+                    "shrink-0 transition-colors",
+                    isSupportActive ? "text-[#635BFF]" : "text-slate-400 group-hover/navitem:text-slate-700",
+                  )}
+                />
+                {!collapsed && <span className="truncate flex-1">Help & Support</span>}
+              </Link>
+            </div>
+            {collapsed && (
+              <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3.5 z-50 hidden rounded-xl bg-white border border-slate-200 px-3 py-1.5 shadow-pop group-hover/navitem:block whitespace-nowrap text-xs font-bold text-slate-900">
+                Help & Support
+              </div>
+            )}
+          </li>
+        </ul>
+
+        {/* Minimal Desktop Collapse/Expand Toggle Button */}
+        {onToggleCollapse && (
+          <div className="mt-1 pt-1.5 border-t border-slate-100 flex items-center justify-end">
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className={cn(
+                "flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer text-xs font-medium",
+                collapsed ? "h-8 w-8 mx-auto" : "h-7 px-2.5 gap-2 ml-auto",
+              )}
+              title={collapsed ? "Expand sidebar (Ctrl+\\)" : "Collapse sidebar (Ctrl+\\)"}
+            >
+              <Icon name={collapsed ? "chevronRight" : "chevronLeft"} size={14} />
+              {!collapsed && <span className="text-[11px] text-slate-400 font-normal">Collapse</span>}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

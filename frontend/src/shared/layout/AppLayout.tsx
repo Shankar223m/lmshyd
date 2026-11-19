@@ -10,7 +10,6 @@ import { AppBreadcrumb } from "@/shared/layout/AppBreadcrumb";
 import { Brand } from "@/shared/layout/Brand";
 import { QuickJump } from "@/shared/layout/QuickJump";
 import { SideNav } from "@/shared/layout/SideNav";
-import { SidebarWorkspace } from "@/shared/layout/SidebarWorkspace";
 import { Avatar, Icon, Menu } from "@/shared/ui";
 import { cn } from "@/core/lib/cn";
 
@@ -18,13 +17,7 @@ export function AppLayout() {
   const { user, role } = useAuth();
   const { signOut } = useSignOut();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [desktopCollapsed, setDesktopCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem("lms_sidebar_collapsed") === "true";
-    } catch {
-      return false;
-    }
-  });
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -65,23 +58,23 @@ export function AppLayout() {
   const userFooter = (
     <div
       className={cn(
-        "mt-auto border-t border-slate-100 transition-all duration-200",
-        desktopCollapsed ? "p-2" : "p-3",
+        "mt-auto border-t border-[#E8ECF4] transition-all duration-200 bg-white",
+        desktopCollapsed ? "p-2" : "p-3.5",
       )}
     >
       <div
         onClick={() => navigate("/account/profile")}
         className={cn(
-          "flex cursor-pointer items-center rounded-2xl transition-colors hover:bg-slate-50",
-          desktopCollapsed ? "h-11 w-11 justify-center mx-auto" : "gap-3 p-2",
+          "flex cursor-pointer items-center rounded-xl transition-colors hover:bg-slate-50",
+          desktopCollapsed ? "h-10 w-10 justify-center mx-auto" : "gap-3 p-1.5",
         )}
         title={desktopCollapsed ? `${user.full_name} (${ROLE_LABELS[user.role]})` : undefined}
       >
         <Avatar name={user.full_name} size="sm" />
         {!desktopCollapsed && (
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-slate-900">{user.full_name}</p>
-            <p className="truncate text-[11px] text-slate-500">{ROLE_LABELS[user.role]}</p>
+            <p className="truncate text-sm font-semibold text-slate-900">{user.full_name}</p>
+            <p className="truncate text-xs text-slate-500">{ROLE_LABELS[user.role]}</p>
           </div>
         )}
       </div>
@@ -94,26 +87,18 @@ export function AppLayout() {
         Skip to content
       </a>
 
-      {/* Desktop Collapsible Sidebar — soft floating panel */}
+      {/* Desktop Clean LMS Sidebar — Exactly matching reference UI Kit */}
       <aside
         className={cn(
-          "sidebar-panel hidden h-screen shrink-0 flex-col transition-all duration-300 ease-in-out lg:flex lg:sticky lg:top-0 z-20",
-          desktopCollapsed ? "w-[76px]" : "w-[250px]",
+          "sidebar-panel hidden h-screen shrink-0 flex-col transition-all duration-200 ease-in-out lg:flex lg:sticky lg:top-0 z-20 bg-white border-r border-[#E8ECF4] overflow-hidden",
+          desktopCollapsed ? "w-[72px]" : "w-[260px]",
         )}
       >
         <Brand collapsed={desktopCollapsed} />
-        <SidebarWorkspace collapsed={desktopCollapsed} />
         <SideNav
           collapsed={desktopCollapsed}
           onToggleCollapse={toggleDesktopCollapsed}
         />
-        {!desktopCollapsed && (
-          <div className="cd-sidebar-help">
-            <b>Need a hand?</b>
-            Visit support for guides on placements, courses, and campus drives.
-            <a href="/support">Get support ↗</a>
-          </div>
-        )}
         {userFooter}
       </aside>
 
@@ -152,16 +137,6 @@ export function AppLayout() {
             aria-label="Open navigation menu"
           >
             <Icon name="menu" size={20} />
-          </button>
-
-          <button
-            type="button"
-            onClick={toggleDesktopCollapsed}
-            className="hidden lg:flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200/80 bg-white text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95 cursor-pointer"
-            title={desktopCollapsed ? "Expand sidebar (Ctrl+\\)" : "Collapse sidebar (Ctrl+\\)"}
-            aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <Icon name={desktopCollapsed ? "menu" : "chevronLeft"} size={16} />
           </button>
 
           <QuickJump />

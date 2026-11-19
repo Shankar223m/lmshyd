@@ -1,6 +1,5 @@
 import { cn } from "@/core/lib/cn";
 import { Icon } from "@/shared/ui";
-import { LogoMark } from "./LogoMark";
 
 export function Brand({
   collapsed = false,
@@ -12,20 +11,19 @@ export function Brand({
   return (
     <div
       className={cn(
-        "flex h-16 items-center border-b border-slate-100 transition-all duration-200",
-        collapsed ? "justify-center px-2" : "justify-between px-4 sm:px-5",
+        "flex h-[68px] shrink-0 items-center border-b border-[#E8ECF4] transition-all duration-200",
+        collapsed ? "justify-center px-2" : "justify-between px-5",
       )}
     >
-      <div className="flex items-center gap-2.5 min-w-0">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F0EFFF] ring-1 ring-[#D6D3FF]/60 shadow-xs">
-          <LogoMark className="h-5 w-5" />
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#635BFF] to-[#4F46E5] text-white shadow-xs">
+          <Icon name="graduation" size={20} className="text-white" />
         </span>
         {!collapsed && (
           <div className="min-w-0 leading-tight">
-            <p className="font-display truncate text-lg font-bold text-slate-900 tracking-tight" style={{ letterSpacing: "-0.04em" }}>
+            <p className="font-display truncate text-xl font-bold text-slate-900 tracking-tight" style={{ letterSpacing: "-0.03em" }}>
               LMS
             </p>
-            <p className="brand-tagline">Learning platform</p>
           </div>
         )}
       </div>

@@ -14,13 +14,12 @@
 
 .lms-campus-shell .sidebar-panel {
   border-radius: 0;
-  border-right: 1px solid var(--cd-border);
+  border-right: 1px solid #e8ecf4;
   border-top: none;
   border-bottom: none;
   border-left: none;
   box-shadow: none;
   background: #fff;
-  width: 250px;
 }
 
 .lms-campus-shell .shell-header {
