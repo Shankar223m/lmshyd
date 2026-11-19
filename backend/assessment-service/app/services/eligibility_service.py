@@ -17,7 +17,10 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
-from lms_common import devdb
+try:
+    from lms_common import devdb
+except ImportError:
+    devdb = None
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -65,9 +68,27 @@ class EligibilityService:
 
         # ---- who may take it
         if test.kind in (TestKind.TOPIC, TestKind.MODULE, TestKind.FINAL):
-            result.enrollment = await self._enrollment(auth.user_id, test)
-            if result.enrollment is None:
-                return self._deny(result, "NOT_ENROLLED", "You are not enrolled in a course that includes this test.")
+            is_org_test = (
+                auth.organization_id is not None
+                and test.organization_id is not None
+                and test.organization_id == auth.organization_id
+            )
+            has_org_schedule = False
+            if auth.organization_id is not None:
+                has_org_schedule = (
+                    await self.db.execute(
+                        select(TestSchedule.id).where(
+                            TestSchedule.test_id == test.id,
+                            TestSchedule.cancelled_at.is_(None),
+                            or_(TestSchedule.organization_id.is_(None), TestSchedule.organization_id == auth.organization_id),
+                        )
+                    )
+                ).scalar_one_or_none() is not None
+
+            if not is_org_test and not has_org_schedule:
+                result.enrollment = await self._enrollment(auth.user_id, test)
+                if result.enrollment is None:
+                    return self._deny(result, "NOT_ENROLLED", "You are not enrolled in a course that includes this test.")
             if test.kind == TestKind.MODULE:
                 # Backend validation: Module test unlocks ONLY after all chapters and chapter exams in this module are complete/passed
                 try:
@@ -283,13 +304,20 @@ class EligibilityService:
             )
         ).scalar_one_or_none()
 
-    async def available_tests_filter(self, user_id: int) -> list[Any]:
+    async def available_tests_filter(self, user_id: int, organization_id: int | None = None) -> list[Any]:
         """SQL conditions (OR-ed by the caller) selecting the published tests this student could take."""
         version_ids = select(EnrollmentRef.version_id).where(EnrollmentRef.student_user_id == user_id, EnrollmentRef.active.is_(True))
         topic_or_module = select(VersionTarget.target_type, VersionTarget.target_id).where(VersionTarget.version_id.in_(version_ids))
         rows = (await self.db.execute(topic_or_module)).all()
         courses = [c for (c,) in (await self.db.execute(select(VersionRef.course_id).where(VersionRef.version_id.in_(version_ids)))).all()]
         conditions = [Test.kind == TestKind.PRACTICE]
+        if organization_id is not None:
+            conditions.append(Test.organization_id == organization_id)
+            scheduled = select(TestSchedule.test_id).where(
+                TestSchedule.cancelled_at.is_(None),
+                or_(TestSchedule.organization_id.is_(None), TestSchedule.organization_id == organization_id),
+            )
+            conditions.append(Test.id.in_(scheduled))
         by_type: dict[str, list[int]] = {}
         for target_type, target_id in rows:
             by_type.setdefault(target_type, []).append(target_id)

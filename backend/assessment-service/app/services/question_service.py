@@ -145,6 +145,8 @@ class QuestionService:
             return requested_org
         if is_employer_member(auth):
             return auth.organization_id
+        if auth.organization_id is not None and auth.role in ("staff", "institution_head"):
+            return auth.organization_id
         if can_read_owned_by(auth, None):
             return None
         raise PermissionDeniedError()

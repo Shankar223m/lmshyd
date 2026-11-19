@@ -66,10 +66,12 @@ def can_review_platform(auth: AccessTokenClaims) -> bool:
 
 def author_organization(auth: AccessTokenClaims) -> tuple[bool, int | None]:
     """(may author, the owner organisation new content gets): platform authors own platform content, employer
-    members their employer's."""
+    members their employer's, institution staff their institution's."""
     if can_author_platform(auth):
         return True, None
     if _employer_may(auth, AUTHOR):
+        return True, auth.organization_id
+    if auth.organization_id is not None and auth.role in ("staff", "institution_head"):
         return True, auth.organization_id
     return False, None
 
@@ -81,28 +83,44 @@ def can_author(auth: AccessTokenClaims) -> bool:
 def can_author_owned_by(auth: AccessTokenClaims, owner_organization_id: int | None) -> bool:
     if owner_organization_id is None:
         return can_author_platform(auth)
-    return is_super_admin(auth) or (_employer_may(auth, AUTHOR) and auth.organization_id == owner_organization_id)
+    return (
+        is_super_admin(auth)
+        or (_employer_may(auth, AUTHOR) and auth.organization_id == owner_organization_id)
+        or (auth.role in ("staff", "institution_head") and auth.organization_id == owner_organization_id)
+    )
 
 
 def can_review_owned_by(auth: AccessTokenClaims, owner_organization_id: int | None) -> bool:
     """Approve, reject, retire; see answer keys. An employer's admin reviews the employer's own content."""
     if owner_organization_id is None:
         return can_review_platform(auth)
-    return is_super_admin(auth) or (_employer_may(auth, REVIEW) and auth.organization_id == owner_organization_id)
+    return (
+        is_super_admin(auth)
+        or (_employer_may(auth, REVIEW) and auth.organization_id == owner_organization_id)
+        or (auth.role in ("staff", "institution_head") and auth.organization_id == owner_organization_id)
+    )
 
 
 def can_read_owned_by(auth: AccessTokenClaims, owner_organization_id: int | None) -> bool:
     """Read questions/tests with their keys (authors, reviewers and exam managers of the owner)."""
     if owner_organization_id is None:
         return can_author_platform(auth) or can_review_platform(auth) or can_manage_exams(auth)
-    return is_super_admin(auth) or (is_employer_member(auth) and auth.organization_id == owner_organization_id)
+    return (
+        is_super_admin(auth)
+        or (is_employer_member(auth) and auth.organization_id == owner_organization_id)
+        or (auth.role in ("staff", "institution_head") and auth.organization_id == owner_organization_id)
+    )
 
 
 def can_manage_owned_by(auth: AccessTokenClaims, owner_organization_id: int | None) -> bool:
     """Schedules, invitations, result release and reports for a test."""
     if owner_organization_id is None:
         return can_manage_exams(auth)
-    return is_super_admin(auth) or (_employer_may(auth, MANAGE) and auth.organization_id == owner_organization_id)
+    return (
+        is_super_admin(auth)
+        or (_employer_may(auth, MANAGE) and auth.organization_id == owner_organization_id)
+        or (auth.role in ("staff", "institution_head") and auth.organization_id == owner_organization_id)
+    )
 
 
 def can_view_attempt(

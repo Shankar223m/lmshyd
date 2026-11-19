@@ -15,7 +15,10 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from lms_common import devdb
+try:
+    from lms_common import devdb
+except ImportError:
+    devdb = None
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 from sqlalchemy import func, select, update

@@ -10,7 +10,7 @@ from typing import Any
 
 from lms_common.pagination import contains_pattern, paginate
 from redis.asyncio import Redis
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -136,6 +136,8 @@ class TestService:
             owner_filter = Test.organization_id == query.organization_id if query.organization_id else None
         elif is_employer_member(auth):
             owner_filter = Test.organization_id == auth.organization_id
+        elif auth.organization_id is not None and auth.role in ("staff", "institution_head"):
+            owner_filter = or_(Test.organization_id == auth.organization_id, Test.organization_id.is_(None))
         elif can_read_owned_by(auth, None) or can_manage_exams(auth):
             owner_filter = Test.organization_id.is_(None)
         else:
@@ -326,8 +328,6 @@ class TestService:
         expected = _TARGET_FOR_KIND.get(kind)
         if expected is None and target_id is not None:
             details.append({"field": "target_id", "code": "NOT_ALLOWED", "message": f"A {kind} test has no target"})
-        if test.organization_id is not None and kind != TestKind.HIRING:
-            details.append({"field": "kind", "code": "HIRING_ONLY", "message": "An employer can only author hiring tests"})
         if details:
             raise ValidationFailedError(details=details)
         test.kind = kind
@@ -431,8 +431,6 @@ class TestService:
             for section in sections:
                 if not section.time_limit_minutes:
                     issue(f"sections[{section.position}].time_limit_minutes", "REQUIRED", "Every section needs a time limit")
-        if test.organization_id is not None and test.kind != TestKind.HIRING:
-            issue("kind", "HIRING_ONLY", "An employer can only publish hiring tests")
 
         fixed_ids = {slot.question_id for section in sections for slot in section.slots if slot.question_id is not None}
         fixed_questions: dict[uuid.UUID, Question] = {}

@@ -65,7 +65,7 @@ async def _describe(service: EligibilityService, test: Test, auth: CurrentAuth) 
 )
 async def my_tests(query: Annotated[MyTestsQuery, Query()], auth: RequireStudent, db: DbSession, settings: SettingsDep) -> MyTestsResponse:
     eligibility = EligibilityService(db, settings)
-    stmt = select(Test).where(Test.status == TestStatus.PUBLISHED, or_(*await eligibility.available_tests_filter(auth.user_id)))
+    stmt = select(Test).where(Test.status == TestStatus.PUBLISHED, or_(*await eligibility.available_tests_filter(auth.user_id, auth.organization_id)))
     if query.kind:
         stmt = stmt.where(Test.kind == query.kind)
     if query.target_id:

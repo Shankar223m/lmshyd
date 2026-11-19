@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from lms_common.pagination import paginate
-from sqlalchemy import Select, case, func, select, tuple_
+from sqlalchemy import Select, case, func, or_, select, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.exceptions import PermissionDeniedError
@@ -34,8 +34,8 @@ def scope_attempts(stmt: Select[Any], auth: AccessTokenClaims) -> Select[Any]:
     stmt = stmt.where(Attempt.status != AttemptStatus.NOT_STARTED)
     if can_manage_exams(auth) or can_review_platform(auth):
         return stmt
-    if is_institution_staff(auth):  # their own students, on platform tests (an employer's hiring test is private to it)
-        return stmt.where(Attempt.organization_id == auth.organization_id, Test.organization_id.is_(None))
+    if is_institution_staff(auth):  # their own students, on platform or institution tests
+        return stmt.where(Attempt.organization_id == auth.organization_id, or_(Test.organization_id.is_(None), Test.organization_id == auth.organization_id))
     if runs_employer_tests(auth):
         return stmt.where(Test.organization_id == auth.organization_id)
     raise PermissionDeniedError()
@@ -48,7 +48,7 @@ def scope_answers_to_grade(stmt: Select[Any], auth: AccessTokenClaims) -> Select
     if runs_employer_tests(auth):
         return stmt.where(Test.organization_id == auth.organization_id)
     if is_institution_staff(auth, "update"):
-        return stmt.where(Attempt.organization_id == auth.organization_id, Test.organization_id.is_(None))
+        return stmt.where(Attempt.organization_id == auth.organization_id, or_(Test.organization_id.is_(None), Test.organization_id == auth.organization_id))
     raise PermissionDeniedError()
 
 
