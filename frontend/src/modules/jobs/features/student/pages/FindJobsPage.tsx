@@ -36,7 +36,6 @@ type DiscoverJob = {
 };
 
 type FindJobsAudience = "student" | "admin";
-type RoleFilter = "ALL" | "ENGINEERING" | "DESIGN";
 
 export function FindJobsPage({ audience = "student" }: { audience?: FindJobsAudience }) {
   const isAdmin = audience === "admin";
@@ -44,7 +43,6 @@ export function FindJobsPage({ audience = "student" }: { audience?: FindJobsAudi
   const [params, setParams] = useSearchParams();
   const [keyword, setKeyword] = useState(params.get("q") || "");
   const [locationQuery, setLocationQuery] = useState(params.get("loc") || "");
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
   const [showFilters, setShowFilters] = useState(false);
   const [eligibleOnly, setEligibleOnly] = useState(!isAdmin && params.get("eligible") === "1");
   const [jobType, setJobType] = useState(params.get("type") || "ALL");
@@ -104,25 +102,13 @@ export function FindJobsPage({ audience = "student" }: { audience?: FindJobsAudi
     if (loc) {
       list = list.filter((j) => (j.location || "").toLowerCase().includes(loc) || j.work_mode === "REMOTE");
     }
-    if (roleFilter === "ENGINEERING") {
-      list = list.filter((j) => {
-        const blob = `${j.title} ${(j.skills || []).join(" ")}`.toLowerCase();
-        return /engineer|developer|backend|frontend|full.?stack|devops|software/.test(blob);
-      });
-    }
-    if (roleFilter === "DESIGN") {
-      list = list.filter((j) => {
-        const blob = `${j.title} ${(j.skills || []).join(" ")}`.toLowerCase();
-        return /design|ui|ux|product designer|figma/.test(blob);
-      });
-    }
     if (sortBy === "MATCH") {
       list.sort((a, b) => (b.match_percent ?? 0) - (a.match_percent ?? 0));
     } else if (sortBy === "CTC") {
       list.sort((a, b) => (b.salary_max ?? b.salary_min ?? 0) - (a.salary_max ?? a.salary_min ?? 0));
     }
     return list;
-  }, [rawJobs, locationQuery, roleFilter, sortBy]);
+  }, [rawJobs, locationQuery, sortBy]);
 
   const runSearch = () => {
     const p = new URLSearchParams(params);
@@ -136,18 +122,11 @@ export function FindJobsPage({ audience = "student" }: { audience?: FindJobsAudi
   const clearFilters = () => {
     setKeyword("");
     setLocationQuery("");
-    setRoleFilter("ALL");
     setEligibleOnly(false);
     setJobType("ALL");
     setSortBy(isAdmin ? "LATEST" : "MATCH");
     setParams({}, { replace: true });
   };
-
-  const rolePills: { id: RoleFilter; label: string }[] = [
-    { id: "ALL", label: "All roles" },
-    { id: "ENGINEERING", label: "Engineering" },
-    { id: "DESIGN", label: "Design" },
-  ];
 
   const featuredCount = rawJobs.length || filteredJobs.length;
 
@@ -212,19 +191,7 @@ export function FindJobsPage({ audience = "student" }: { audience?: FindJobsAudi
         </button>
       </div>
 
-      <div className="job-filter-row">
-        <div className="category-pills">
-          {rolePills.map((pill) => (
-            <button
-              key={pill.id}
-              type="button"
-              className={`category-pill ${roleFilter === pill.id ? "selected" : ""}`}
-              onClick={() => setRoleFilter(pill.id)}
-            >
-              {pill.label}
-            </button>
-          ))}
-        </div>
+      <div className="job-filter-row !justify-end">
         <button type="button" className="filter-button" onClick={() => setShowFilters((v) => !v)}>
           <SlidersHorizontal size={16} />
           Filters
@@ -368,7 +335,7 @@ export function FindJobsPage({ audience = "student" }: { audience?: FindJobsAudi
                   aria-label={saved ? "Remove bookmark" : "Bookmark job"}
                   onClick={() => toggleBookmark(j.id)}
                 >
-                  <Bookmark size={18} fill={saved ? "#635bff" : "none"} />
+                  <Bookmark size={18} fill={saved ? "#7DC8F7" : "none"} />
                 </button>
               </article>
             </li>

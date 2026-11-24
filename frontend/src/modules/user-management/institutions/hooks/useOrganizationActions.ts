@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "@/modules/user-management/auth/hooks/useAuth";
 import { useConfirmAction } from "@/core/hooks/useConfirmAction";
 import { useNotify } from "@/core/hooks/useNotify";
 import type { InstitutionStatus, OrganizationAction, OrganizationType, StatusChange } from "@/modules/user-management/common/types";
@@ -36,6 +37,8 @@ export function useOrganizationActions(type: OrganizationType) {
   const navigate = useNavigate();
   const notify = useNotify();
   const confirm = useConfirmAction();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === "super_admin";
   const [changeInstitutionStatus] = useChangeInstitutionStatusMutation();
   const [revokeInstitution] = useRevokeInstitutionMutation();
   const [deleteInstitution] = useDeleteInstitutionMutation();
@@ -65,7 +68,7 @@ export function useOrganizationActions(type: OrganizationType) {
 
   const itemsFor = useCallback(
     (target: OrganizationTarget, options: { includeView?: boolean } = {}): MenuItem[] => {
-      const allowed = (action: OrganizationAction) => target.allowed_actions.includes(action);
+      const allowed = (action: OrganizationAction) => (target.allowed_actions || []).includes(action) || isSuperAdmin;
       const id = target.organization_id;
       return [
         { label: "View", icon: "eye", hidden: !options.includeView, onSelect: () => navigate(`${words.list}/${id}`) },

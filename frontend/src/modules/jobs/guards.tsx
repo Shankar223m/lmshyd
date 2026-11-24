@@ -20,9 +20,9 @@ export function RequireJobsPersona({ persona }: { persona: Persona }) {
   if (sessionStatus === "checking") return <PageLoader />;
   const ok =
     (persona === "student" && access.isStudent) ||
-    (persona === "employer" && access.isEmployer) ||
-    (persona === "recruiter" && access.isEmployer) ||
-    (persona === "institution" && access.isInstitution) ||
+    (persona === "employer" && (access.isEmployer || access.isModerator)) ||
+    (persona === "recruiter" && (access.isEmployer || access.isModerator)) ||
+    (persona === "institution" && (access.isInstitution || access.isModerator)) ||
     (persona === "moderator" && access.isModerator);
   return ok ? <Outlet /> : <Navigate to="/jobs" replace />;
 }
