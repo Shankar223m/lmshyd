@@ -1,4 +1,4 @@
-from app.services.institution_access import student_can_read_course
+from app.services.institution_access import check_student_course_access
 from fastapi import APIRouter
 from lms_common.envelopes import PageContext, SortOrder
 
@@ -58,25 +58,19 @@ async def create_draft(course_id: CourseIdParam, auth: RequireAuthor, db: DbSess
 )
 async def get_version(course_id: CourseIdParam, version_id: VersionIdParam, auth: RequireReader, db: DbSession) -> CourseVersionDetailResponse:
     if auth.role == "student":
-        has_access = await student_can_read_course(
-            organization_id=auth.organization_id,
-            organization_type=auth.organization_type,
-            user_id=auth.user_id,
-            course_id=course_id,
-            scopes=auth.scopes,
-        )
+        has_access = await check_student_course_access(auth.organization_id, course_id, user_id=auth.user_id)
         if not has_access:
-            raise PermissionDeniedError(
-                "You do not have access to this course.",
-                code="COURSE_ACCESS_DENIED",
+            entitled, err_code, err_msg = await check_student_course_entitlement(
+                user_id=auth.user_id,
+                course_id=course_id,
+                organization_id=auth.organization_id,
+                settings_db_url=get_settings().DATABASE_URL,
             )
-        entitled, err_code, err_msg = await check_student_course_entitlement(
-            user_id=auth.user_id,
-            course_id=course_id,
-            settings_db_url=get_settings().DATABASE_URL,
-        )
-        if not entitled:
-            raise PermissionDeniedError(err_msg or "Active subscription required.", code=err_code or "SUBSCRIPTION_REQUIRED")
+            if not entitled:
+                raise PermissionDeniedError(
+                    err_msg or "Your account or institution has not been granted access to this course.",
+                    code=err_code or "COURSE_ACCESS_DENIED"
+                )
     version = await VersionService(db).get_detail(course_id, version_id)
     if version.status not in (ContentStatus.PUBLISHED, ContentStatus.ARCHIVED) and not sees_drafts(auth):
         raise NotFoundError("Course version not found.", code="COURSE_VERSION_NOT_FOUND")  # a draft is its authors' business

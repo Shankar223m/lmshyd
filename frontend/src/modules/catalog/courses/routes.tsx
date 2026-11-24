@@ -1,13 +1,33 @@
 import { lazy } from "react";
-import type { RouteObject } from "react-router-dom";
+import { Navigate, useParams, type RouteObject } from "react-router-dom";
 import { page } from "@/shared/routing/page";
 import { RequireRole } from "@/modules/user-management/auth/guards/RequireRole";
+import { useAuth } from "@/modules/user-management/auth/hooks/useAuth";
+
+const BrowseCoursesPage = lazy(() =>
+  import("@/modules/store/pages/BrowseCoursesPage").then((m) => ({ default: m.BrowseCoursesPage }))
+);
+const BrowseCourseDetailPage = lazy(() =>
+  import("@/modules/store/pages/BrowseCourseDetailPage").then((m) => ({ default: m.BrowseCourseDetailPage }))
+);
 
 const CourseDashboardPage = lazy(() =>
   import("./pages/CourseDashboardPage").then((m) => ({ default: m.CourseDashboardPage }))
 );
-const CourseFormPage = lazy(() =>
-  import("./pages/CourseFormPage").then((m) => ({ default: m.CourseFormPage }))
+const CourseCreatePage = lazy(() =>
+  import("./pages/CourseCreatePage").then((m) => ({ default: m.CourseCreatePage }))
+);
+const CourseBuilderPage = lazy(() =>
+  import("./pages/CourseBuilderPage").then((m) => ({ default: m.CourseBuilderPage }))
+);
+const CoursePreviewPage = lazy(() =>
+  import("./pages/CoursePreviewPage").then((m) => ({ default: m.CoursePreviewPage }))
+);
+const CreateTestPage = lazy(() =>
+  import("@/modules/assessments/tests/pages/TestCreatePage").then((m) => ({ default: m.TestCreatePage }))
+);
+const CertificateTemplatesPage = lazy(() =>
+  import("@/modules/certificates/templates/pages/TemplatesListPage").then((m) => ({ default: m.TemplatesListPage }))
 );
 const CourseHubPage = lazy(() =>
   import("./pages/CourseHubPage").then((m) => ({ default: m.CourseHubPage }))
@@ -37,7 +57,42 @@ const MyCoursesCertificatesPage = lazy(() =>
   import("./pages/MyCoursesCertificatesPage").then((m) => ({ default: m.MyCoursesCertificatesPage }))
 );
 
+function CourseIndexRouter() {
+  const { user } = useAuth();
+  if (user?.role === "student") {
+    return <BrowseCoursesPage />;
+  }
+  return <CourseDashboardPage />;
+}
+
+function CourseItemRouter() {
+  const { user } = useAuth();
+  const { courseId } = useParams();
+  if (user?.role === "student") {
+    return <Navigate to={`/courses/${courseId}/details`} replace />;
+  }
+  return <CourseHubPage />;
+}
+
 export const courseRoutes: RouteObject[] = [
+  // 1. Primary Course Route (Role-aware: Approved Marketplace for Students, Dashboard for Admins/Staff)
+  {
+    path: "/courses",
+    element: page(<CourseIndexRouter />),
+  },
+
+  // 2. Student Course Details
+  {
+    path: "/courses/:courseId/details",
+    element: page(<BrowseCourseDetailPage />),
+  },
+
+  // 3. Course Root by ID (Role-aware: Course Details for Students, Course Studio Hub for Admins/Staff)
+  {
+    path: "/courses/:courseId",
+    element: page(<CourseItemRouter />),
+  },
+
   // 11. Student Courses & Certificates (Accessible to enrolled learners and platform viewers)
   {
     path: "/courses/my",
@@ -78,15 +133,39 @@ export const courseRoutes: RouteObject[] = [
     children: [
       {
         path: "/courses/create",
-        element: page(<CourseFormPage />),
+        element: page(<CourseCreatePage />),
       },
       {
         path: "/courses/new",
-        element: page(<CourseFormPage />),
+        element: page(<CourseCreatePage />),
       },
       {
         path: "/courses/:courseId/edit",
-        element: page(<CourseFormPage />),
+        element: page(<CourseHubPage />),
+      },
+      {
+        path: "/courses/:courseId/studio",
+        element: page(<CourseHubPage />),
+      },
+      {
+        path: "/courses/:courseId/builder",
+        element: page(<CourseBuilderPage />),
+      },
+      {
+        path: "/courses/:courseId/preview",
+        element: page(<CoursePreviewPage />),
+      },
+      {
+        path: "/courses/:courseId/certificate",
+        element: page(<CertificateTemplatesPage />),
+      },
+      {
+        path: "/courses/:courseId/certificates",
+        element: page(<CertificateTemplatesPage />),
+      },
+      {
+        path: "/courses/:courseId/tests/create",
+        element: page(<CreateTestPage />),
       },
       {
         path: "/courses/:courseId/modules/:moduleId/chapters/:chapterId/ai-generate",
@@ -99,7 +178,7 @@ export const courseRoutes: RouteObject[] = [
     ],
   },
 
-  // Admin & Staff: Course Catalog and Hub (Students redirected to /courses/my)
+  // Admin & Staff: Course Hub and Chapter Authoring
   {
     element: (
       <RequireRole
@@ -109,15 +188,7 @@ export const courseRoutes: RouteObject[] = [
     ),
     children: [
       {
-        path: "/courses",
-        element: page(<CourseDashboardPage />),
-      },
-      {
         path: "/courses/:courseId/hub",
-        element: page(<CourseHubPage />),
-      },
-      {
-        path: "/courses/:courseId",
         element: page(<CourseHubPage />),
       },
       {

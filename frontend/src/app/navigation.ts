@@ -92,7 +92,14 @@ export const STUDENT_NAVIGATION: NavItem[] = [
     hint: jobsNavigation[0]?.hint ?? "Search, apply, and track placements",
   },
   ...aiInterviewNavigation.map(asStudentCareers),
-  ...storeNavigation.map(asStudentAcademics),
+  {
+    menu: "my_learning",
+    label: "Browse licensed courses",
+    icon: "graduation",
+    to: "/browse-courses",
+    group: "learn",
+    hint: "Courses your institution has licensed for students",
+  },
 ];
 
 /** Every entry, in display order within its group; each module contributes its own. */

@@ -79,7 +79,7 @@ export function UserForm({ mode, defaultValues, userId, submitting, formError, o
               hint={mode === "create" ? "Optional. Generated from the name if left empty." : undefined}
               autoComplete="off"
             />
-            {options.initial_password.allowed && <PasswordChoice options={options} />}
+            {options.initial_password.allowed && <PasswordChoice options={options} editing={Boolean(userId)} />}
           </FormSection>
 
           <PersonalSection options={options} required={required} />

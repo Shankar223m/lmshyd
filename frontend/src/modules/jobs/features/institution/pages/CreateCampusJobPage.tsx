@@ -92,7 +92,7 @@ export function CreateCampusJobPage() {
           <button
             type="submit"
             disabled={create.isPending}
-            className="rounded-lg bg-[#635BFF] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5046E5]"
+            className="rounded-lg bg-[#7DC8F7] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5CB8EC]"
           >
             {create.isPending ? "Submitting…" : "Submit for review"}
           </button>

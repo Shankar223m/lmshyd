@@ -56,7 +56,7 @@ export const ADMIN_SCOPE_LABELS: Record<AdminScope, string> = {
   "careers.manage": "Companies, jobs and hiring",
   "content.author": "Write courses",
   "content.review": "Review and publish courses",
-  "exams.manage": "Exams, grading and certificates",
+  "exams.manage": "Exams and integrity reviews",
   "support.manage": "Support tickets",
   "ai.manage": "AI settings",
   "analytics.view": "Platform-wide analytics",

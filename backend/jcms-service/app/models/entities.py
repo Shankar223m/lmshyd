@@ -166,6 +166,7 @@ class Job(Base, TimestampMixin):
     campus_institution_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("organizations.id"), nullable=True, index=True
     )
+    target_institution_ids: Mapped[list | None] = mapped_column(JSON, default=list)
 
     organization: Mapped[Organization] = relationship(
         back_populates="jobs",

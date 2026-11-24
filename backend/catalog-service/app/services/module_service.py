@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BadRequestError, NotFoundError
@@ -10,6 +10,8 @@ from app.core.ids import new_public_id
 from app.db.session import commit_or_conflict
 from app.models.course_version import CourseVersion
 from app.models.module import Module
+from app.models.topic import Topic
+from app.models.topic_item import TopicItem
 from app.schemas.module import ModuleCreate, ModuleUpdate
 
 
@@ -55,31 +57,54 @@ class ModuleService:
         return module
 
     async def delete(self, module: Module) -> None:
+        version = (await self.db.execute(select(CourseVersion).where(CourseVersion.id == module.course_version_id))).scalar_one_or_none()
+        is_draft = version is None or version.status == ContentStatus.DRAFT
+
         try:
             import asyncpg
             conn = await asyncpg.connect("postgresql://lms:lms@127.0.0.1:5432/lms_learning")
             try:
-                prog_count = await conn.fetchval('''
-                    SELECT COUNT(*) FROM item_progress ip
-                    JOIN topic_item_refs tir ON ip.topic_item_id = tir.topic_item_id
-                    JOIN topic_refs tr ON tir.topic_id = tr.topic_id
-                    WHERE tr.module_id = $1
-                ''', module.public_id)
-                res_count = 0
-                if module.module_test_id:
-                    res_count = await conn.fetchval('''
-                        SELECT COUNT(*) FROM assessment_results WHERE test_id = $1
-                    ''', module.module_test_id)
-                if (prog_count or 0) > 0 or (res_count or 0) > 0:
-                    raise BadRequestError(
-                        "Cannot delete module because student progress or assessment records exist for it.",
-                        code="STUDENT_PROGRESS_EXISTS"
-                    )
-                await conn.execute('''
-                    DELETE FROM topic_item_refs WHERE topic_id IN (SELECT topic_id FROM topic_refs WHERE module_id = $1);
-                    DELETE FROM topic_refs WHERE module_id = $1;
-                    DELETE FROM module_refs WHERE module_id = $1;
-                ''', module.public_id)
+                if is_draft:
+                    # In draft mode, safely clean up any test/preview progress
+                    await conn.execute('''
+                        DELETE FROM item_progress WHERE topic_item_id IN (
+                            SELECT topic_item_id FROM topic_item_refs WHERE topic_id IN (
+                                SELECT topic_id FROM topic_refs WHERE module_id = $1
+                            )
+                        );
+                        DELETE FROM topic_item_refs WHERE topic_id IN (SELECT topic_id FROM topic_refs WHERE module_id = $1);
+                        DELETE FROM topic_refs WHERE module_id = $1;
+                        DELETE FROM module_refs WHERE module_id = $1;
+                    ''', module.public_id)
+                    if module.module_test_id:
+                        try:
+                            await conn.execute('''
+                                DELETE FROM assessment_results WHERE test_id = $1;
+                            ''', module.module_test_id)
+                        except Exception:
+                            pass
+                else:
+                    prog_count = await conn.fetchval('''
+                        SELECT COUNT(*) FROM item_progress ip
+                        JOIN topic_item_refs tir ON ip.topic_item_id = tir.topic_item_id
+                        JOIN topic_refs tr ON tir.topic_id = tr.topic_id
+                        WHERE tr.module_id = $1
+                    ''', module.public_id)
+                    res_count = 0
+                    if module.module_test_id:
+                        res_count = await conn.fetchval('''
+                            SELECT COUNT(*) FROM assessment_results WHERE test_id = $1
+                        ''', module.module_test_id)
+                    if (prog_count or 0) > 0 or (res_count or 0) > 0:
+                        raise BadRequestError(
+                            "Cannot delete module because student progress or assessment records exist for it.",
+                            code="STUDENT_PROGRESS_EXISTS"
+                        )
+                    await conn.execute('''
+                        DELETE FROM topic_item_refs WHERE topic_id IN (SELECT topic_id FROM topic_refs WHERE module_id = $1);
+                        DELETE FROM topic_refs WHERE module_id = $1;
+                        DELETE FROM module_refs WHERE module_id = $1;
+                    ''', module.public_id)
             finally:
                 await conn.close()
         except BadRequestError:
@@ -90,6 +115,8 @@ class ModuleService:
         version = (
             await self.db.execute(select(CourseVersion).where(CourseVersion.id == module.course_version_id))
         ).scalar_one_or_none()
+        await self.db.execute(delete(TopicItem).where(TopicItem.topic_id.in_(select(Topic.id).where(Topic.module_id == module.id))))
+        await self.db.execute(delete(Topic).where(Topic.module_id == module.id))
         await self.db.delete(module)
         await self.db.commit()
         if version and version.status == ContentStatus.PUBLISHED:

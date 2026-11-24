@@ -3,7 +3,8 @@ import { RowActions } from "@/modules/user-management/manage/common/components/R
 import type { PersonKind } from "@/modules/user-management/manage/people/config";
 import type { PeopleActions } from "@/modules/user-management/manage/people/hooks/usePeopleActions";
 import type { AdminListItem, UserListItem } from "@/modules/user-management/users/types";
-import { Avatar, type Column } from "@/shared/ui";
+import { PersonAvatar } from "@/modules/user-management/users/components/PersonAvatar";
+import { type Column } from "@/shared/ui";
 
 type Row = UserListItem & Partial<Pick<AdminListItem, "institution_count">>;
 
@@ -21,7 +22,7 @@ export function usePeopleColumns(kind: PersonKind, actions: PeopleActions): Colu
     header: "Name",
     render: (row) => (
       <div className="flex min-w-0 items-center gap-3">
-        <Avatar name={row.full_name} size="sm" />
+        <PersonAvatar userId={row.user_id} name={row.full_name} version={row.avatar_version} />
         <div className="min-w-0">
           <p className="truncate font-semibold text-navy-950">{row.full_name}</p>
           <p className="truncate text-[13px] text-slate-500">{row.email ?? `Username: ${row.username}`}</p>
@@ -33,6 +34,7 @@ export function usePeopleColumns(kind: PersonKind, actions: PeopleActions): Colu
   const institution: Column<Row> = { key: "institution", header: "Institution", render: (row) => dash(row.institution?.name), hideOnMobile: true };
 
   const middle: Record<PersonKind, Column<Row>[]> = {
+    super_admin: [{ key: "phone", header: "Phone", render: (row) => dash(row.phone), hideOnMobile: true }],
     admin: [
       { key: "phone", header: "Phone", render: (row) => dash(row.phone), hideOnMobile: true },
       { key: "institutions", header: "Institutions", render: (row) => dash(row.institution_count), hideOnMobile: true },

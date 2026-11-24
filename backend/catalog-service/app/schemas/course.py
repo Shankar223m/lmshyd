@@ -1,5 +1,5 @@
 from lms_common.envelopes import PageContext, RequestSchema, ResponseSchema, SuccessResponse
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from app.schemas.common import ListQuery
 from app.schemas.types import PublicIdOut, Slug, Timestamp, id_field, text
@@ -99,6 +99,10 @@ class CourseBrowseOut(ResponseSchema):
     duration_label: str = "Self-paced"
     latest_published_version_id: PublicIdOut | None = None
     access_status: str = "available"  # enrolled | active_plan | eligible_under_plan | available | payments_disabled
+    access_type: str | None = None  # institution | purchased | None
+    price_paise: int | None = None
+    price_inr: int | None = None
+    skills: list[str] = Field(default_factory=list)
     active_plan_name: str | None = None
     min_price_paise: int | None = None
     payments_enabled: bool = True
@@ -108,3 +112,36 @@ class CourseBrowseOut(ResponseSchema):
 class CourseBrowseListResponse(SuccessResponse):
     courses: list[CourseBrowseOut]
     page_context: PageContext
+
+
+class TopicPreviewOut(BaseModel):
+    id: PublicIdOut
+    title: str
+    position: int
+    duration_seconds: int = 0
+    items_count: int = 0
+
+
+class ModulePreviewOut(BaseModel):
+    id: PublicIdOut
+    title: str
+    description: str | None = None
+    position: int
+    chapters_count: int = 0
+    duration_seconds: int = 0
+    chapters: list[TopicPreviewOut] = Field(default_factory=list)
+
+
+class CourseCurriculumPreviewOut(BaseModel):
+    course_id: PublicIdOut
+    version_id: PublicIdOut
+    version_number: int
+    modules: list[ModulePreviewOut] = Field(default_factory=list)
+    total_modules: int = 0
+    total_chapters: int = 0
+    total_duration_seconds: int = 0
+    duration_label: str = "Self-paced"
+
+
+class CourseCurriculumPreviewResponse(SuccessResponse):
+    curriculum: CourseCurriculumPreviewOut

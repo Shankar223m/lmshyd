@@ -14,7 +14,13 @@ export const subscriptionsApi = baseApi.injectEndpoints({
     grantSubscription: build.mutation<Subscription, SubscriptionGrantBody>({
       query: (body) => ({ url: "/subscriptions", method: "POST", body }),
       transformResponse: (response: { subscription: Subscription }) => response.subscription,
-      invalidatesTags: ["SubscriptionList", "CourseList"],
+      invalidatesTags: (_result, _error, body) => [
+        "SubscriptionList",
+        "CourseList",
+        { type: "Course", id: body.course_id },
+        "Store",
+        "EnrollmentList",
+      ],
     }),
     listSubscriptions: build.query<ListResult<Subscription>, SubscriptionFilters & PageParams>({
       query: (params) => ({ url: "/subscriptions", params }),

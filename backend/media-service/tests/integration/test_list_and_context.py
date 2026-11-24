@@ -17,7 +17,7 @@ async def test_list_filters_by_context(client: AsyncClient, authed) -> None:
     await _upload(client, authed)
     tagged = await _upload(client, authed, context_type="course_version", context_id="1755000000009999")
 
-    authed(scopes=("content.author",))
+    authed(scopes=())
     response = await client.get("/api/v1/media", params={"context_type": "course_version", "context_id": "1755000000009999"})
     assert response.status_code == 200
     body = response.json()
@@ -26,7 +26,7 @@ async def test_list_filters_by_context(client: AsyncClient, authed) -> None:
 
 
 async def test_unknown_asset_is_404(client: AsyncClient, authed) -> None:
-    authed(scopes=("content.author",))
+    authed(scopes=())
     response = await client.get("/api/v1/media/1755000000009998")
     assert response.status_code == 404
     assert response.json()["code"] == "MEDIA_ASSET_NOT_FOUND"

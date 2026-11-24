@@ -42,9 +42,7 @@ export function refreshSession(api: Pick<BaseQueryApi, "getState" | "dispatch" |
       const result = await rawBaseQuery({ url: "/auth/refresh-token", method: "POST" }, api as BaseQueryApi, {});
       const data = result.data as LoginResponse | undefined;
       if (data?.token && data.user) {
-        api.dispatch(
-          credentialsReceived({ token: data.token, user: data.user, permissions: data.permissions ?? undefined }),
-        );
+        api.dispatch(credentialsReceived({ token: data.token, user: data.user }));
         return true;
       }
       api.dispatch(loggedOut());
@@ -163,7 +161,6 @@ export const baseApi = createApi({
     "TestSchedules",
     "TestResults",
     "TestAnalytics",
-    "TestPlagiarism",
     "MyTestList",
     "MyTest",
     "Attempt",

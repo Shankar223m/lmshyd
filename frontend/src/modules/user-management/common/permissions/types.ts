@@ -4,7 +4,6 @@ import type { AdminScope, ManagedRole, OrganizationType, Role, UserStatus } from
 export type Section =
   | "dashboard"
   | "admins"
-  | "super_admins"
   | "institutions"
   | "employers"
   | "my_organization"

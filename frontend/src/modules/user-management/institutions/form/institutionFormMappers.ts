@@ -22,6 +22,7 @@ export function emptyInstitutionForm(): InstitutionFormValues {
     facebook_url: "",
     youtube_url: "",
     twitter_url: "",
+    login: { username: "", password: "" },
   };
 }
 
@@ -88,7 +89,10 @@ function shape(values: InstitutionFormValues) {
 }
 
 export function toInstitutionCreateBody(values: InstitutionFormValues): InstitutionBody {
-  return compact(shape(values)) as InstitutionBody;
+  const body = compact(shape(values)) as InstitutionBody & { login?: { username: string; password: string } };
+  const login = values.login;
+  if (login?.username.trim() && login.password) body.login = { username: login.username.trim().toLowerCase(), password: login.password };
+  return body;
 }
 
 export function toInstitutionUpdateBody(initial: InstitutionFormValues, values: InstitutionFormValues): InstitutionBody {

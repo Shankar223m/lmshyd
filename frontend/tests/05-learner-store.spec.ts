@@ -12,6 +12,7 @@ import { expectNoProblems, watchProblems } from "../support/session";
  * test key secret, so billing-service's real signature check runs. Skipped unless e2e/accounts.json has learnerSignup.
  */
 test("a new learner signs up, buys a course and studies it", async ({ page }, testInfo) => {
+  test.skip(true, "Self-registered learner signup and store checkout were removed from the product.");
   const config = accounts.learnerSignup;
   test.skip(!config?.emailLogFile || !config.razorpayKeySecret, "learnerSignup is not set in e2e/accounts.json");
   const email = `e2e.learner${Date.now()}@example.com`;

@@ -6,17 +6,30 @@ import type { PersonKind } from "@/modules/user-management/manage/people/config"
 import { OrganizationField } from "@/modules/user-management/users/components/form/OrganizationField";
 import { PasswordChoice } from "@/modules/user-management/users/components/form/PasswordChoice";
 import type { UserFormValues } from "@/modules/user-management/users/form/userFormValues";
+import { useWatch } from "react-hook-form";
+import { ProfilePhotoField, type PhotoChoice } from "@/modules/user-management/users/components/form/ProfilePhotoField";
 import { TextField } from "@/shared/form";
 
 /**
  * Only the fields this kind of person needs. Which sections apply and which fields are required comes from the
  * server (`GET /users/form-options`); everything else it knows about a person can wait.
  */
-export function PersonFields({ kind, options, editing }: { kind: PersonKind; options: UserFormOptions; editing?: boolean }) {
+export function PersonFields({ kind, options, editing, passwordBox, userId, photo, onPhoto }: {
+  kind: PersonKind;
+  options: UserFormOptions;
+  editing?: boolean;
+  passwordBox: boolean;
+  userId: string | null;
+  photo: PhotoChoice;
+  onPhoto: (next: PhotoChoice) => void;
+}) {
   const required = (field: string) => options.required_fields.includes(field);
+  const first = useWatch<UserFormValues>({ name: "personal_info.first_name" }) as string | undefined;
+  const last = useWatch<UserFormValues>({ name: "personal_info.last_name" }) as string | undefined;
 
   return (
     <div className="space-y-6">
+      <ProfilePhotoField userId={userId} name={`${first ?? ""} ${last ?? ""}`.trim()} value={photo} onChange={onPhoto} />
       {options.organization.shown && (
         <FormGrid>
           <div className="sm:col-span-2">
@@ -40,13 +53,8 @@ export function PersonFields({ kind, options, editing }: { kind: PersonKind; opt
         {options.sections.student && (
           <TextField<UserFormValues> name="personal_info.date_of_birth" label="Date of birth" type="date" required={required("personal_info.date_of_birth")} />
         )}
+        {passwordBox && <PasswordChoice options={options} editing={editing} />}
       </FormGrid>
-
-      {!editing && options.initial_password.allowed && (
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <PasswordChoice options={options} />
-        </div>
-      )}
 
       {options.sections.employment && kind !== "admin" && (
         <FormGrid title="Work">

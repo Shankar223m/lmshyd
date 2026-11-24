@@ -40,30 +40,6 @@ def get_user_management_db_url() -> str:
     return _get_database_url("lms_user_management", "USER_MANAGEMENT_DATABASE_URL")
 
 
-INDIVIDUAL_LEARNER_ORG_TYPE = "individual"
-STORE_BUY_SCOPE = "store.buy"
-
-
-async def browse_allowed_course_ids_for_student(
-    *,
-    organization_id: int | None,
-    organization_type: str | None,
-    user_id: int,
-    scopes: tuple[str, ...] | list[str],
-) -> set[int] | None:
-    """Catalog visibility for students.
-
-    ``None`` — full published catalog (self-registered / store learners).
-    ``set()`` — restrict to these course public ids (institution-licensed + learner purchases).
-  """
-    scope_set = set(scopes)
-    if organization_type == INDIVIDUAL_LEARNER_ORG_TYPE or STORE_BUY_SCOPE in scope_set:
-        return None
-    if organization_id:
-        return await get_student_accessible_course_ids(organization_id, user_id=user_id)
-    return set()
-
-
 async def get_student_accessible_course_ids(organization_id: int | None, user_id: int | None = None) -> set[int]:
     """Returns the set of course_ids for which the student has access:
     1. Active subscriptions for the student's institution.
@@ -98,26 +74,6 @@ async def get_student_accessible_course_ids(organization_id: int | None, user_id
     except Exception as exc:
         logger.error("Failed to query accessible courses for organization %s, user %s from %s: %s", organization_id, user_id, db_url, exc, exc_info=True)
     return course_ids
-
-
-async def student_can_read_course(
-    *,
-    organization_id: int | None,
-    organization_type: str | None,
-    user_id: int,
-    course_id: int,
-    scopes: tuple[str, ...] | list[str],
-) -> bool:
-    """Whether a student may load course metadata / published version (learn room entry)."""
-    if await check_student_course_access(organization_id, course_id, user_id=user_id):
-        return True
-    scope_set = set(scopes)
-    if organization_type == INDIVIDUAL_LEARNER_ORG_TYPE or STORE_BUY_SCOPE in scope_set:
-        return False
-    if organization_id:
-        allowed = await get_student_accessible_course_ids(organization_id, user_id=user_id)
-        return int(course_id) in allowed
-    return False
 
 
 async def check_student_course_access(organization_id: int | None, course_id: int, user_id: int | None = None) -> bool:

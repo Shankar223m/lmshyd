@@ -111,14 +111,14 @@ export function AdminDashboardPage() {
           >
             Review inbox
             {pendingJobs + pendingOrgs > 0 && (
-              <span className="ml-2 rounded-full bg-[#635BFF] px-1.5 py-0.5 text-[10px] font-bold text-white">
+              <span className="ml-2 rounded-full bg-[#7DC8F7] px-1.5 py-0.5 text-[10px] font-bold text-white">
                 {pendingJobs + pendingOrgs}
               </span>
             )}
           </Link>
           <Link
             to="/jobs/admin/jobs/new"
-            className="inline-flex items-center rounded-xl bg-[#635BFF] px-3.5 py-2 text-sm font-semibold text-white hover:bg-[#5046e5]"
+            className="inline-flex items-center rounded-xl bg-[#7DC8F7] px-3.5 py-2 text-sm font-semibold text-white hover:bg-[#5CB8EC]"
           >
             Create job
           </Link>
@@ -157,7 +157,7 @@ export function AdminDashboardPage() {
                 </div>
                 <Link
                   to={`/jobs/admin/review?job=${pendingJob.id}`}
-                  className="shrink-0 rounded-xl bg-[#635BFF] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#5046e5]"
+                  className="shrink-0 rounded-xl bg-[#7DC8F7] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#5CB8EC]"
                 >
                   Review
                 </Link>
@@ -171,8 +171,8 @@ export function AdminDashboardPage() {
               value={pendingOrgs}
               hint={pendingOrgs ? "Open queue" : "None waiting"}
               to="/jobs/admin/review?tab=orgs"
-              icon={<Building2 className="h-4 w-4 text-[#635BFF]" />}
-              iconBg="bg-[#635BFF]/10"
+              icon={<Building2 className="h-4 w-4 text-[#7DC8F7]" />}
+              iconBg="bg-[#7DC8F7]/10"
             />
             <KpiCard
               label="Jobs to review"
@@ -229,7 +229,7 @@ export function AdminDashboardPage() {
           <div className="rounded-2xl border border-slate-200 bg-white">
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
               <h2 className="text-sm font-semibold text-slate-900">Recent activity</h2>
-              <Link to="/jobs/admin/audit" className="text-sm font-semibold text-[#635BFF] hover:underline">
+              <Link to="/jobs/admin/audit" className="text-sm font-semibold text-[#7DC8F7] hover:underline">
                 View all
               </Link>
             </div>
@@ -239,7 +239,7 @@ export function AdminDashboardPage() {
               <ul className="divide-y divide-slate-100">
                 {activity.slice(0, 6).map((row) => (
                   <li key={row.id} className="flex items-start gap-3 px-5 py-3.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#635BFF]/15 text-xs font-bold text-[#5046e5]">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#7DC8F7]/15 text-xs font-bold text-[#5CB8EC]">
                       {initials(row.actor_name)}
                     </div>
                     <div className="min-w-0">
@@ -318,7 +318,7 @@ function QuickAction({ to, title }: { to: string; title: string }) {
   return (
     <Link
       to={to}
-      className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-800 transition hover:border-[#635BFF]/40 hover:text-[#5046e5]"
+      className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-800 transition hover:border-[#7DC8F7]/40 hover:text-[#5CB8EC]"
     >
       {title} →
     </Link>

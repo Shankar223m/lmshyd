@@ -74,9 +74,3 @@ class RateLimitedError(AppError):
     def __init__(self, retry_after: int, **kwargs: Any) -> None:
         kwargs.setdefault("headers", {"Retry-After": str(max(retry_after, 1))})
         super().__init__(**kwargs)
-
-
-class ServiceUnavailableError(AppError):
-    status_code = 503
-    code = "SERVICE_UNAVAILABLE"
-    message = "A service this request depends on is not answering. Please try again shortly."

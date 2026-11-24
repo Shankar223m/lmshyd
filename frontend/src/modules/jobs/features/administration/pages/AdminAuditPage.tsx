@@ -115,7 +115,7 @@ export function AdminAuditPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by actor, action, or resource ID…"
-            className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#635BFF] focus:bg-white focus:outline-none"
+            className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#7DC8F7] focus:bg-white focus:outline-none"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -167,7 +167,7 @@ export function AdminAuditPage() {
 
       {isLoading && (
         <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#635BFF] border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#7DC8F7] border-t-transparent" />
           <p className="text-xs text-slate-500">Loading activity…</p>
         </div>
       )}
@@ -205,7 +205,7 @@ export function AdminAuditPage() {
                       <td className="whitespace-nowrap px-4 py-3 text-slate-500">{formatWhen(l.created_at)}</td>
                       <td className="whitespace-nowrap px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#635BFF]/10 text-[10px] font-bold text-[#635BFF]">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#7DC8F7]/10 text-[10px] font-bold text-[#7DC8F7]">
                             {initials(l.actor_name || "System")}
                           </span>
                           <div>
@@ -215,7 +215,7 @@ export function AdminAuditPage() {
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
-                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-[#635BFF]">
+                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-[#7DC8F7]">
                           {l.action}
                         </span>
                       </td>
@@ -227,7 +227,7 @@ export function AdminAuditPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedLog(l)}
-                          className="font-semibold text-[#635BFF] hover:underline"
+                          className="font-semibold text-[#7DC8F7] hover:underline"
                         >
                           View
                         </button>

@@ -96,11 +96,11 @@ export function StudentDashboardView() {
             <em>Become something more.</em>
           </h2>
           <p>
-            Explore expert-led courses, discover career opportunities and build a portfolio that gets noticed.
+            Continue your licensed courses, discover career opportunities, and build a portfolio that gets noticed.
           </p>
           <div className="hero-actions">
             <Link
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-white text-[#4f46dc] hover:bg-slate-50 transition shadow-xs cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-white text-[#5CB8EC] hover:bg-slate-50 transition shadow-xs cursor-pointer"
               to="/browse-courses"
             >
               <span>Explore courses</span> <ArrowUpRight size={15} />
@@ -231,7 +231,7 @@ export function StudentDashboardView() {
                 onClick={() =>
                   navigate(`/courses/${activeCourse.course_id}/learn`)
                 }
-                className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-[#635bff] hover:bg-[#5148e8] text-white text-xs font-bold shadow-xs cursor-pointer transition shrink-0"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white text-xs font-bold shadow-xs cursor-pointer transition shrink-0"
               >
                 Continue
               </button>
@@ -246,7 +246,7 @@ export function StudentDashboardView() {
             </span>
             <Link
               to={`/courses/${activeCourse.course_id}/learn`}
-              className="text-[#635BFF] font-bold hover:underline"
+              className="text-[#7DC8F7] font-bold hover:underline"
             >
               Take Assessment →
             </Link>

@@ -46,7 +46,7 @@ export function QuickJump() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Search anything (Ctrl+K)"
-        className="flex h-10 flex-1 cursor-pointer items-center gap-2.5 rounded-full border border-slate-200/80 bg-slate-50/70 px-4 text-sm text-slate-400 transition-colors hover:border-[#635BFF]/30 hover:bg-white hover:text-slate-600 sm:max-w-md"
+        className="flex h-10 flex-1 cursor-pointer items-center gap-2.5 rounded-full border border-slate-200/80 bg-slate-50/70 px-4 text-sm text-slate-400 transition-colors hover:border-[#7DC8F7]/30 hover:bg-white hover:text-slate-600 sm:max-w-md"
       >
         <Icon name="search" size={16} className="text-slate-400" />
         <span className="hidden flex-1 text-left text-xs sm:inline text-slate-400">Search anything...</span>

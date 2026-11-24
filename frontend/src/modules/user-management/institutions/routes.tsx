@@ -14,8 +14,5 @@ export const institutionRoutes: RouteObject[] = [
     element: page(<WithOverlay><InstitutionDetailPage /></WithOverlay>),
     children: [{ element: <RequireSection section="institutions" />, children: [{ path: "edit", element: drawerPage(<InstitutionEditPage />) }] }],
   },
-  {
-    element: <RequireSection section="my_organization" />,
-    children: [{ path: "/my-organization", element: page(<MyOrganizationPage />) }],
-  },
+  { path: "/my-organization", element: page(<MyOrganizationPage />) },
 ];

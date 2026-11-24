@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { store } from "@/app/store";
 import { env } from "@/core/config/env";
+import { CampusCollegePicker, type CampusCollegeOption } from "../../../components/CampusCollegePicker";
 import { EmployerOrgPicker } from "../../../components/EmployerOrgPicker";
 import { JobThumbnail } from "../../../components/JobThumbnail";
 import { useJobsAccess } from "@/modules/jobs/hooks/useJobsAccess";
@@ -71,6 +72,7 @@ export function CreateJobPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [allowBacklogs, setAllowBacklogs] = useState(false);
+  const [selectedCollegeIds, setSelectedCollegeIds] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -88,6 +90,13 @@ export function CreateJobPage() {
       apiFetch<ApiResponse<EmployerOrg[]>>("/admin/organizations?org_type=EMPLOYER&status=VERIFIED"),
   });
   const employerOrgs = orgsData?.data || [];
+
+  const { data: collegesData, isLoading: collegesLoading } = useQuery({
+    queryKey: ["campus-institution-options"],
+    queryFn: () =>
+      apiFetch<ApiResponse<CampusCollegeOption[]>>("/jobs/campus-institutions/options"),
+  });
+  const collegeOptions = collegesData?.data ?? [];
 
   const { data: editJob } = useQuery({
     queryKey: ["job-edit", editId],
@@ -139,6 +148,10 @@ export function CreateJobPage() {
       max_backlogs: el.max_backlogs == null ? "" : String(el.max_backlogs),
     });
     setAllowBacklogs(el.max_backlogs != null && Number(el.max_backlogs) > 0);
+    const targets = Array.isArray(j.target_institution_ids)
+      ? (j.target_institution_ids as string[]).filter(Boolean)
+      : [];
+    setSelectedCollegeIds(targets);
     if ((j.questions as unknown[])?.length || (j.hiring_stages as unknown[])?.length) setShowAdvanced(true);
   }, [editJob?.data]);
 
@@ -219,6 +232,7 @@ export function CreateJobPage() {
       recruiter_ids: selectedRecruiterIds,
       requires_moderation: !isPlatformAdmin,
       eligibility: el,
+      target_institution_ids: selectedCollegeIds,
       thumbnail_file_id: thumbnailFileId || undefined,
       ...(isPlatformAdmin ? { organization_id: organizationId } : {}),
     };
@@ -290,7 +304,7 @@ export function CreateJobPage() {
 
   const selectedOrgName = employerOrgs.find((o) => o.id === organizationId)?.name;
   const inputBaseClass =
-    "w-full h-10 px-3 bg-slate-50 rounded-xl font-medium text-sm text-slate-900 border border-slate-200 focus:outline-none focus:bg-white focus:border-[#635BFF] transition-all";
+    "w-full h-10 px-3 bg-slate-50 rounded-xl font-medium text-sm text-slate-900 border border-slate-200 focus:outline-none focus:bg-white focus:border-[#7DC8F7] transition-all";
 
   const completeness = useMemo(() => {
     let score = 0;
@@ -347,7 +361,7 @@ export function CreateJobPage() {
               key={s.id}
               className={`flex items-center gap-3 rounded-2xl border px-3.5 py-3 ${
                 active
-                  ? "border-[#635BFF] bg-[#635BFF]/5"
+                  ? "border-[#7DC8F7] bg-[#7DC8F7]/5"
                   : done
                     ? "border-emerald-200 bg-emerald-50/60"
                     : "border-slate-200 bg-white"
@@ -356,7 +370,7 @@ export function CreateJobPage() {
               <span
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
                   active
-                    ? "bg-[#635BFF] text-white"
+                    ? "bg-[#7DC8F7] text-white"
                     : done
                       ? "bg-emerald-600 text-white"
                       : "bg-slate-100 text-slate-500"
@@ -568,7 +582,7 @@ export function CreateJobPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe key responsibilities, role expectations, and technical stack…"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 focus:border-[#635BFF] focus:bg-white focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 focus:border-[#7DC8F7] focus:bg-white focus:outline-none"
                   />
                   {fieldErrors.description && (
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.description}</p>
@@ -582,7 +596,24 @@ export function CreateJobPage() {
             <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
               <div>
                 <h2 className="text-base font-bold text-slate-900">Who can apply?</h2>
-                <p className="mt-0.5 text-sm text-slate-500">Only matching students see this job.</p>
+                <p className="mt-0.5 text-sm text-slate-500">
+                  Set eligibility criteria and assign partner colleges for this drive.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+                <h3 className="text-sm font-bold text-slate-900">Assign colleges</h3>
+                <p className="mt-0.5 text-sm text-slate-500">
+                  Select campuses that can participate in this job post.
+                </p>
+                <div className="mt-3">
+                  <CampusCollegePicker
+                    options={collegeOptions}
+                    selectedIds={selectedCollegeIds}
+                    onChange={setSelectedCollegeIds}
+                    loading={collegesLoading}
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -671,7 +702,7 @@ export function CreateJobPage() {
                       type="checkbox"
                       checked={allowBacklogs}
                       onChange={(e) => setAllowBacklogs(e.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300 text-[#635BFF]"
+                      className="h-4 w-4 rounded border-slate-300 text-[#7DC8F7]"
                     />
                   </label>
                 </div>
@@ -680,7 +711,7 @@ export function CreateJobPage() {
               <button
                 type="button"
                 onClick={() => setShowAdvanced((v) => !v)}
-                className="self-start text-sm font-semibold text-[#635BFF] hover:underline"
+                className="self-start text-sm font-semibold text-[#7DC8F7] hover:underline"
               >
                 {showAdvanced ? "Hide hiring pipeline" : "Advanced: hiring stages & screening questions"}
               </button>
@@ -835,7 +866,7 @@ export function CreateJobPage() {
             {wizardStep < 3 ? (
               <button
                 type="submit"
-                className="inline-flex items-center gap-1 rounded-xl bg-[#635BFF] px-5 py-2 text-sm font-semibold text-white hover:bg-[#5046E5]"
+                className="inline-flex items-center gap-1 rounded-xl bg-[#7DC8F7] px-5 py-2 text-sm font-semibold text-white hover:bg-[#5CB8EC]"
               >
                 Next <ChevronRight className="h-4 w-4" />
               </button>
@@ -843,7 +874,7 @@ export function CreateJobPage() {
               <button
                 type="submit"
                 disabled={saveMutation.isPending}
-                className="rounded-xl bg-[#635BFF] px-5 py-2 text-sm font-semibold text-white hover:bg-[#5046E5] disabled:opacity-50"
+                className="rounded-xl bg-[#7DC8F7] px-5 py-2 text-sm font-semibold text-white hover:bg-[#5CB8EC] disabled:opacity-50"
               >
                 {saveMutation.isPending
                   ? "Publishing…"
@@ -920,7 +951,7 @@ export function CreateJobPage() {
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-[#635BFF] transition-all"
+                  className="h-full rounded-full bg-[#7DC8F7] transition-all"
                   style={{ width: `${completeness}%` }}
                 />
               </div>

@@ -1,14 +1,7 @@
 import type { NavItem } from "@/app/navigation";
 
 export const employersNavigation: NavItem[] = [
-  {
-    section: "employers",
-    label: "Hiring companies",
-    icon: "briefcase",
-    to: "/employers",
-    group: "careers",
-    hint: "Register employer organisations; day-to-day hiring runs under Jobs & placements",
-  },
+  { section: "employers", label: "Hiring Companies", icon: "briefcase", to: "/employers", group: "careers", hint: "" },
 ];
 
 /**
@@ -18,6 +11,7 @@ export const employersNavigation: NavItem[] = [
  */
 export const userManagementNavigation: NavItem[] = [
   // User management: the people who use the platform, top to bottom of the hierarchy
+  { section: "admins", label: "Super admin users", icon: "shield", to: "/super-admins", group: "users", hint: "" },
   { section: "admins", label: "Admins", icon: "shield", to: "/admins", group: "users", hint: "" },
   { section: "institutions", label: "Institutions", icon: "building", to: "/institutions", group: "users", hint: "" },
   { section: "users", viewRole: "institution_head", label: "Institution heads", icon: "user", to: "/institution-heads", group: "users", hint: "" },
@@ -27,7 +21,7 @@ export const userManagementNavigation: NavItem[] = [
   { section: "permissions", label: "Roles & permissions", icon: "key", to: "/permissions", group: "admin", hint: "" },
   { section: "my_organization", label: "My organisation", icon: "building", to: "/my-organization", group: "academics", hint: "" },
   { section: "academics", label: "Academic structure", icon: "layers", to: "/academics", group: "academics", hint: "" },
+  { section: "academics", label: "Marks & results", icon: "chart", to: "/results", group: "academics", hint: "" },
   { section: "downloads", label: "Data exports", icon: "download", to: "/downloads", group: "admin", hint: "" },
   { section: "audit_logs", label: "System audit log", icon: "search", to: "/audit-logs", group: "admin", hint: "" },
-  { section: "permissions", label: "RBAC audit", icon: "shield", to: "/audit/rbac", group: "admin", hint: "Who changed roles and permissions" },
 ];

@@ -91,7 +91,7 @@ export function DashboardPage() {
                   variant={i === 0 ? "primary" : "secondary"}
                   className={
                     i === 0
-                      ? "bg-white text-[#635BFF] hover:bg-indigo-50 shadow-none font-bold"
+                      ? "bg-white text-[#7DC8F7] hover:bg-indigo-50 shadow-none font-bold"
                       : "border-white/40 bg-white/10 text-white hover:bg-white/20"
                   }
                   onClick={() => navigate(a.to)}

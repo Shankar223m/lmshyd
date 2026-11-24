@@ -16,7 +16,11 @@ from app.models.module import Module
 from app.models.topic import Topic
 from app.models.topic_item import TopicItem
 from app.schemas.course import BrowsePlanPreviewOut, CourseBrowseOut
-from app.services.institution_access import get_user_management_db_url
+from app.services.institution_access import get_subscription_db_url, get_user_management_db_url, _get_database_url
+
+
+def get_billing_db_url() -> str:
+    return _get_database_url("lms_billing", "BILLING_DATABASE_URL")
 
 
 def _format_duration(seconds: int) -> str:
@@ -29,6 +33,28 @@ def _format_duration(seconds: int) -> str:
     if hours > 0:
         return f"{hours}h"
     return f"{rem_mins}m"
+
+
+def _infer_skills(title: str, summary: str) -> list[str]:
+    combined = f"{title} {summary}".lower()
+    skills: list[str] = []
+    if "python" in combined:
+        skills.extend(["Python 3", "OOP", "Data Structures", "Scripting"])
+    elif "react" in combined:
+        skills.extend(["React.js", "State Management", "Hooks", "Component Architecture"])
+    elif "data" in combined or "pandas" in combined:
+        skills.extend(["Data Analysis", "Pandas", "NumPy", "Data Cleaning"])
+    elif "machine learning" in combined or "ai" in combined or "intelligence" in combined:
+        skills.extend(["Machine Learning", "Model Training", "Deep Learning", "Algorithms"])
+    elif "java" in combined:
+        skills.extend(["Java Core", "Spring Boot", "Backend Development", "OOP"])
+    elif "design" in combined or "ui" in combined or "ux" in combined or "blender" in combined:
+        skills.extend(["UI/UX Design", "Wireframing", "Figma", "Design Systems"])
+    elif "business" in combined or "management" in combined:
+        skills.extend(["Business Strategy", "Leadership", "Product Management"])
+    if not skills:
+        skills = ["Software Engineering", "Problem Solving", "Best Practices"]
+    return skills[:4]
 
 
 async def _fetch_instructor_names(user_ids: list[int]) -> dict[int, str]:
@@ -58,6 +84,7 @@ async def enrich_browse_courses(
     *,
     user_id: int,
     role: str,
+    organization_id: int | None = None,
 ) -> list[CourseBrowseOut]:
     if not courses:
         return []
@@ -106,6 +133,57 @@ async def enrich_browse_courses(
     min_price = min((p.price_paise for p in plans_preview), default=None)
     payments_enabled = bool(ctx["payments_enabled"])
 
+    # Query course prices from lms_billing
+    course_prices: dict[int, int] = {}
+    try:
+        bconn = await asyncpg.connect(get_billing_db_url())
+        try:
+            prows = await bconn.fetch(
+                "SELECT code, unit_amount FROM price_items WHERE kind = 'course_seat' AND active = TRUE"
+            )
+            for pr in prows:
+                if pr["code"] and str(pr["code"]).isdigit():
+                    course_prices[int(pr["code"])] = int(pr["unit_amount"])
+        finally:
+            await bconn.close()
+    except Exception:
+        pass
+
+    # Query individual purchases and institution course subscriptions
+    purchased_course_ids: set[int] = set()
+    institution_course_ids: set[int] = set()
+    if role == "student":
+        try:
+            sconn = await asyncpg.connect(get_subscription_db_url())
+            try:
+                if user_id:
+                    ca_rows = await sconn.fetch(
+                        """
+                        SELECT course_id FROM course_access
+                        WHERE user_id = $1 AND status = 'active'
+                          AND starts_at <= NOW()
+                          AND (ends_at IS NULL OR ends_at > NOW())
+                        """,
+                        int(user_id),
+                    )
+                    purchased_course_ids = {int(r["course_id"]) for r in ca_rows}
+
+                if organization_id:
+                    sub_rows = await sconn.fetch(
+                        """
+                        SELECT course_id FROM subscriptions
+                        WHERE organization_id = $1 AND status = 'active'
+                          AND starts_at <= NOW()
+                          AND (ends_at IS NULL OR ends_at > NOW())
+                        """,
+                        int(organization_id),
+                    )
+                    institution_course_ids = {int(r["course_id"]) for r in sub_rows}
+            finally:
+                await sconn.close()
+        except Exception:
+            pass
+
     out: list[CourseBrowseOut] = []
     for c in courses:
         pub_v = latest_version_by_course.get(c.id)
@@ -113,18 +191,36 @@ async def enrich_browse_courses(
         dur_sec = vstats.get("duration_seconds", 0)
         cid = int(c.public_id)
 
-        if cid in batch_enrolled:
+        is_purchased = cid in purchased_course_ids
+        is_institution = cid in institution_course_ids or cid in batch_enrolled
+
+        if is_purchased:
             access_status = "enrolled"
+            access_type = "purchased"
+        elif is_institution:
+            access_status = "enrolled"
+            access_type = "institution"
         elif plan_state.get("has_active") and cid in unlocked_under_plan:
             access_status = "active_plan"
+            access_type = "plan"
         elif plan_state.get("has_active"):
             max_c = plan_state.get("max_courses")
             if max_c is None or len(unlocked_under_plan) < int(max_c):
                 access_status = "eligible_under_plan"
+                access_type = None
             else:
                 access_status = "available" if payments_enabled else "payments_disabled"
+                access_type = None
         else:
             access_status = "available" if payments_enabled else "payments_disabled"
+            access_type = None
+
+        price_paise = course_prices.get(cid)
+        if not price_paise:
+            # Deterministic default pricing: ₹999, ₹1,999, ₹2,499, ₹3,499
+            price_paise = [99900, 199900, 249900, 349900][cid % 4]
+        price_inr = price_paise // 100
+        skills = _infer_skills(c.title, c.summary or "")
 
         out.append(
             CourseBrowseOut(
@@ -140,8 +236,12 @@ async def enrich_browse_courses(
                 duration_label=_format_duration(dur_sec),
                 latest_published_version_id=pub_v.public_id if pub_v else None,
                 access_status=access_status if role == "student" else "available",
+                access_type=access_type if role == "student" else None,
+                price_paise=price_paise,
+                price_inr=price_inr,
+                skills=skills,
                 active_plan_name=plan_state.get("plan_name"),
-                min_price_paise=min_price,
+                min_price_paise=price_paise or min_price,
                 payments_enabled=payments_enabled,
                 plans_preview=plans_preview,
             )

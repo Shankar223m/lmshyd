@@ -45,6 +45,11 @@ class MediaAssetOut(ResponseSchema):
     byte_size: int | None = None
     status: str
     duration_seconds: int | None = None
+    original_byte_size: int | None = None
+    original_resolution: str | None = None
+    output_resolution: str | None = None
+    compression_method: str | None = None
+    savings_percent: float | None = None
     context_type: str | None = None
     context_id: PublicIdOut | None = None
     created_by: PublicIdOut

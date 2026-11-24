@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -16,7 +15,6 @@ from app.db.redis import build_redis
 from app.db.session import build_engine, build_sessionmaker
 from app.middleware.request_context import RequestContextMiddleware
 from app.middleware.security_headers import SecurityHeadersMiddleware
-from app.services.media_optimizer import resume_unfinished
 
 
 @asynccontextmanager
@@ -26,11 +24,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.engine = engine
     app.state.sessionmaker = build_sessionmaker(engine)
     app.state.redis = build_redis(settings)
-    resume = asyncio.create_task(resume_unfinished(app.state.sessionmaker, settings))
     try:
         yield
     finally:
-        resume.cancel()
         await app.state.redis.aclose()
         await engine.dispose()
 

@@ -1,4 +1,4 @@
-﻿# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1
 #
 # Build context is lms-backend/ (every service depends on ./shared, the lms-common package):
 #   docker build -f catalog-service/Dockerfile -t lms-catalog-service lms-backend/

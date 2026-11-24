@@ -7,10 +7,9 @@ export function AnalyticsCard({ testId }: { testId: string }) {
 
   return (
     <Card title="Analytics">
-      <div className="mb-4 grid gap-4 sm:grid-cols-4">
+      <div className="mb-4 grid gap-4 sm:grid-cols-3">
         <StatTile icon="check" label="Graded" value={analytics.graded} />
         <StatTile icon="graduation" label="Pass rate" value={analytics.pass_rate_percent != null ? `${analytics.pass_rate_percent.toFixed(0)}%` : "—"} />
-        <StatTile icon="alert" label="Plagiarism flagged" value={analytics.plagiarism_flagged} />
         <StatTile icon="clock" label="Integrity pending" value={analytics.integrity_pending} />
       </div>
       <DescriptionList

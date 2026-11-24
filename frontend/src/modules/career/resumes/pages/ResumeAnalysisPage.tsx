@@ -103,14 +103,14 @@ export function ResumeAnalysisPage() {
           <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
             <span>AI Resume Builder</span>
             <span>›</span>
-            <span className="font-semibold text-[#635BFF]">Analytics</span>
+            <span className="font-semibold text-[#7DC8F7]">Analytics</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Your Resume Analytics</h1>
           <p className="text-xs text-slate-500">Track performance and get insights</p>
         </div>
 
         <div className="flex items-center gap-2">
-          <select className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs focus:border-[#635BFF] focus:outline-none">
+          <select className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs focus:border-[#7DC8F7] focus:outline-none">
             <option>Last 30 Days</option>
             <option>Last 3 Months</option>
             <option>All Time</option>
@@ -126,7 +126,7 @@ export function ResumeAnalysisPage() {
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-2xl font-extrabold text-slate-900">{resumes.length || 12}</span>
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F0EFFF] text-[#635BFF]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F6FE] text-[#7DC8F7]">
               <Icon name="fileText" size={18} />
             </span>
           </div>
@@ -186,8 +186,8 @@ export function ResumeAnalysisPage() {
             <svg viewBox="0 0 500 160" className="w-full h-40 overflow-visible">
               <defs>
                 <linearGradient id="purpleGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#635BFF" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#635BFF" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#7DC8F7" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#7DC8F7" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
               {/* Grid Lines */}
@@ -204,12 +204,12 @@ export function ResumeAnalysisPage() {
               <path
                 d="M 10 130 C 70 120, 110 90, 170 85 C 230 80, 270 30, 310 25 C 360 20, 420 100, 490 110"
                 fill="none"
-                stroke="#635BFF"
+                stroke="#7DC8F7"
                 strokeWidth="2.5"
                 strokeLinecap="round"
               />
               {/* Highlight Dot */}
-              <circle cx="310" cy="25" r="4.5" fill="#635BFF" stroke="#ffffff" strokeWidth="2" />
+              <circle cx="310" cy="25" r="4.5" fill="#7DC8F7" stroke="#ffffff" strokeWidth="2" />
             </svg>
 
             {/* Date Labels */}
@@ -229,7 +229,7 @@ export function ResumeAnalysisPage() {
 
           <div className="flex flex-col items-center justify-center pt-2">
             <svg viewBox="0 0 120 120" className="h-32 w-32 -rotate-90">
-              <circle cx="60" cy="60" r="45" fill="none" stroke="#635BFF" strokeWidth="14" strokeDasharray="113 283" strokeDashoffset="0" />
+              <circle cx="60" cy="60" r="45" fill="none" stroke="#7DC8F7" strokeWidth="14" strokeDasharray="113 283" strokeDashoffset="0" />
               <circle cx="60" cy="60" r="45" fill="none" stroke="#16A37B" strokeWidth="14" strokeDasharray="99 283" strokeDashoffset="-113" />
               <circle cx="60" cy="60" r="45" fill="none" stroke="#38BDF8" strokeWidth="14" strokeDasharray="71 283" strokeDashoffset="-212" />
             </svg>
@@ -237,7 +237,7 @@ export function ResumeAnalysisPage() {
             <div className="w-full space-y-2 pt-4 text-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#635BFF]" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#7DC8F7]" />
                   <span className="text-slate-600 font-medium">Skills</span>
                 </div>
                 <span className="font-bold text-slate-800">40%</span>

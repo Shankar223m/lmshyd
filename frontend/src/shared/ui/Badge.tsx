@@ -9,8 +9,8 @@ const tones = {
   orange: "bg-orange-50 text-orange-700 ring-orange-200/70",
   red: "bg-rose-50 text-rose-700 ring-rose-200/70",
   blue: "bg-sky-50 text-sky-700 ring-sky-200/70",
-  indigo: "bg-indigo-50 text-[#635BFF] ring-indigo-200/70",
-  purple: "bg-[#F0EFFF] text-[#635BFF] ring-[#D6D3FF]/80",
+  indigo: "bg-sky-50 text-brand-600 ring-sky-200/70",
+  purple: "bg-brand-50 text-brand-700 ring-brand-200/80",
 } as const;
 
 export type BadgeTone = keyof typeof tones;

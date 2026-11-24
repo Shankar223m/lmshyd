@@ -30,7 +30,6 @@ const HEAD_EXTRA_HIDDEN_MENUS: ReadonlySet<MenuKey> = new Set(["media_library"])
 
 const STAFF_HIDDEN_SECTIONS: ReadonlySet<Section> = new Set([
   "admins",
-  "super_admins",
   "institutions",
   "employers",
   "hierarchy",
@@ -41,7 +40,6 @@ const STAFF_HIDDEN_SECTIONS: ReadonlySet<Section> = new Set([
 
 const EMPLOYER_HIDDEN_SECTIONS: ReadonlySet<Section> = new Set([
   "admins",
-  "super_admins",
   "institutions",
   "employers",
   "hierarchy",

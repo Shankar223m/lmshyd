@@ -33,7 +33,7 @@ export function SectionTabs({ tabs }: { tabs: SectionTab[] }) {
                 aria-current={on ? "page" : undefined}
                 className={cn(
                   "-mb-px flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
-                  on ? "border-[#635BFF] text-[#635BFF] font-semibold" : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800",
+                  on ? "border-[#7DC8F7] text-[#7DC8F7] font-semibold" : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800",
                 )}
               >
                 {t.icon && <Icon name={t.icon} size={16} />}

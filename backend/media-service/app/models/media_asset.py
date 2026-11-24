@@ -31,6 +31,11 @@ class MediaAsset(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     storage_key: Mapped[str] = mapped_column(String(500))
     status: Mapped[str] = mapped_column(String(20), default=AssetStatus.UPLOADING, server_default=AssetStatus.UPLOADING)
     duration_seconds: Mapped[int | None]
+    original_byte_size: Mapped[int | None] = mapped_column(BigInteger)
+    original_resolution: Mapped[str | None] = mapped_column(String(50))
+    output_resolution: Mapped[str | None] = mapped_column(String(50))
+    compression_method: Mapped[str | None] = mapped_column(String(50))
+    savings_percent: Mapped[float | None]
     failed_reason: Mapped[str | None] = mapped_column(String(500))
     context_type: Mapped[str | None] = mapped_column(String(50), index=True)
     context_id: Mapped[int | None] = mapped_column(BigInteger, index=True)

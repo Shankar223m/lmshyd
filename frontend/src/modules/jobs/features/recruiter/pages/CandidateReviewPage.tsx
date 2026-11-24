@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { LIVE_LIST_QUERY_OPTIONS } from '../../../lib/liveQueryOptions';
 import { apiFetch, filesApi, type ApiResponse } from '../../../services/api';
 
 type CandidateApplication = {
@@ -51,6 +52,7 @@ export function CandidateReviewPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['recruiter-queue'],
     queryFn: () => apiFetch<ApiResponse<CandidateApplication[]>>('/recruiter/applications'),
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
 
   const apps = data?.data || [];

@@ -8,6 +8,12 @@ from app.core.exceptions import AppError
 from app.core.responses import success_data
 from app.core.security import hash_password
 from app.models.entities import Application, Job, Offer, Placement, StudentProfile, User, Organization
+from app.modules.institutions.drives import (
+    job_assigned_to_institution,
+    list_campus_drives_for_institution,
+    list_drive_applications_for_institution,
+    institution_student_ids,
+)
 from app.modules.audit.service import record_audit
 from app.modules.institutions.import_csv import parse_csv_text, validate_import_rows
 from app.modules.reports.analytics_pdf import build_institution_analytics_pdf
@@ -24,6 +30,99 @@ class ImportConfirmBody(BaseModel):
 class ImportPreviewBody(BaseModel):
     file_id: str | None = None
     rows: list[dict] | None = None
+
+
+@router.get("/campus-drives")
+def list_campus_drives(
+    db: DbSession,
+    user: CurrentUser,
+    request: Request,
+    _: str = Depends(attach_request_id),
+):
+    require_roles(UserRole.INSTITUTION)(user)
+    if not user.organization_id:
+        raise AppError("FORBIDDEN", "No institution", 403)
+    drives = list_campus_drives_for_institution(db, user.organization_id)
+    return success_data(drives, request)
+
+
+@router.get("/campus-drives/{job_id}/applications")
+def list_campus_drive_applications(
+    job_id: str,
+    db: DbSession,
+    user: CurrentUser,
+    request: Request,
+    _: str = Depends(attach_request_id),
+):
+    require_roles(UserRole.INSTITUTION)(user)
+    if not user.organization_id:
+        raise AppError("FORBIDDEN", "No institution", 403)
+    job = db.get(Job, job_id)
+    if not job or not job_assigned_to_institution(job, user.organization_id):
+        raise AppError("NOT_FOUND", "Drive not found", 404)
+    rows = list_drive_applications_for_institution(db, user.organization_id, job_id)
+    return success_data(rows, request)
+
+
+@router.get("/placement-dashboard")
+def placement_dashboard(
+    db: DbSession,
+    user: CurrentUser,
+    request: Request,
+    _: str = Depends(attach_request_id),
+):
+    """Stats + assigned drives for the college placement cell."""
+    require_roles(UserRole.INSTITUTION)(user)
+    if not user.organization_id:
+        raise AppError("FORBIDDEN", "No institution", 403)
+    inst_id = user.organization_id
+    student_ids = institution_student_ids(db, inst_id)
+    total_students = len(student_ids)
+    applications = (
+        db.scalar(
+            select(func.count(Application.id)).where(
+                Application.student_id.in_(student_ids or ["none"]),
+                Application.status != ApplicationStatus.WITHDRAWN.value,
+            )
+        )
+        or 0
+    )
+    selected = (
+        db.scalar(
+            select(func.count(Application.id)).where(
+                Application.student_id.in_(student_ids or ["none"]),
+                Application.status == ApplicationStatus.SELECTED.value,
+            )
+        )
+        or 0
+    )
+    drives = list_campus_drives_for_institution(db, inst_id)
+    assigned_drives = len(drives)
+    upcoming = sum(1 for d in drives if d.get("closes_on"))
+    placed = (
+        db.scalar(
+            select(func.count(Placement.id)).where(
+                Placement.institution_id == inst_id,
+                Placement.status == PlacementStatus.VERIFIED.value,
+            )
+        )
+        or 0
+    )
+    return success_data(
+        {
+            "stats": {
+                "assigned_drives": assigned_drives,
+                "upcoming_drives": min(upcoming, assigned_drives),
+                "eligible_students": total_students,
+                "applications": applications,
+                "selected": selected,
+                "placed": placed,
+                "placement_percentage": int((placed / total_students) * 100) if total_students else 0,
+            },
+            "drives": drives,
+        },
+        request,
+    )
 
 
 @router.get("/students")

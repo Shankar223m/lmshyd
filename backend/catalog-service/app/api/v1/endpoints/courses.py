@@ -1,8 +1,4 @@
-from app.services.institution_access import (
-    browse_allowed_course_ids_for_student,
-    get_institutions_with_access_for_courses,
-    student_can_read_course,
-)
+from app.services.institution_access import check_student_course_access, get_institutions_with_access_for_courses, get_student_accessible_course_ids
 from app.services.review_service import ReviewService
 from typing import Annotated
 
@@ -26,7 +22,13 @@ from app.schemas.course import (
     BulkDeleteResponse,
     CatalogCleanupSummaryResponse,
     CourseBrowseListResponse,
+    CourseCurriculumPreviewResponse,
+    CourseCurriculumPreviewOut,
+    ModulePreviewOut,
+    TopicPreviewOut,
 )
+from app.services.version_service import VersionService
+from app.core.exceptions import NotFoundError
 from app.services.course_browse import enrich_browse_courses
 from app.services.course_service import CourseService
 from app.services.outbox import write_event
@@ -59,12 +61,7 @@ async def list_courses(query: Annotated[CourseListQuery, Query()], auth: Current
     
     allowed_ids = None
     if is_student:
-        allowed_ids = await browse_allowed_course_ids_for_student(
-            organization_id=auth.organization_id,
-            organization_type=auth.organization_type,
-            user_id=auth.user_id,
-            scopes=auth.scopes,
-        )
+        allowed_ids = await get_student_accessible_course_ids(auth.organization_id, user_id=auth.user_id)
         published_only = True
     else:
         published_only = query.published_only or not is_admin
@@ -157,23 +154,15 @@ async def bulk_delete_courses(data: BulkDeleteRequest, auth: CurrentAuth, db: Db
     responses=errors(401, 422),
 )
 async def browse_courses(query: Annotated[CourseListQuery, Query()], auth: CurrentAuth, db: DbSession) -> CourseBrowseListResponse:
-    is_student = auth.role == "student"
-    allowed_ids = (
-        await browse_allowed_course_ids_for_student(
-            organization_id=auth.organization_id,
-            organization_type=auth.organization_type,
-            user_id=auth.user_id,
-            scopes=auth.scopes,
-        )
-        if is_student
-        else None
-    )
+    # In the Marketplace, all published courses are visible to browse and purchase
     courses, total, is_exact = await CourseService(db).list_courses(
         query,
         published_only=True,
-        allowed_course_ids=allowed_ids,
+        allowed_course_ids=None,
     )
-    enriched = await enrich_browse_courses(db, courses, user_id=auth.user_id, role=auth.role)
+    enriched = await enrich_browse_courses(
+        db, courses, user_id=auth.user_id, role=auth.role, organization_id=auth.organization_id
+    )
     return CourseBrowseListResponse(
         message="Browse courses retrieved successfully.",
         courses=enriched,
@@ -189,6 +178,75 @@ async def browse_courses(query: Annotated[CourseListQuery, Query()], auth: Curre
 
 
 @router.get(
+    "/{course_id}/curriculum-preview",
+    response_model=CourseCurriculumPreviewResponse,
+    summary="Get public curriculum outline for course preview",
+    responses=errors(401, 404),
+)
+async def get_course_curriculum_preview(
+    course_id: CourseIdParam,
+    auth: CurrentAuth,
+    db: DbSession,
+) -> CourseCurriculumPreviewResponse:
+    course = await CourseService(db).get(course_id)
+    pub_versions = [v for v in (course.versions or []) if v.status == ContentStatus.PUBLISHED]
+    if not pub_versions:
+        raise NotFoundError("No published curriculum found for this course.", code="CURRICULUM_NOT_FOUND")
+    latest_version = max(pub_versions, key=lambda v: v.version_number)
+    version = await VersionService(db).get_detail(course.public_id, latest_version.public_id)
+
+    modules_out: list[ModulePreviewOut] = []
+    total_chapters = 0
+    total_duration = 0
+
+    for m in (version.modules or []):
+        chapters_out: list[TopicPreviewOut] = []
+        mod_duration = 0
+        for t in (m.topics or []):
+            topic_duration = sum((item.duration_seconds or 0) for item in (t.items or []))
+            mod_duration += topic_duration
+            chapters_out.append(
+                TopicPreviewOut(
+                    id=t.public_id,
+                    title=t.title,
+                    position=t.position,
+                    duration_seconds=topic_duration,
+                    items_count=len(t.items or []),
+                )
+            )
+        total_chapters += len(chapters_out)
+        total_duration += mod_duration
+        modules_out.append(
+            ModulePreviewOut(
+                id=m.public_id,
+                title=m.title,
+                description=m.description,
+                position=m.position,
+                chapters_count=len(chapters_out),
+                duration_seconds=mod_duration,
+                chapters=chapters_out,
+            )
+        )
+
+    from app.services.course_browse import _format_duration
+
+    curriculum = CourseCurriculumPreviewOut(
+        course_id=course.public_id,
+        version_id=latest_version.public_id,
+        version_number=latest_version.version_number,
+        modules=modules_out,
+        total_modules=len(modules_out),
+        total_chapters=total_chapters,
+        total_duration_seconds=total_duration,
+        duration_label=_format_duration(total_duration),
+    )
+    return CourseCurriculumPreviewResponse(
+        message="Curriculum preview retrieved successfully.",
+        curriculum=curriculum,
+    )
+
+
+@router.get(
     "/{course_id}",
     response_model=CourseResponse,
     summary="Get a course",
@@ -198,17 +256,11 @@ async def get_course(course_id: CourseIdParam, auth: CurrentAuth, db: DbSession)
     course = await CourseService(db).get(course_id)
     if auth.role == "student":
         has_published = any(v.status == ContentStatus.PUBLISHED for v in course.versions)
-        has_access = await student_can_read_course(
-            organization_id=auth.organization_id,
-            organization_type=auth.organization_type,
-            user_id=auth.user_id,
-            course_id=int(course.public_id),
-            scopes=auth.scopes,
-        )
+        has_access = await check_student_course_access(auth.organization_id, course.public_id, user_id=auth.user_id)
         if not has_published or not has_access:
             raise PermissionDeniedError(
-                "You do not have access to this course.",
-                code="COURSE_ACCESS_DENIED",
+                "You do not have access to this course. Please purchase the course or contact your institution.",
+                code="COURSE_ACCESS_DENIED"
             )
     c_out = CourseOut.model_validate(course)
     if auth.role in ("super_admin", "admin"):

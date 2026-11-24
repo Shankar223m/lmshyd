@@ -48,19 +48,19 @@ export function ResumesListPage() {
   return (
     <div className="space-y-6 pb-16">
       {/* Top Hero Banner matching Reference Screen */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#F0EFFF] via-[#EAE8FF] to-[#FAF8FF] border border-[#D6D3FF]/60 p-6 sm:p-8 shadow-xs">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#E8F6FE] via-[#E8F6FE] to-[#FAF8FF] border border-[#C5E8F5]/60 p-6 sm:p-8 shadow-xs">
         {/* Soft background glow circles */}
-        <div className="absolute right-0 top-0 -mt-12 -mr-12 h-64 w-64 rounded-full bg-[#635BFF]/10 blur-3xl" />
+        <div className="absolute right-0 top-0 -mt-12 -mr-12 h-64 w-64 rounded-full bg-[#7DC8F7]/10 blur-3xl" />
         <div className="absolute left-1/3 bottom-0 -mb-8 h-40 w-40 rounded-full bg-indigo-200/20 blur-2xl" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-xl space-y-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAE8FF] px-3 py-1 text-xs font-semibold text-[#635BFF] ring-1 ring-[#D6D3FF]/80">
-              <Icon name="sparkles" size={14} className="text-[#635BFF]" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F6FE] px-3 py-1 text-xs font-semibold text-[#7DC8F7] ring-1 ring-[#C5E8F5]/80">
+              <Icon name="sparkles" size={14} className="text-[#7DC8F7]" />
               AI Powered
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-              Build Your <span className="text-[#635BFF]">Professional Resume</span>
+              Build Your <span className="text-[#7DC8F7]">Professional Resume</span>
             </h1>
             <p className="text-sm text-slate-600 leading-relaxed">
               Create a stunning resume in minutes with AI. Stand out and get your dream job!
@@ -70,7 +70,7 @@ export function ResumesListPage() {
                 type="button"
                 onClick={() => navigate("/career/resumes/create")}
                 disabled={full}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#635BFF] px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-[#5046E5] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#7DC8F7] px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-[#5CB8EC] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
               >
                 Create New Resume
                 <Icon name="chevronRight" size={16} />
@@ -90,15 +90,15 @@ export function ResumesListPage() {
           <div className="hidden lg:flex shrink-0 relative items-center justify-center">
             <div className="relative w-64 rounded-2xl bg-white p-4 shadow-lift border border-slate-200/80 transform rotate-2 hover:rotate-0 transition-transform duration-300">
               <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#635BFF] to-indigo-400 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#7DC8F7] to-indigo-400 text-white flex items-center justify-center font-bold text-sm shadow-xs">
                   JD
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-900">RESUME</h4>
-                  <div className="h-1.5 w-16 rounded-full bg-[#635BFF]/30 mt-1" />
+                  <div className="h-1.5 w-16 rounded-full bg-[#7DC8F7]/30 mt-1" />
                 </div>
                 <div className="ml-auto flex gap-1">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#EAE8FF] text-[#635BFF]">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#E8F6FE] text-[#7DC8F7]">
                     <Icon name="download" size={12} />
                   </span>
                 </div>
@@ -108,7 +108,7 @@ export function ResumesListPage() {
                 <div className="h-1.5 w-full rounded-full bg-slate-100" />
                 <div className="h-1.5 w-5/6 rounded-full bg-slate-100" />
                 <div className="flex gap-1.5 pt-1">
-                  <span className="h-4 w-12 rounded-full bg-[#EAE8FF] text-[#635BFF] text-[9px] font-semibold flex items-center justify-center">React</span>
+                  <span className="h-4 w-12 rounded-full bg-[#E8F6FE] text-[#7DC8F7] text-[9px] font-semibold flex items-center justify-center">React</span>
                   <span className="h-4 w-12 rounded-full bg-slate-100 text-slate-600 text-[9px] font-semibold flex items-center justify-center">Node</span>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export function ResumesListPage() {
         <button
           type="button"
           onClick={() => navigate("/career/resumes/templates")}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-[#635BFF] hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-[#7DC8F7] hover:underline"
         >
           View All Templates
           <Icon name="chevronRight" size={14} />

@@ -21,6 +21,11 @@ export interface UploadMediaResult {
   duration_seconds: number;
   original_filename: string;
   byte_size: number;
+  original_byte_size?: number;
+  original_resolution?: string;
+  output_resolution?: string;
+  compression_method?: string;
+  savings_percent?: number;
 }
 
 /**
@@ -96,6 +101,11 @@ export async function uploadMediaMultipart(
             duration_seconds: Number(res.duration_seconds || asset.duration_seconds || 0),
             original_filename: asset.original_filename || options.file.name,
             byte_size: asset.byte_size || options.file.size,
+            original_byte_size: Number(res.original_byte_size || asset.original_byte_size || options.file.size),
+            original_resolution: res.original_resolution || asset.original_resolution,
+            output_resolution: res.output_resolution || asset.output_resolution,
+            compression_method: res.compression_method || asset.compression_method,
+            savings_percent: Number(res.savings_percent ?? asset.savings_percent ?? 0),
           });
         } catch {
           reject(new Error("Failed to parse media upload response from server."));

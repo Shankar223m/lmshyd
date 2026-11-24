@@ -32,13 +32,26 @@ const MyInterviewsPage = lazyNamed(() => import("./features/student/pages/MyInte
 const StudentOffersPage = lazyNamed(() => import("./features/student/pages/StudentOffersPage"), "StudentOffersPage");
 const PlacementPage = lazyNamed(() => import("./features/student/pages/PlacementPage"), "PlacementPage");
 const StudentProfilePage = lazyNamed(() => import("./features/student/pages/StudentProfilePage"), "StudentProfilePage");
+const ResumeDashboardPage = lazyNamed(
+  () => import("./features/student/resume-builder/pages/ResumeDashboardPage"),
+  "ResumeDashboardPage",
+);
+const CreateResumePage = lazyNamed(
+  () => import("./features/student/resume-builder/pages/CreateResumePage"),
+  "CreateResumePage",
+);
+const ResumeEditorPage = lazyNamed(
+  () => import("./features/student/resume-builder/pages/ResumeEditorPage"),
+  "ResumeEditorPage",
+);
+const ResumePreviewStandalonePage = lazyNamed(
+  () => import("./features/student/resume-builder/pages/ResumePreviewStandalonePage"),
+  "ResumePreviewStandalonePage",
+);
 const InstitutionPlacementsPage = lazyNamed(() => import("./features/institution/pages/InstitutionPlacementsPage"), "InstitutionPlacementsPage");
-const InstitutionStudentsPage = lazyNamed(() => import("./features/institution/pages/InstitutionStudentsPage"), "InstitutionStudentsPage");
-const InstitutionAnalyticsPage = lazyNamed(() => import("./features/institution/pages/InstitutionAnalyticsPage"), "InstitutionAnalyticsPage");
-const InstitutionProfilePage = lazyNamed(() => import("./features/institution/pages/InstitutionProfilePage"), "InstitutionProfilePage");
-const CreateCampusJobPage = lazyNamed(
-  () => import("./features/institution/pages/CreateCampusJobPage"),
-  "CreateCampusJobPage",
+const InstitutionDriveApplicantsPage = lazyNamed(
+  () => import("./features/institution/pages/InstitutionDriveApplicantsPage"),
+  "InstitutionDriveApplicantsPage",
 );
 const AdminDashboardPage = lazyNamed(() => import("./features/administration/pages/AdminDashboardPage"), "AdminDashboardPage");
 const AdminAuditPage = lazyNamed(() => import("./features/administration/pages/AdminAuditPage"), "AdminAuditPage");
@@ -95,16 +108,21 @@ export const jobsModuleRoutes: RouteObject[] = [
             { path: "/jobs/student/offers", element: page(<StudentOffersPage />) },
             { path: "/jobs/student/placement", element: page(<PlacementPage />) },
             { path: "/jobs/student/profile", element: page(<StudentProfilePage />) },
+            { path: "/jobs/student/resume-builder", element: page(<ResumeDashboardPage />) },
+            { path: "/jobs/student/resume-builder/new", element: page(<CreateResumePage />) },
+            { path: "/jobs/student/resume-builder/:resumeId", element: page(<ResumeEditorPage />) },
+            { path: "/jobs/student/resume-builder/:resumeId/preview", element: page(<ResumePreviewStandalonePage />) },
           ],
         },
         {
           element: <RequireJobsPersona persona="institution" />,
           children: [
             { path: "/jobs/institution/placements", element: page(<InstitutionPlacementsPage />) },
-            { path: "/jobs/institution/students", element: page(<InstitutionStudentsPage />) },
-            { path: "/jobs/institution/analytics", element: page(<InstitutionAnalyticsPage />) },
-            { path: "/jobs/institution/profile", element: page(<InstitutionProfilePage />) },
-            { path: "/jobs/institution/jobs/new", element: page(<CreateCampusJobPage />) },
+            { path: "/jobs/institution/drives/:jobId/students", element: page(<InstitutionDriveApplicantsPage />) },
+            { path: "/jobs/institution/students", element: <Navigate to="/jobs/institution/placements" replace /> },
+            { path: "/jobs/institution/analytics", element: <Navigate to="/jobs/institution/placements" replace /> },
+            { path: "/jobs/institution/profile", element: <Navigate to="/jobs/institution/placements" replace /> },
+            { path: "/jobs/institution/jobs/new", element: <Navigate to="/jobs/institution/placements" replace /> },
           ],
         },
         {

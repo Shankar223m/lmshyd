@@ -110,6 +110,8 @@ export interface Admin extends User {
 }
 
 export interface UserListItem {
+  /** 0 = no profile photo; it changes whenever the photo does. */
+  avatar_version?: number;
   user_id: Id;
   role: Role;
   status: UserStatus;

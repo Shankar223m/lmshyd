@@ -14,7 +14,6 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from lms_common.access_state import TokenIdentity, is_token_revoked
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.clients.catalog import CatalogClient
 from app.core.config import Settings, get_settings
 from app.core.context import RequestContext
 from app.core.exceptions import AuthenticationError, NotFoundError, PermissionDeniedError
@@ -139,22 +138,3 @@ def require_scope(scope: Scope) -> Callable[[AccessTokenClaims], AccessTokenClai
 
 
 RequireAuthor = Annotated[AccessTokenClaims, Depends(require_scope(Scope.CONTENT_AUTHOR))]
-
-
-def get_catalog_client(settings: SettingsDep) -> CatalogClient:
-    return CatalogClient(settings)
-
-
-CatalogDep = Annotated[CatalogClient, Depends(get_catalog_client)]
-
-
-async def ensure_may_play(auth: AccessTokenClaims, catalog: CatalogClient, asset_id: int) -> None:
-    """Authors, reviewers and the super admin open any file; everyone else only a lesson of a course they may open.
-
-    Which course uses the file, and whether this person is enrolled in it, is catalog-service's and learning-service's
-    business: asked through catalog-service, failing closed. A file the viewer may not play does not exist for them.
-    """
-    if auth.can(Scope.CONTENT_AUTHOR.value) or auth.can("content.review"):
-        return
-    if not await catalog.may_play(asset_id=asset_id, user_id=auth.user_id):
-        raise NotFoundError("Media asset not found.", code="MEDIA_NOT_FOUND")

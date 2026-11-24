@@ -1,6 +1,6 @@
 import { baseApi } from "@/core/api/baseApi";
 import type { ListResult, PageContext, PageParams } from "@/core/api/types";
-import type { PlagiarismItem, TestAnalytics, TestCompositionItem, TestValidation } from "@/modules/assessments/tests/reportTypes";
+import type { TestAnalytics, TestCompositionItem, TestValidation } from "@/modules/assessments/tests/reportTypes";
 import type { Schedule, ScheduleCreateBody, ScheduleUpdateBody } from "@/modules/assessments/tests/scheduleTypes";
 import type { SectionInput } from "@/modules/assessments/tests/sectionTypes";
 import type { Test, TestCreateBody, TestFilters, TestListItem, TestUpdateBody } from "@/modules/assessments/tests/types";
@@ -105,11 +105,6 @@ export const testsApi = baseApi.injectEndpoints({
       transformResponse: (response: { analytics: TestAnalytics }) => response.analytics,
       providesTags: (_result, _error, testId) => [{ type: "TestAnalytics", id: testId }],
     }),
-    getPlagiarism: build.query<PlagiarismItem[], string>({
-      query: (testId) => `/tests/${testId}/plagiarism`,
-      transformResponse: (response: { items: PlagiarismItem[] }) => response.items,
-      providesTags: (_result, _error, testId) => [{ type: "TestPlagiarism", id: testId }],
-    }),
     releaseResults: build.mutation<void, string>({
       query: (testId) => ({ url: `/tests/${testId}/release-results`, method: "POST" }),
       invalidatesTags: (_result, _error, testId) => [{ type: "TestResults", id: testId }, { type: "Test", id: testId }],
@@ -139,6 +134,5 @@ export const {
   useUpdateScheduleMutation,
   useCancelScheduleMutation,
   useGetAnalyticsQuery,
-  useGetPlagiarismQuery,
   useReleaseResultsMutation,
 } = testsApi;

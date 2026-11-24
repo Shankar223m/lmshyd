@@ -108,7 +108,7 @@ export function EmployerOrgPicker({
       </div>
 
       {selected && (
-        <div className="mt-2 flex items-center gap-3 rounded-xl border border-[#635BFF]/30 bg-[#635BFF]/5 px-3 py-2.5">
+        <div className="mt-2 flex items-center gap-3 rounded-xl border border-[#7DC8F7]/30 bg-[#7DC8F7]/5 px-3 py-2.5">
           <JobThumbnail fallbackLabel={selected.name} className="shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold text-slate-900">{selected.name}</p>
@@ -139,13 +139,13 @@ export function EmployerOrgPicker({
                     type="button"
                     className={cn(
                       "flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition hover:bg-slate-50",
-                      active && "bg-[#635BFF]/10",
+                      active && "bg-[#7DC8F7]/10",
                     )}
                     onClick={() => pick(o.id, o.name)}
                   >
                     <JobThumbnail fallbackLabel={o.name} className="shrink-0" />
                     <span className="min-w-0 flex-1 truncate font-medium text-slate-900">{o.name}</span>
-                    {active ? <Icon name="check" size={16} className="shrink-0 text-[#635BFF]" /> : null}
+                    {active ? <Icon name="check" size={16} className="shrink-0 text-[#7DC8F7]" /> : null}
                   </button>
                 </li>
               );

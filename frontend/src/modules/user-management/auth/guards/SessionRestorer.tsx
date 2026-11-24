@@ -3,7 +3,7 @@ import { useEffect, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { store } from "@/app/store";
 import { refreshSession } from "@/core/api/baseApi";
-import { useAuth } from "@/modules/user-management/auth/hooks/useAuth";
+import { startSessionKeeper } from "@/core/api/sessionKeeper";
 import { sessionRestoreFinished } from "@/modules/user-management/auth/store/authSlice";
 import { PageLoader } from "@/shared/ui";
 
@@ -25,10 +25,7 @@ export function SessionRestorer({ children }: { children: ReactNode }) {
     }).finally(() => dispatch(sessionRestoreFinished()));
   }, [dispatch, status]);
 
-  // If we already know who signed in, render immediately while the refresh cookie is exchanged in the background.
-  const { user } = useAuth();
-  if (status === "checking" && !user) {
-    return <PageLoader label="Restoring your session…" />;
-  }
-  return <>{children}</>;
+  useEffect(() => startSessionKeeper(), []);
+
+  return status === "checking" ? <PageLoader label="Restoring your session…" /> : <>{children}</>;
 }

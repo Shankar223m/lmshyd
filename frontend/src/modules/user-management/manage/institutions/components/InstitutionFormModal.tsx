@@ -12,6 +12,7 @@ import type { InstitutionFormValues } from "@/modules/user-management/institutio
 import { validateUrl } from "@/modules/user-management/institutions/form/validateUrl";
 import { useFormErrorHandler } from "@/modules/user-management/institutions/hooks/useInstitutionFormErrors";
 import { FormGrid } from "@/modules/user-management/manage/common/components/FormGrid";
+import { PasswordChoice } from "@/modules/user-management/users/components/form/PasswordChoice";
 import { SelectField, TextField } from "@/shared/form";
 import { Alert, Button, EmptyState, Modal, Spinner } from "@/shared/ui";
 
@@ -98,6 +99,20 @@ function InstitutionForm({ organizationId, initial, onDone }: { organizationId: 
           <TextField<InstitutionFormValues> name="address.state" label="State" required />
           <TextField<InstitutionFormValues> name="address.postal_code" label="PIN code" inputMode="numeric" required />
         </FormGrid>
+        {organizationId === null && (
+          <FormGrid title="Sign-in">
+            <TextField<InstitutionFormValues>
+              name="login.username"
+              label="Username"
+              placeholder="e.g. gztc"
+              maxLength={30}
+              autoComplete="off"
+              required
+              rules={{ validate: (value) => (typeof value === "string" && value.trim().length >= 3) || "At least 3 characters" }}
+            />
+            <PasswordChoice name="login.password" minLength={8} />
+          </FormGrid>
+        )}
         <FormGrid title="Online Presence">
           <TextField<InstitutionFormValues>
             name="website"

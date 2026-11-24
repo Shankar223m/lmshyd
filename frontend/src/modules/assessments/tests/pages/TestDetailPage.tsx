@@ -6,7 +6,6 @@ import { PROCTORING_LEVEL_LABELS, TEST_KIND_LABELS } from "@/modules/assessments
 import { TestStatusBadge } from "@/modules/assessments/common/components/TestStatusBadge";
 import { useGetTestQuery } from "@/modules/assessments/tests/api/testsApi";
 import { AnalyticsCard } from "@/modules/assessments/tests/components/detail/AnalyticsCard";
-import { PlagiarismCard } from "@/modules/assessments/tests/components/detail/PlagiarismCard";
 import { ResultsCard } from "@/modules/assessments/tests/components/detail/ResultsCard";
 import { SchedulesCard } from "@/modules/assessments/tests/components/detail/SchedulesCard";
 import { TestLifecycleActions } from "@/modules/assessments/tests/components/detail/TestLifecycleActions";
@@ -23,7 +22,7 @@ export function TestDetailPage() {
   const canAuthor = can("content.author") || isSuperAdmin || holds("assessments.author");
   const canReview = canAuthor || can("content.review") || can("exams.manage");
   const canSchedule = can("exams.manage") || isSuperAdmin;
-  const [tab, setTab] = useState<"overview" | "schedules" | "results" | "analytics" | "plagiarism">("overview");
+  const [tab, setTab] = useState<"overview" | "schedules" | "results" | "analytics">("overview");
   const { data: test, isLoading, isError } = useGetTestQuery(testId, { skip: !testId });
 
   if (isLoading) return <PageLoader />;
@@ -34,7 +33,7 @@ export function TestDetailPage() {
   const tabs = [
     { value: "overview" as const, label: "Overview" },
     ...(canSchedule && test.requires_schedule ? [{ value: "schedules" as const, label: "Exam windows" }] : []),
-    ...(canReview ? [{ value: "results" as const, label: "Results" }, { value: "analytics" as const, label: "Analytics" }, { value: "plagiarism" as const, label: "Plagiarism" }] : []),
+    ...(canReview ? [{ value: "results" as const, label: "Results" }, { value: "analytics" as const, label: "Analytics" }] : []),
   ];
 
   return (
@@ -74,7 +73,6 @@ export function TestDetailPage() {
       {tab === "schedules" && canSchedule && <SchedulesCard testId={testId} canManage={canSchedule} />}
       {tab === "results" && canReview && <ResultsCard testId={testId} canManage={can("exams.manage") || isSuperAdmin} />}
       {tab === "analytics" && canReview && <AnalyticsCard testId={testId} />}
-      {tab === "plagiarism" && canReview && <PlagiarismCard testId={testId} />}
     </>
   );
 }

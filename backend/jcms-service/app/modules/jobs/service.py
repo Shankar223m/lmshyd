@@ -18,6 +18,21 @@ from app.modules.notifications.service import notify_user
 from app.shared.enums import ApplicationStatus, JobPostingChannel, JobStatus, OrganizationType, UserRole, VerificationStatus
 
 
+def _normalize_target_institution_ids(db: Session, ids: list | None) -> list[str]:
+    if not ids:
+        return []
+    unique = list(dict.fromkeys(str(i).strip() for i in ids if str(i).strip()))
+    if not unique:
+        return []
+    orgs = db.scalars(select(Organization).where(Organization.id.in_(unique))).all()
+    by_id = {o.id: o for o in orgs}
+    for oid in unique:
+        org = by_id.get(oid)
+        if not org or org.org_type != OrganizationType.INSTITUTION.value:
+            raise ValueError("INVALID_TARGET_INSTITUTION")
+    return unique
+
+
 def ensure_verified_employer(org: Organization) -> None:
     if org.verification_status != VerificationStatus.VERIFIED.value:
         raise ValueError("ORG_NOT_VERIFIED")
@@ -53,6 +68,7 @@ def create_job(db: Session, employer: User, data: dict) -> Job:
         requires_moderation=data.get("requires_moderation", True),
         posting_channel=JobPostingChannel.OPEN.value,
         campus_institution_id=None,
+        target_institution_ids=_normalize_target_institution_ids(db, data.get("target_institution_ids")),
     )
     db.add(job)
     db.flush()
@@ -91,6 +107,8 @@ def create_campus_job(db: Session, head: User, data: dict) -> Job:
         requires_moderation=data.get("requires_moderation", True),
         posting_channel=JobPostingChannel.CAMPUS.value,
         campus_institution_id=org.id,
+        target_institution_ids=_normalize_target_institution_ids(db, data.get("target_institution_ids"))
+        or [org.id],
     )
     db.add(job)
     db.flush()

@@ -61,7 +61,7 @@ export function StudentResultsPage() {
         title="Test Results"
         description="Review your completed test attempts, scores, and comprehensive scorecards."
         actions={
-          <Button onClick={() => navigate("/my-tests")} className="bg-[#635BFF] hover:bg-[#5046E5] text-white">
+          <Button onClick={() => navigate("/my-tests")} className="bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white">
             <Icon name="clipboardCheck" size={16} className="mr-1.5" />
             My Tests
           </Button>
@@ -104,7 +104,7 @@ export function StudentResultsPage() {
                 placeholder="Search tests..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-9 w-44 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs placeholder:text-slate-400 focus:border-[#635BFF] focus:bg-white focus:outline-none"
+                className="h-9 w-44 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs placeholder:text-slate-400 focus:border-[#7DC8F7] focus:bg-white focus:outline-none"
               />
             </div>
             <div className="flex rounded-xl bg-slate-100 p-0.5 text-xs font-medium">
@@ -153,7 +153,7 @@ export function StudentResultsPage() {
             }
             action={
               attempts.length === 0 ? (
-                <Button onClick={() => navigate("/my-tests")} className="bg-[#635BFF] hover:bg-[#5046E5] text-white">
+                <Button onClick={() => navigate("/my-tests")} className="bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white">
                   Browse Available Tests
                 </Button>
               ) : undefined
@@ -225,7 +225,7 @@ export function StudentResultsPage() {
 
                     <Link
                       to={`/attempts/${attempt.attempt_id}/result`}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:border-[#635BFF] hover:text-[#635BFF] hover:bg-[#EAE8FF]/30 transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:border-[#7DC8F7] hover:text-[#7DC8F7] hover:bg-[#E8F6FE]/30 transition-all cursor-pointer"
                     >
                       <span>View Scorecard</span>
                       <Icon name="chevronRight" size={14} />

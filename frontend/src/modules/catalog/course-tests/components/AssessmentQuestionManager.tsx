@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button, Icon } from "@/shared/ui";
 import { ConfirmModal } from "@/modules/catalog/courses/components/common/ConfirmModal";
 import { ManualQuestionModal } from "@/modules/catalog/course-tests/components/ManualQuestionModal";
@@ -22,6 +22,7 @@ export interface AssessmentQuestionManagerProps {
   contextTitle: string;
   contextType: "chapter" | "module" | "final";
   targetQuestionCount?: number;
+  initialAction?: "add" | "import" | "ai" | null;
   onSaveQuestion: (question: McqDraft & { questionType?: string }) => Promise<void>;
   onDeleteQuestion: (questionId?: string, index?: number) => Promise<void>;
   onImportDrafts: (
@@ -36,6 +37,7 @@ export function AssessmentQuestionManager({
   contextTitle,
   contextType,
   targetQuestionCount,
+  initialAction,
   onSaveQuestion,
   onDeleteQuestion,
   onImportDrafts,
@@ -45,6 +47,12 @@ export function AssessmentQuestionManager({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (initialAction === "add") setIsAddModalOpen(true);
+    else if (initialAction === "import") setIsImportModalOpen(true);
+    else if (initialAction === "ai") setIsAiModalOpen(true);
+  }, [initialAction]);
   const [editingQuestion, setEditingQuestion] = useState<{
     item: ManagedQuestionItem;
     index: number;
@@ -75,9 +83,6 @@ export function AssessmentQuestionManager({
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
         <div>
           <h4 className="text-sm font-bold text-slate-900">Questions</h4>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Add questions manually, import in bulk, or generate with AI.
-          </p>
         </div>
 
         {/* The Action Buttons near the question management area */}

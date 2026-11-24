@@ -55,7 +55,7 @@ export function EmployerPipelineHubPage() {
           <p className="mt-3 text-sm font-medium text-slate-700">No active roles with a pipeline yet.</p>
           <Link
             to="/jobs/employer/jobs/new"
-            className="mt-4 inline-flex text-sm font-semibold text-[#635BFF] hover:underline"
+            className="mt-4 inline-flex text-sm font-semibold text-[#7DC8F7] hover:underline"
           >
             Create a job posting
           </Link>

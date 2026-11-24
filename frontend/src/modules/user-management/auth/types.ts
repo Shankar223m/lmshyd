@@ -1,5 +1,4 @@
 import { Id, IsoDateTime, SuccessEnvelope } from "@/core/api/types";
-import type { Permissions } from "@/modules/user-management/common/permissions/types";
 import { AdminScope, InstitutionRef, Role } from "@/modules/user-management/common/types";
 
 export interface TokenOut {
@@ -34,8 +33,6 @@ export interface LoginResponse extends SuccessEnvelope {
   token: TokenOut | null;
   user: AuthUser | null;
   mfa_challenge: MfaChallenge | null;
-  /** When present, the client can skip GET /users/me/permissions on sign-in. */
-  permissions?: Permissions | null;
 }
 
 export interface SessionOut {

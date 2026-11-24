@@ -6,6 +6,7 @@ import type { InstitutionStatus } from "@/modules/user-management/common/types";
 import { useListInstitutionsQuery } from "@/modules/user-management/institutions/api/institutionsApi";
 import { ManageFilters, type ManageFilterValues } from "@/modules/user-management/manage/common/components/ManageFilters";
 import { ManagePage } from "@/modules/user-management/manage/common/components/ManagePage";
+import { UserManagementTabs } from "@/modules/user-management/manage/common/components/UserManagementTabs";
 import { InstitutionFormModal } from "@/modules/user-management/manage/institutions/components/InstitutionFormModal";
 import { useInstitutionColumns } from "@/modules/user-management/manage/institutions/components/useInstitutionColumns";
 import { useInstitutionRowActions } from "@/modules/user-management/manage/institutions/hooks/useInstitutionRowActions";
@@ -31,6 +32,7 @@ export function InstitutionsPage() {
 
   return (
     <>
+      <UserManagementTabs />
       <ManagePage
         title="Institutions"
         description="Colleges and schools. Each one is owned by an admin."

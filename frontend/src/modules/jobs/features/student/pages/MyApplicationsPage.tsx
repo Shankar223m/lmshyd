@@ -15,6 +15,8 @@ import {
   Calendar,
 } from "lucide-react";
 import { JobThumbnail } from '../../../components/JobThumbnail';
+import { ApplicationStatusBadge, applicationStageLabel } from '../../../lib/applicationStatus';
+import { LIVE_LIST_QUERY_OPTIONS } from '../../../lib/liveQueryOptions';
 import { apiFetch, type ApiResponse } from '../../../services/api';
 
 type StudentApplication = {
@@ -39,11 +41,13 @@ export function MyApplicationsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["my-apps"],
     queryFn: () => apiFetch<ApiResponse<StudentApplication[]>>("/applications/me"),
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
 
   const { data: interviewsData } = useQuery({
     queryKey: ["my-interviews", "apps-banner"],
     queryFn: () => apiFetch<ApiResponse<Array<{ id: string; round_name: string; starts_at: string }>>>("/interviews/me"),
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
   const upcomingInterviewCount =
     interviewsData?.data?.filter((i) => new Date(i.starts_at) >= new Date()).length ?? 0;
@@ -69,6 +73,20 @@ export function MyApplicationsPage() {
 
   const apps = data?.data || [];
 
+  const isAdvancedInPipeline = (a: StudentApplication) => {
+    const s = a.status.toUpperCase();
+    const stage = (a.pipeline_stage || "").toLowerCase();
+    if (["SHORTLISTED", "INTERVIEW_SCHEDULED", "SELECTED", "OFFER_ISSUED", "ASSESSMENT", "SCREENING"].includes(s)) {
+      return true;
+    }
+    return (
+      stage.includes("shortlist") ||
+      stage.includes("interview") ||
+      stage.includes("assess") ||
+      stage.includes("select")
+    );
+  };
+
   const filteredApps = apps.filter((a) => {
     if (!filterText) return true;
     const q = filterText.toLowerCase();
@@ -84,35 +102,10 @@ export function MyApplicationsPage() {
   const underReviewCount = apps.filter((a) =>
     ['SUBMITTED', 'IN_REVIEW', 'SCREENING', 'UNDER_REVIEW'].includes(a.status)
   ).length;
-  const shortlistedCount = apps.filter((a) =>
-    ['SHORTLISTED', 'INTERVIEW_SCHEDULED', 'SELECTED', 'OFFER_ISSUED'].includes(a.status)
-  ).length;
+  const shortlistedCount = apps.filter((a) => isAdvancedInPipeline(a)).length;
   const rejectedCount = apps.filter((a) =>
     ['REJECTED', 'WITHDRAWN'].includes(a.status)
   ).length;
-
-  const getStatusBadge = (status: string) => {
-    const s = status.toUpperCase();
-    if (['SHORTLISTED', 'SELECTED', 'OFFER_ISSUED'].includes(s)) {
-      return (
-        <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 border border-emerald-200/60">
-          Shortlisted
-        </span>
-      );
-    }
-    if (['REJECTED', 'WITHDRAWN'].includes(s)) {
-      return (
-        <span className="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700 border border-rose-200/60">
-          Rejected
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 border border-amber-200/60">
-        Under Review
-      </span>
-    );
-  };
 
   return (
     <div className="flex flex-col w-full space-y-7">
@@ -127,7 +120,7 @@ export function MyApplicationsPage() {
 
         <Link
           to="/jobs/student/jobs"
-          className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-[#635BFF] hover:bg-[#5046E5] text-white font-semibold text-sm transition-colors shadow-xs"
+          className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white font-semibold text-sm transition-colors shadow-xs"
         >
           <span>Browse Jobs</span>
           <ArrowRight className="w-4 h-4" />
@@ -187,10 +180,10 @@ export function MyApplicationsPage() {
           className="flex items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50/60 px-4 py-3 text-sm transition hover:bg-indigo-50"
         >
           <span className="inline-flex items-center gap-2 font-semibold text-slate-800">
-            <Calendar className="h-4 w-4 text-[#635BFF]" />
+            <Calendar className="h-4 w-4 text-[#7DC8F7]" />
             {upcomingInterviewCount} upcoming interview{upcomingInterviewCount === 1 ? "" : "s"}
           </span>
-          <span className="text-xs font-semibold text-[#635BFF]">Open schedule →</span>
+          <span className="text-xs font-semibold text-[#7DC8F7]">Open schedule →</span>
         </Link>
       )}
 
@@ -228,7 +221,7 @@ export function MyApplicationsPage() {
       {/* Loading state */}
       {isLoading && (
         <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[#635BFF] border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-[#7DC8F7] border-t-transparent animate-spin" />
           <p className="text-xs text-slate-500">Loading your applications…</p>
         </div>
       )}
@@ -247,7 +240,7 @@ export function MyApplicationsPage() {
               </p>
               <Link
                 to="/jobs/student/jobs"
-                className="mt-4 px-4 py-2 rounded-lg bg-[#635BFF] text-white text-xs font-semibold hover:bg-[#5046E5] transition"
+                className="mt-4 px-4 py-2 rounded-lg bg-[#7DC8F7] text-white text-xs font-semibold hover:bg-[#5CB8EC] transition"
               >
                 Find Jobs
               </Link>
@@ -295,14 +288,14 @@ export function MyApplicationsPage() {
                       Applied on {formattedDate}
                     </div>
 
-                    <div>
-                      {getStatusBadge(a.status)}
+                    <div className="flex flex-col items-end gap-0.5">
+                      <ApplicationStatusBadge application={a} />
                     </div>
 
                     <button
                       type="button"
                       onClick={() => setSelectedApp(a)}
-                      className="font-semibold text-xs text-[#635BFF] hover:text-[#5046E5] flex items-center gap-1 hover:underline"
+                      className="font-semibold text-xs text-[#7DC8F7] hover:text-[#5CB8EC] flex items-center gap-1 hover:underline"
                     >
                       <span>View Details</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -349,11 +342,11 @@ export function MyApplicationsPage() {
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex flex-col gap-2">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Status:</span>
-                  {getStatusBadge(selectedApp.status)}
+                  <ApplicationStatusBadge application={selectedApp} />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Pipeline Stage:</span>
-                  <span className="font-semibold text-slate-900">{selectedApp.pipeline_stage || 'Application Intake'}</span>
+                  <span className="font-semibold text-slate-900">{applicationStageLabel(selectedApp)}</span>
                 </div>
                 {selectedApp.created_at && (
                   <div className="flex justify-between items-center">

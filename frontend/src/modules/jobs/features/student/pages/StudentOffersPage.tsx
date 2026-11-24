@@ -17,14 +17,14 @@ function offerStatusDisplay(status: string): { label: string; className: string;
     case 'ISSUED':
       return {
         label: 'Decision pending',
-        className: 'bg-indigo-50 text-[#635BFF] border border-indigo-200/60',
+        className: 'bg-indigo-50 text-[#7DC8F7] border border-indigo-200/60',
       };
     case 'PENDING_APPROVAL':
     case 'APPROVED':
     case 'EXPIRED':
       return {
         label: 'Decision pending',
-        className: 'bg-indigo-50 text-[#635BFF] border border-indigo-200/60',
+        className: 'bg-indigo-50 text-[#7DC8F7] border border-indigo-200/60',
       };
     case 'ACCEPTED':
       return { label: 'Accepted', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' };
@@ -240,7 +240,7 @@ export function StudentOffersPage() {
                         <button
                           type="button"
                           onClick={() => filesApi.openDownload(o.offer_letter_file_id!).catch(() => undefined)}
-                          className="font-semibold text-[#635BFF] hover:underline flex items-center gap-1"
+                          className="font-semibold text-[#7DC8F7] hover:underline flex items-center gap-1"
                         >
                           <span>Download PDF</span>
                           <Download className="w-3.5 h-3.5" />
@@ -268,7 +268,7 @@ export function StudentOffersPage() {
                         setRespondError('');
                         setShowAcceptModal(o);
                       }}
-                      className="px-5 py-2.5 rounded-lg bg-[#635BFF] hover:bg-[#5046E5] text-white text-xs font-semibold transition shadow-xs flex items-center gap-1.5"
+                      className="px-5 py-2.5 rounded-lg bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white text-xs font-semibold transition shadow-xs flex items-center gap-1.5"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Accept Offer</span>
@@ -335,7 +335,7 @@ export function StudentOffersPage() {
                 type="button"
                 onClick={() => respondMutation.mutate({ id: showAcceptModal.id, accept: true })}
                 disabled={respondMutation.isPending}
-                className="px-5 py-2.5 rounded-lg bg-[#635BFF] hover:bg-[#5046E5] text-white text-xs font-semibold transition shadow-xs"
+                className="px-5 py-2.5 rounded-lg bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white text-xs font-semibold transition shadow-xs"
               >
                 {respondMutation.isPending ? 'Accepting…' : 'Confirm Acceptance'}
               </button>

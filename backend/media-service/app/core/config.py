@@ -97,8 +97,6 @@ class Settings(BaseSettings):
     # Set only for local testing against a non-AWS S3-compatible endpoint (e.g. moto server);
     # leave unset in staging/production so boto3 talks to real AWS S3.
     S3_ENDPOINT_URL: str | None = None
-    PUBLIC_S3_ENDPOINT_URL: str | None = None
-    DIRECT_UPLOADS_TO_S3: bool = Field(default=True, description="Move videos, PDFs and images from the course upload form into the S3 bucket once compressed")
     S3_UPLOAD_URL_EXPIRES_SECONDS: int = Field(default=900, ge=60, le=3_600)
     S3_PLAYBACK_URL_EXPIRES_SECONDS: int = Field(default=300, ge=30, le=3_600)
 
@@ -113,11 +111,6 @@ class Settings(BaseSettings):
 
     # --- Playback ---
     PLAYBACK_TOKEN_EXPIRE_MINUTES: int = Field(default=240, ge=1, le=1_440)
-
-    # --- catalog-service: may this viewer play this lesson file? (service-to-service, the shared internal token) ---
-    CATALOG_SERVICE_URL: str = "http://localhost:8002"
-    CATALOG_SERVICE_TIMEOUT_SECONDS: float = Field(default=5.0, gt=0)
-    INTERNAL_SERVICE_TOKEN: SecretStr = SecretStr(f"{DEV_SECRET_MARKER}-internal-service-token-change-me-0")
 
     @property
     def is_production_like(self) -> bool:
@@ -137,8 +130,6 @@ class Settings(BaseSettings):
                 errors.append("USER_MANAGEMENT_JWKS_URL must use https outside local/test")
             if DEV_SECRET_MARKER in token_secret:
                 errors.append("TOKEN_HASH_SECRET still uses the development default")
-            if DEV_SECRET_MARKER in self.INTERNAL_SERVICE_TOKEN.get_secret_value():
-                errors.append("INTERNAL_SERVICE_TOKEN still uses the development default")
             if self.AWS_ACCESS_KEY_ID is None or self.AWS_SECRET_ACCESS_KEY is None:
                 errors.append("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required outside local/test")
             if self.S3_ENDPOINT_URL is not None and not self.S3_ENDPOINT_URL.startswith("https://"):

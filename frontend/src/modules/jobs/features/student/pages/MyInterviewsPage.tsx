@@ -9,6 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { JobThumbnail } from '../../../components/JobThumbnail';
+import { LIVE_LIST_QUERY_OPTIONS } from '../../../lib/liveQueryOptions';
 import { apiFetch, type ApiResponse } from '../../../services/api';
 
 type StudentInterview = {
@@ -52,6 +53,7 @@ export function MyInterviewsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['my-interviews'],
     queryFn: () => apiFetch<ApiResponse<StudentInterview[]>>('/interviews/me'),
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
 
   const interviews = data?.data || [];
@@ -78,7 +80,7 @@ export function MyInterviewsPage() {
         {/* 3 Metric Pills */}
         <div className="flex items-center gap-4 bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
           <div className="px-3 text-center">
-            <div className="text-lg font-bold text-[#635BFF]">{upcomingInterviews.length}</div>
+            <div className="text-lg font-bold text-[#7DC8F7]">{upcomingInterviews.length}</div>
             <div className="text-[11px] font-medium text-slate-500">Upcoming</div>
           </div>
           <div className="w-px h-8 bg-slate-200" />
@@ -103,7 +105,7 @@ export function MyInterviewsPage() {
 
       {isLoading && (
         <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[#635BFF] border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-[#7DC8F7] border-t-transparent animate-spin" />
           <p className="text-xs text-slate-500">Loading your scheduled rounds…</p>
         </div>
       )}
@@ -149,7 +151,7 @@ export function MyInterviewsPage() {
                       </div>
                     </div>
 
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100/60 text-xs font-medium text-[#635BFF] self-start">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100/60 text-xs font-medium text-[#7DC8F7] self-start">
                       <Video className="w-3.5 h-3.5" />
                       <span>{i.format || 'Google Meet'}</span>
                     </div>
@@ -160,7 +162,7 @@ export function MyInterviewsPage() {
                     <div className="space-y-1">
                       <div className="text-slate-500 font-medium">Scheduled Time</div>
                       <div className="flex items-center gap-2 font-bold text-slate-900">
-                        <Clock className="w-3.5 h-3.5 text-[#635BFF]" />
+                        <Clock className="w-3.5 h-3.5 text-[#7DC8F7]" />
                         <span>
                           {sDate.toLocaleDateString(undefined, {
                             weekday: 'short',
@@ -179,7 +181,7 @@ export function MyInterviewsPage() {
                           href={i.meeting_link}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-4 py-2 rounded-lg bg-[#635BFF] hover:bg-[#5046E5] text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs"
+                          className="px-4 py-2 rounded-lg bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs"
                         >
                           <span>Join Meeting</span>
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -332,7 +334,7 @@ export function MyInterviewsPage() {
                   })
                 }
                 disabled={reschedule.isPending || !startsAt || !endsAt || !reason}
-                className="px-4 py-2 rounded-lg bg-[#635BFF] hover:bg-[#5046E5] text-white text-xs font-semibold disabled:opacity-50 transition"
+                className="px-4 py-2 rounded-lg bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white text-xs font-semibold disabled:opacity-50 transition"
               >
                 {reschedule.isPending ? 'Submitting…' : 'Submit Request'}
               </button>

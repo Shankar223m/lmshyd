@@ -1,11 +1,11 @@
-/* App shell patterns from campus-drive-lms-ui (nexora / #635bff kit) */
+/* App shell patterns from campus-drive-lms-ui (#7dc8f7 kit) */
 
 .lms-campus-shell {
   --cd-border: #e9edf4;
   --cd-muted: #8792a3;
   --cd-ink: #192338;
-  --cd-primary: #635bff;
-  --cd-primary-soft: #f0efff;
+  --cd-primary: #7dc8f7;
+  --cd-primary-soft: #e8f6fe;
 }
 
 .lms-campus-shell.app-shell {

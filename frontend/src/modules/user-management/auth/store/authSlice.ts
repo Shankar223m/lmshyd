@@ -1,7 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import { storage } from "@/core/lib/storage";
-import type { Permissions } from "@/modules/user-management/common/permissions/types";
 import type { AuthUser, MfaChallenge, TokenOut } from "@/modules/user-management/auth/types";
 
 export interface AuthState {
@@ -26,7 +25,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    credentialsReceived(state, action: PayloadAction<{ token: TokenOut; user: AuthUser; permissions?: Permissions }>) {
+    credentialsReceived(state, action: PayloadAction<{ token: TokenOut; user: AuthUser }>) {
       state.accessToken = action.payload.token.access_token;
       state.user = action.payload.user;
       state.sessionStatus = "ready";

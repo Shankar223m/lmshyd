@@ -5,11 +5,11 @@ import { Icon, type IconName } from "./Icon";
 import { Spinner } from "./Spinner";
 
 const variants = {
-  primary: "bg-[#635BFF] text-white shadow-xs hover:bg-[#5046E5] active:scale-[0.98] disabled:opacity-50 disabled:shadow-none",
+  primary: "bg-brand-600 text-white shadow-xs hover:bg-brand-700 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none",
   secondary: "border border-slate-200/90 bg-white text-slate-800 shadow-xs hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 disabled:text-slate-400 disabled:shadow-none",
   danger: "bg-red-600 text-white shadow-xs hover:bg-red-700 disabled:opacity-50",
   ghost: "text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 disabled:text-slate-300",
-  link: "text-[#635BFF] hover:text-[#5046E5] hover:underline underline-offset-4 px-0 py-0 h-auto",
+  link: "text-brand-600 hover:text-brand-700 hover:underline underline-offset-4 px-0 py-0 h-auto",
 } as const;
 
 const sizes = {

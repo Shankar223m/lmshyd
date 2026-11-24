@@ -113,7 +113,7 @@ export function PlacementPage() {
         </p>
         <Link
           to="/jobs/student/offers"
-          className="inline-block rounded-xl bg-[#635BFF] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#5046E5]"
+          className="inline-block rounded-xl bg-[#7DC8F7] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#5CB8EC]"
         >
           View Offers →
         </Link>
@@ -281,7 +281,7 @@ export function PlacementPage() {
               type="button"
               disabled={submitMutation.isPending || placement.status === 'VERIFIED'}
               onClick={() => submitMutation.mutate()}
-              className="w-full rounded-xl bg-[#635BFF] py-2.5 text-xs font-semibold text-white hover:bg-[#5046E5] disabled:opacity-50 transition shadow-xs"
+              className="w-full rounded-xl bg-[#7DC8F7] py-2.5 text-xs font-semibold text-white hover:bg-[#5CB8EC] disabled:opacity-50 transition shadow-xs"
             >
               {submitMutation.isPending
                 ? 'Submitting…'

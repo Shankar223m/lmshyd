@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { EmployerActionModal } from "../../../components/EmployerActionModal";
+import { LIVE_LIST_QUERY_OPTIONS } from "../../../lib/liveQueryOptions";
 import { apiFetch, filesApi, type ApiResponse } from "../../../services/api";
 
 type PipelineCandidate = {
@@ -58,8 +59,7 @@ export function JobHiringPipelinePage() {
     queryKey: ["pipeline", jobId],
     enabled: !!jobId,
     queryFn: () => apiFetch<ApiResponse<PipelineData>>(`/jobs/${jobId}/pipeline`),
-    refetchOnWindowFocus: true,
-    staleTime: 15_000,
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
 
   const isPipelineHidden = (status?: string) => {
@@ -91,8 +91,8 @@ export function JobHiringPipelinePage() {
         method: "POST",
         body: JSON.stringify({ to_status: toStatus, pipeline_stage: stage }),
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["pipeline", jobId] });
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["pipeline", jobId] });
       setSelectedCandidate(null);
       setActionError(null);
     },

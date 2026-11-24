@@ -39,7 +39,7 @@ export function ChapterTestSetupModal({
   isOpen,
   onClose,
   chapter,
-  moduleTitle,
+  moduleTitle: _moduleTitle,
   courseId,
   versionId,
   moduleId,
@@ -127,50 +127,15 @@ export function ChapterTestSetupModal({
       }
     }
 
-    // 3. Fallback: Seed with 2 default starter questions if completely empty
-    if (loaded.length === 0) {
-      loaded = [
-        {
-          id: `draft-chap-seed-1`,
-          text: `Which core concept is central to understanding ${chapter.title}?`,
-          questionType: "mcq_single",
-          marks: 2,
-          options: [
-            { id: "a", text: "Fundamental architecture and syntax" },
-            { id: "b", text: "Deprecation rules" },
-            { id: "c", text: "Unrelated external utilities" },
-            { id: "d", text: "Non-standard overrides" },
-          ],
-          correctAnswer: "a",
-          explanation: "Mastering the fundamental architecture is essential.",
-        },
-        {
-          id: `draft-chap-seed-2`,
-          text: `What is the recommended best practice demonstrated in ${chapter.title}?`,
-          questionType: "mcq_single",
-          marks: 2,
-          options: [
-            { id: "a", text: "Write clean, modular, and maintainable code" },
-            { id: "b", text: "Bypass error validations" },
-            { id: "c", text: "Hardcode credentials" },
-            { id: "d", text: "Ignore unit tests" },
-          ],
-          correctAnswer: "a",
-          explanation: "Clean and modular patterns ensure scalability.",
-        },
-      ];
-    }
-
+    // Fallback: If no saved questions exist, start with an empty question list
     if (existingTest) {
       if (existingTest.duration_minutes) setDurationMinutes(existingTest.duration_minutes);
       if (existingTest.pass_mark_percent) setPassMarkPercent(existingTest.pass_mark_percent);
       if (existingTest.max_attempts) setMaxAttempts(existingTest.max_attempts);
     }
 
-    if (loaded.length > 0 || !isLoaded) {
-      setQuestions(loaded);
-      setIsLoaded(true);
-    }
+    setQuestions(loaded);
+    setIsLoaded(true);
   }, [isOpen, isLoaded, chapter.topic_id, existingTest, bankData]);
 
   // Persist draft questions to localStorage
@@ -450,9 +415,6 @@ export function ChapterTestSetupModal({
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div>
               <h4 className="text-sm font-bold text-slate-900">Chapter Test Question Paper</h4>
-              <p className="text-xs text-slate-500">
-                {moduleTitle ? `${moduleTitle} · ` : ""}Add, edit, or import multiple-choice questions for this chapter.
-              </p>
             </div>
           </div>
 

@@ -50,13 +50,6 @@ class PlaybackService:
         await commit_or_conflict(self.db)
         return raw_token, token
 
-    async def is_valid_for(self, asset: MediaAsset, raw_token: str) -> bool:
-        """Whether this playback token is live and was issued for exactly this asset."""
-        token = (
-            await self.db.execute(select(PlaybackToken).where(PlaybackToken.token_hash == hash_token(raw_token)))
-        ).scalar_one_or_none()
-        return token is not None and token.media_asset_id == asset.id and token.revoked_at is None and token.expires_at > utcnow()
-
     async def resolve(self, raw_token: str) -> str:
         """Validate the opaque token and return a freshly presigned, short-lived S3 GET URL."""
         token = (
@@ -77,11 +70,8 @@ class PlaybackService:
 
         rendition = _best_rendition(asset.renditions)
         storage_target = rendition.storage_key if rendition else asset.storage_key
-        if storage_target and (storage_target.startswith("http://") or storage_target.startswith("https://")):
+        if storage_target and (storage_target.startswith("http://") or storage_target.startswith("https://") or storage_target.startswith("/")):
             return storage_target
-        if storage_target and storage_target.startswith("/"):
-            # served by this service's own stream endpoint, which wants the token as proof the viewer may play it
-            return f"{storage_target}{'&' if '?' in storage_target else '?'}playback={raw_token}"
         if rendition is None:
             raise NotFoundError("This media is no longer available.", code="MEDIA_ASSET_NOT_READY")
         if asset.kind == AssetKind.DOCUMENT:

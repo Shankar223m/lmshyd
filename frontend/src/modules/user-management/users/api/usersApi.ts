@@ -16,7 +16,7 @@ import type {
 } from "@/modules/user-management/users/types";
 
 /** Admins are the same user resource under /admins (super admins only). */
-export type UserResource = "users" | "admins";
+export type UserResource = "users" | "admins" | "super-admins";
 
 const listTag = (resource: UserResource): "UserList" | "AdminList" => (resource === "users" ? "UserList" : "AdminList");
 const itemTag = (resource: UserResource): "User" | "Admin" => (resource === "users" ? "User" : "Admin");
@@ -39,22 +39,36 @@ export const usersApi = baseApi.injectEndpoints({
       }),
       providesTags: ["AdminList"],
     }),
+    listSuperAdmins: build.query<ListResult<AdminListItem>, UserFilters & PageParams>({
+      query: (params) => ({ url: "/super-admins", params }),
+      transformResponse: (response: { super_admins: AdminListItem[]; page_context: PageContext }) => ({
+        items: response.super_admins,
+        pageContext: response.page_context,
+      }),
+      providesTags: ["AdminList"],
+    }),
+    /** A random password that meets the policy: made by the server, never in the browser. */
+    generateUserPassword: build.query<string, void>({
+      query: () => "/users/generate-password",
+      transformResponse: (response: { password: string }) => response.password,
+      keepUnusedDataFor: 0,
+    }),
     getUser: build.query<User | Admin, { resource: UserResource; userId: string }>({
       query: ({ resource, userId }) => `/${resource}/${userId}`,
-      transformResponse: (response: { user?: User; admin?: Admin }) => (response.user ?? response.admin) as User,
+      transformResponse: (response: { user?: User; admin?: Admin; super_admin?: User }) => (response.user ?? response.admin ?? response.super_admin) as User,
       providesTags: (_result, _error, { resource, userId }) => [{ type: itemTag(resource), id: userId }],
     }),
     createUser: build.mutation<CreatedUser, { resource: UserResource; body: UserCreateBody | Omit<UserCreateBody, "role"> }>({
       query: ({ resource, body }) => ({ url: `/${resource}`, method: "POST", body }),
-      transformResponse: (response: { user?: User; admin?: Admin; credentials: CreatedUser["credentials"] }) => ({
-        user: (response.user ?? response.admin) as User,
+      transformResponse: (response: { user?: User; admin?: Admin; super_admin?: User; credentials: CreatedUser["credentials"] }) => ({
+        user: (response.user ?? response.admin ?? response.super_admin) as User,
         credentials: response.credentials,
       }),
       invalidatesTags: (_result, _error, { resource }) => [listTag(resource), "InstitutionList", "Institution", "EmployerList", "Employer"],
     }),
     updateUser: build.mutation<User | Admin, { resource: UserResource; userId: string; body: UserUpdateBody }>({
       query: ({ resource, userId, body }) => ({ url: `/${resource}/${userId}`, method: "PUT", body }),
-      transformResponse: (response: { user?: User; admin?: Admin }) => (response.user ?? response.admin) as User,
+      transformResponse: (response: { user?: User; admin?: Admin; super_admin?: User }) => (response.user ?? response.admin ?? response.super_admin) as User,
       invalidatesTags: (_result, _error, { resource, userId }) => [
         { type: itemTag(resource), id: userId },
         listTag(resource),
@@ -68,7 +82,7 @@ export const usersApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: reason ? { status, reason } : { status },
       }),
-      transformResponse: (response: { user?: User; admin?: Admin }) => (response.user ?? response.admin) as User,
+      transformResponse: (response: { user?: User; admin?: Admin; super_admin?: User }) => (response.user ?? response.admin ?? response.super_admin) as User,
       invalidatesTags: (_result, _error, { resource, userId }) => [{ type: itemTag(resource), id: userId }, listTag(resource)],
     }),
     deleteUser: build.mutation<SuccessEnvelope, { resource: UserResource; userId: string }>({
@@ -137,7 +151,10 @@ export const usersApi = baseApi.injectEndpoints({
 export const {
   useUploadCertificateMutation,
   useListUsersQuery,
+  useGenerateUserPasswordQuery,
+  useLazyGenerateUserPasswordQuery,
   useListAdminsQuery,
+  useListSuperAdminsQuery,
   useLazyListUsersQuery,
   useGetUserQuery,
   useCreateUserMutation,

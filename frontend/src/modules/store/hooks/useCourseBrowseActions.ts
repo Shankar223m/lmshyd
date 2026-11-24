@@ -15,7 +15,7 @@ export function useCourseBrowseActions(offersByCourse: Map<string, StoreOffer>) 
 
   const openDetail = useCallback(
     (courseId: string, course?: BrowseCourse) => {
-      navigate(`/browse-courses/${courseId}`, { state: course ? { course } : undefined });
+      navigate(`/courses/${courseId}/details`, { state: course ? { course } : undefined });
     },
     [navigate],
   );

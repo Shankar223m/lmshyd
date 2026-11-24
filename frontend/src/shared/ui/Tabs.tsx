@@ -7,7 +7,7 @@ const styles = {
   line: {
     list: "flex gap-1 overflow-x-auto border-b border-slate-200",
     tab: "-mb-px border-b-2 px-4 py-2.5",
-    on: "border-[#635BFF] text-[#635BFF] font-semibold",
+    on: "border-[#7DC8F7] text-[#7DC8F7] font-semibold",
     off: "border-transparent text-slate-500 hover:text-slate-800",
   },
   pills: {

@@ -51,7 +51,7 @@ export function WorkflowShell({ title, tabs, actions }: WorkflowShellProps) {
                   cn(
                     "inline-flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition",
                     isActive
-                      ? "bg-[#635BFF] text-white shadow-xs font-semibold"
+                      ? "bg-[#7DC8F7] text-white shadow-xs font-semibold"
                       : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
                   )
                 }
@@ -64,7 +64,7 @@ export function WorkflowShell({ title, tabs, actions }: WorkflowShellProps) {
                       <span
                         className={cn(
                           "ml-0.5 inline-flex min-w-[1.1rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none",
-                          isActive ? "bg-white/25 text-white" : "bg-[#635BFF] text-white",
+                          isActive ? "bg-white/25 text-white" : "bg-[#7DC8F7] text-white",
                         )}
                       >
                         {tab.badge > 99 ? "99+" : tab.badge}

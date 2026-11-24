@@ -119,7 +119,7 @@ async def test_playback_token_requires_a_ready_asset(client: AsyncClient, authed
     body = await _start_upload(client, authed)
     asset_id = body["asset"]["asset_id"]
 
-    authed(scopes=AUTHOR)  # the author previews their own upload
+    authed(scopes=())  # any authenticated viewer can request a token
     response = await client.post(f"/api/v1/media/{asset_id}/playback-tokens")
     assert response.status_code == 400
     assert response.json()["code"] == "MEDIA_ASSET_NOT_READY"
@@ -133,7 +133,7 @@ async def test_playback_token_resolves_to_a_signed_url(client: AsyncClient, auth
     await client.post(f"/api/v1/media/{asset_id}/complete")
     await _run_worker_transcode(app, asset_id)
 
-    authed(scopes=AUTHOR)
+    authed(scopes=())
     response = await client.post(f"/api/v1/media/{asset_id}/playback-tokens")
     assert response.status_code == 201
     token = response.json()["playback"]["token"]
@@ -161,7 +161,7 @@ async def test_archiving_an_asset_stops_new_playback_tokens(client: AsyncClient,
     assert response.status_code == 200
     assert response.json()["asset"]["archived_at"] is not None
 
-    authed(scopes=AUTHOR)
+    authed(scopes=())
     response = await client.post(f"/api/v1/media/{asset_id}/playback-tokens")
     assert response.status_code == 400
     assert response.json()["code"] == "MEDIA_ASSET_NOT_READY"
@@ -191,7 +191,7 @@ async def test_pdf_is_ready_on_upload_and_opens_inline(client: AsyncClient, auth
     assert asset["kind"] == "document"
     assert asset["status"] == "ready"
 
-    authed(scopes=AUTHOR)
+    authed(scopes=())
     response = await client.post(f"/api/v1/media/{asset['asset_id']}/playback-tokens")
     assert response.status_code == 201
     token = response.json()["playback"]["token"]

@@ -26,7 +26,7 @@ export function SignupPage() {
       initial={draft}
       onSent={(values, expiresIn) => {
         setSent({ values, expiresIn });
-        navigate("/register", { replace: true, state: { from: "/browse-courses" } });
+        navigate("/register", { replace: true, state: { from: "/store" } });  // where the signed-out-only guard sends them once in
       }}
     />
   );

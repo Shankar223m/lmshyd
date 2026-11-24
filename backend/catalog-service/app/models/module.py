@@ -32,6 +32,6 @@ class Module(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     module_test_id: Mapped[int | None] = mapped_column(BigInteger)
 
     course_version: Mapped["CourseVersion"] = relationship(back_populates="modules", lazy="raise")
-    topics: Mapped[list["Topic"]] = relationship(back_populates="module", order_by="Topic.position", lazy="raise")
+    topics: Mapped[list["Topic"]] = relationship(back_populates="module", order_by="Topic.position", lazy="raise", cascade="all, delete-orphan", passive_deletes=True)
 
     __table_args__ = (Index("ix_modules_course_version_id_position", "course_version_id", "position"),)

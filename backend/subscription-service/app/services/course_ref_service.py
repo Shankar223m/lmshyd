@@ -1,6 +1,6 @@
 from typing import Any
 
-from lms_common import devdb
+from lms_common.devdb import connect as devdb_connect
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BadRequestError, NotFoundError
@@ -29,8 +29,8 @@ class CourseRefService:
     async def get_requestable(self, course_id: int) -> CourseRef:
         ref = await self.db.get(CourseRef, course_id)
         if ref is None or ref.status != CourseAvailability.PUBLISHED:
-            try:
-                conn = await devdb.connect("lms_catalog")
+            try:
+                conn = await devdb_connect("lms_catalog")
                 try:
                     row = await conn.fetchrow("""
                         SELECT c.public_id, c.title, c.slug,
@@ -73,7 +73,7 @@ class CourseRefService:
         if ref is not None:
             return ref
 
-        conn = await devdb.connect("lms_catalog")
+        conn = await devdb_connect("lms_catalog")
         try:
             row = await conn.fetchrow(
                 """

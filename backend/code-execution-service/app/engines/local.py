@@ -18,15 +18,14 @@ from pathlib import Path
 from app.engines.base import EngineError, ExecutionRequest, ExecutionResult, Outcome
 
 _PLACEHOLDERS = {"{python}": sys.executable}
-_SAFE_ENV_KEYS = ("PATH", "SYSTEMROOT", "TEMP", "TMP", "HOME", "LANG")
+_SAFE_ENV_KEYS = ("PATH", "SYSTEMROOT", "TEMP", "TMP", "HOME", "LANG", "JAVA_HOME")
 
 
 def _resolve(part: str, file_name: str) -> str:
-    if part == "{file}":
-        return file_name
-    if part in _PLACEHOLDERS:
-        return _PLACEHOLDERS[part]
-    return shutil.which(part) or part
+    res = part.replace("{file}", file_name)
+    for placeholder, val in _PLACEHOLDERS.items():
+        res = res.replace(placeholder, val)
+    return shutil.which(res) or res
 
 
 def _environment() -> dict[str, str]:

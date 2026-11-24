@@ -1,8 +1,8 @@
 import type { ManagedRole } from "@/modules/user-management/common/types";
 import type { UserResource } from "@/modules/user-management/users/api/usersApi";
 
-/** The four people screens of User management. Admins live under /admins; the others are users of one role. */
-export type PersonKind = Extract<ManagedRole, "admin" | "institution_head" | "staff" | "student">;
+/** The people screens of User management. Super admin users and admins have their own endpoints; the others are users of one role. */
+export type PersonKind = Extract<ManagedRole, "admin" | "institution_head" | "staff" | "student"> | "super_admin";
 
 export interface PersonScreen {
   resource: UserResource;
@@ -18,6 +18,14 @@ export interface PersonScreen {
 const EMAIL_SETUP = "They get an email with a link to set their password.";
 
 export const PERSON_SCREENS: Record<PersonKind, PersonScreen> = {
+  super_admin: {
+    resource: "super-admins",
+    title: "Super admin users",
+    one: "super admin",
+    description: "People who run the whole platform.",
+    searchPlaceholder: "Search by name or email",
+    addHint: EMAIL_SETUP,
+  },
   admin: {
     resource: "admins",
     title: "Admins",

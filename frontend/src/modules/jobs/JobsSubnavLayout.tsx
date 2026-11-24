@@ -24,11 +24,7 @@ const baseRoleTabs: Record<string, WorkflowTab[]> = {
     { label: "Offers & placement", to: "/jobs/student/offers", icon: "award" },
     { label: "Profile", to: "/jobs/student/profile", icon: "user" },
   ],
-  INSTITUTION: [
-    { label: "Placements", to: "/jobs/institution/placements", icon: "graduation" },
-    { label: "Students", to: "/jobs/institution/students", icon: "users" },
-    { label: "Analytics", to: "/jobs/institution/analytics", icon: "chart" },
-  ],
+  INSTITUTION: [],
 };
 
 function AdminJobsNav() {
@@ -62,6 +58,10 @@ export function JobsSubnavLayout() {
         <Outlet />
       </>
     );
+  }
+
+  if (user.role === "INSTITUTION") {
+    return <Outlet />;
   }
 
   const tabs = baseRoleTabs[user.role] || [];

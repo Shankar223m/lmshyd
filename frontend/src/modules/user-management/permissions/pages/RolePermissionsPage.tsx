@@ -22,33 +22,25 @@ export function RolePermissionsPage({ initialMode }: { initialMode?: "roles" | "
   );
 
   const notify = useNotify();
-  const { data: catalog, isLoading: loadingCatalog, isError: catalogError, error: catalogErr } = useGetPermissionCatalogQuery();
-  const { data: roles = [], isLoading, isError: rolesError, error: rolesErr } = useGetRolePermissionsQuery();
+  const { data: catalog, isLoading: loadingCatalog } = useGetPermissionCatalogQuery();
+  const { data: roles = [], isLoading } = useGetRolePermissionsQuery();
   const [save, { isLoading: saving }] = useSetRolePermissionsMutation();
   const [role, setRole] = useState("staff");
   const [search, setSearch] = useState("");
   const [pending, setPending] = useState<PermissionChanges>({});
   const [review, setReview] = useState<"save" | "reset" | null>(null);
 
-  const matrixRoleIds = catalog?.matrix_roles ?? [];
-  const initialRole = matrixRoleIds.includes("staff") ? "staff" : matrixRoleIds[0] ?? "staff";
-  const activeRole = matrixRoleIds.includes(role) ? role : initialRole;
-  const row = roles.find((r) => r.role === activeRole);
+  const row = roles.find((r) => r.role === role);
   const cells = useMemo(() => new Map(row?.permissions.map((c) => [c.key, c]) ?? []), [row]);
   const actionsByKey = useMemo(() => new Map(catalog?.pages.flatMap((p) => p.actions.map((a) => [a.key, { page: p, action: a }] as const)) ?? []), [catalog]);
 
   const matrixRoles = roles.filter((r) => catalog?.matrix_roles.includes(r.role));
-  const groups = catalog ? groupPages(catalog.pages, activeRole, search) : [];
-  const roleLabel = ROLE_LABELS[activeRole as Role] ?? activeRole;
+  const groups = catalog ? groupPages(catalog.pages, role, search) : [];
+  const roleLabel = ROLE_LABELS[role as Role] ?? role;
   const count = Object.keys(pending).length;
   const changedKeys = row?.permissions.filter((c) => c.changed).map((c) => c.key) ?? [];
-  const loadFailed = catalogError || rolesError;
-  const loadErrorCode =
-    (catalogErr && "data" in catalogErr && (catalogErr.data as { code?: string } | undefined)?.code) ||
-    (rolesErr && "data" in rolesErr && (rolesErr.data as { code?: string } | undefined)?.code) ||
-    undefined;
 
-  const catalogDefault = (key: string) => actionsByKey.get(key)?.action.default_roles.includes(activeRole) ?? false;
+  const catalogDefault = (key: string) => actionsByKey.get(key)?.action.default_roles.includes(role) ?? false;
   const allowed = (key: string) => (key in pending ? (pending[key] ?? catalogDefault(key)) : (cells.get(key)?.allowed ?? false));
   const toggle = (key: string, value: boolean) => setPending((prev) => {
     const next = { ...prev };
@@ -58,7 +50,7 @@ export function RolePermissionsPage({ initialMode }: { initialMode?: "roles" | "
   });
   const switchRole = (next: string) => (count === 0 ? setRole(next) : notify.info(`Save or discard the changes to ${roleLabel} first`));
   const submit = (changes: PermissionChanges, done: string) =>
-    void save({ role: activeRole, changes }).unwrap().then(() => { setPending({}); setReview(null); notify.success(done); }, notify.apiError);
+    void save({ role, changes }).unwrap().then(() => { setPending({}); setReview(null); notify.success(done); }, notify.apiError);
   const resetAll = Object.fromEntries(changedKeys.map((k) => [k, null])) as PermissionChanges;
 
   const handleTabChange = (tab: "roles" | "individual") => {
@@ -127,23 +119,8 @@ export function RolePermissionsPage({ initialMode }: { initialMode?: "roles" | "
         />
       ) : isLoading || loadingCatalog ? (
         <PageLoader />
-      ) : loadFailed ? (
-        <EmptyState
-          icon="key"
-          title={loadErrorCode === "MFA_SETUP_REQUIRED" ? "Two-factor authentication required" : "Could not load roles"}
-          description={
-            loadErrorCode === "MFA_SETUP_REQUIRED"
-              ? "Finish two-factor setup for this account, then open Roles & permissions again."
-              : "Check that you are signed in as a super admin and try refreshing the page."
-          }
-          action={
-            loadErrorCode === "MFA_SETUP_REQUIRED" ? (
-              <Button onClick={() => (window.location.href = "/account/setup/mfa")}>Set up two-factor</Button>
-            ) : undefined
-          }
-        />
-      ) : !catalog || matrixRoles.length === 0 || !row ? (
-        <EmptyState icon="key" title="No roles to show" description="The permission catalog did not return any editable roles." />
+      ) : !catalog || !row ? (
+        <EmptyState icon="key" title="No roles to show" />
       ) : (
         <>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -154,7 +131,7 @@ export function RolePermissionsPage({ initialMode }: { initialMode?: "roles" | "
                   ...matrixRoles.map((r) => ({ value: r.role, label: ROLE_LABELS[r.role as Role] ?? r.role })),
                   { value: "__individual__", label: "👤 Individual User Overrides" },
                 ]}
-                value={activeRole}
+                value={role}
                 onChange={(next) => {
                   if (next === "__individual__") {
                     handleTabChange("individual");

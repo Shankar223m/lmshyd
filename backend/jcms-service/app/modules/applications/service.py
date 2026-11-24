@@ -146,6 +146,15 @@ def submit_application(db: Session, student: User, job: Job, data: dict) -> Appl
     if ev.result == EligibilityResult.NOT_ELIGIBLE.value:
         raise ValueError("NOT_ELIGIBLE")
 
+    profile = student.student_profile
+    resume_file_id = data.get("resume_file_id")
+    if resume_file_id:
+        resume_file_id = str(resume_file_id).strip() or None
+    if not resume_file_id and profile and profile.resume_file_id:
+        resume_file_id = profile.resume_file_id
+    if not resume_file_id:
+        raise ValueError("RESUME_REQUIRED")
+
     app = Application(
         job_id=job.id,
         student_id=student.id,
@@ -153,7 +162,7 @@ def submit_application(db: Session, student: User, job: Job, data: dict) -> Appl
         pipeline_stage="Screening",
         match_percent=ev.match_percent,
         answers=data.get("answers", {}),
-        resume_file_id=data.get("resume_file_id"),
+        resume_file_id=resume_file_id,
     )
     db.add(app)
     db.flush()

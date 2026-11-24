@@ -9,9 +9,8 @@ from lms_common.auth import AccessTokenClaims
 from moto import mock_aws
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.api.deps import _authenticate, get_catalog_client
+from app.api.deps import _authenticate
 from app.core.config import Settings, get_settings
-from app.core.exceptions import ServiceUnavailableError
 from app.db.session import build_engine, build_sessionmaker
 from app.main import create_app
 from app.models import Base
@@ -24,7 +23,6 @@ TEST_BUCKET = "lms-media-test"
 def _settings() -> Settings:
     return Settings(
         ENVIRONMENT="test",
-        DIRECT_UPLOADS_TO_S3=False,
         DATABASE_URL="sqlite+aiosqlite:///:memory:",
         REDIS_URL="redis://localhost:6379/15",
         DOCS_ENABLED=False,
@@ -68,7 +66,7 @@ def stub_ffmpeg(monkeypatch: pytest.MonkeyPatch):
     async def fake_probe(local_path: str) -> ffmpeg.VideoInfo:
         return ffmpeg.VideoInfo(duration_seconds=90, height=720)
 
-    async def fake_transcode(source_path: str, output_path: str, *, max_height: int, crf: int = 23, **_: object) -> None:
+    async def fake_transcode(source_path: str, output_path: str, *, max_height: int, crf: int = 23) -> None:
         with open(output_path, "wb") as handle:
             handle.write(f"fake-encoded-at-{max_height}p".encode())
 
@@ -85,22 +83,6 @@ async def db_engine() -> AsyncIterator[AsyncEngine]:
     await engine.dispose()
 
 
-class FakeCatalog:
-    """catalog-service's answer to "may this viewer play this file": nobody, until a test allows someone."""
-
-    def __init__(self) -> None:
-        self.allowed: set[tuple[int, int]] = set()  # (asset_id, user_id)
-        self.down = False
-
-    def allow(self, asset_id: int, user_id: int) -> None:
-        self.allowed.add((int(asset_id), user_id))
-
-    async def may_play(self, *, asset_id: int, user_id: int) -> bool:
-        if self.down:
-            raise ServiceUnavailableError()
-        return (asset_id, user_id) in self.allowed
-
-
 @pytest.fixture
 async def app(db_engine: AsyncEngine):
     settings = _settings()
@@ -112,8 +94,6 @@ async def app(db_engine: AsyncEngine):
     # populated once at startup) — override it per app instance so tests don't leak into it and
     # aren't silently governed by whatever settings some earlier import cached.
     fastapi_app.dependency_overrides[get_settings] = lambda: settings
-    fastapi_app.state.catalog = FakeCatalog()
-    fastapi_app.dependency_overrides[get_catalog_client] = lambda: fastapi_app.state.catalog
     yield fastapi_app
     await fastapi_app.state.redis.aclose()
 

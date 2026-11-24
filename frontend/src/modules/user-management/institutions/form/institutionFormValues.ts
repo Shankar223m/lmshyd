@@ -18,4 +18,6 @@ export interface InstitutionFormValues {
   facebook_url: string;
   youtube_url: string;
   twitter_url: string;
+  /** The institution's shared sign-in (adding only). */
+  login?: { username: string; password: string };
 }

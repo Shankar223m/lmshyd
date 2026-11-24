@@ -25,6 +25,6 @@ class Topic(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     topic_test_id: Mapped[int | None] = mapped_column(BigInteger)
 
     module: Mapped["Module"] = relationship(back_populates="topics", lazy="raise")
-    items: Mapped[list["TopicItem"]] = relationship(back_populates="topic", order_by="TopicItem.position", lazy="raise")
+    items: Mapped[list["TopicItem"]] = relationship(back_populates="topic", order_by="TopicItem.position", lazy="raise", cascade="all, delete-orphan", passive_deletes=True)
 
     __table_args__ = (Index("ix_topics_module_id_position", "module_id", "position"),)

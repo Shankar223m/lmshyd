@@ -94,10 +94,10 @@ export function CourseDashboardPage() {
     ).length;
 
     return {
-      total: total || (rawCourses.length > 0 ? rawCourses.length : 2),
-      published: published || 2,
-      draft: draft || 1,
-      underReview: underReview || 1,
+      total,
+      published,
+      draft,
+      underReview,
     };
   }, [rawCourses]);
 
@@ -454,16 +454,9 @@ export function CourseDashboardPage() {
                         )}
                       </td>
 
-                      {/* Actions */}
+                      {/* Actions: Edit, View, Publish, Delete */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/courses/${c.course_id}`)}
-                            className="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-brand-700 hover:bg-brand-600 hover:text-white transition-colors cursor-pointer"
-                          >
-                            Open
-                          </button>
                           <button
                             type="button"
                             onClick={() => navigate(`/courses/${c.course_id}/edit`)}
@@ -571,18 +564,18 @@ export function CourseDashboardPage() {
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => navigate(`/courses/${c.course_id}`)}
-                      className="rounded-xl bg-brand-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-brand-700 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/courses/${c.course_id}/edit`)}
+                      className="rounded-xl bg-brand-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-brand-700 transition-colors cursor-pointer inline-flex items-center gap-1.5"
                     >
-                      Open
+                      <Icon name="edit" size={13} /> Edit
                     </button>
                     <button
                       type="button"
-                      onClick={() => navigate(`/courses/${c.course_id}/edit`)}
+                      onClick={() => navigate(`/courses/${c.course_id}/learn`)}
                       className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-navy-950 cursor-pointer"
-                      title="Edit Course"
+                      title="Preview Learning Room"
                     >
-                      <Icon name="edit" size={14} />
+                      <Icon name="eye" size={14} />
                     </button>
                   </div>
                 </div>

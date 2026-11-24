@@ -14,7 +14,7 @@ export function KpiCard({
   value,
   subtitle,
   icon,
-  iconBg = "bg-indigo-50 text-[#635BFF]",
+  iconBg = "bg-indigo-50 text-[#7DC8F7]",
 }: KpiCardProps) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs transition-shadow hover:shadow-sm">

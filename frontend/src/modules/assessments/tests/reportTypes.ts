@@ -1,5 +1,3 @@
-import type { Id } from "@/core/api/types";
-
 export interface TestIssue {
   field: string;
   code: string;
@@ -38,15 +36,4 @@ export interface TestAnalytics {
   plagiarism_flagged: number;
   integrity_pending: number;
   questions: Record<string, unknown>[];
-}
-
-export interface PlagiarismItem {
-  attempt_id: Id;
-  user_id: Id;
-  question_id: Id;
-  language: string;
-  verdict: string | null;
-  similarity_percent: number | null;
-  similar_to_submission_id: Id | null;
-  code_submission_id: Id | null;
 }

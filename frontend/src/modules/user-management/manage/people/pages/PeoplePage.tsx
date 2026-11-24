@@ -8,9 +8,10 @@ import { PersonFormModal, type TemporaryPassword } from "@/modules/user-manageme
 import { usePeopleColumns } from "@/modules/user-management/manage/people/components/usePeopleColumns";
 import { PERSON_SCREENS, type PersonKind } from "@/modules/user-management/manage/people/config";
 import { usePeopleActions } from "@/modules/user-management/manage/people/hooks/usePeopleActions";
-import { useListAdminsQuery, useListUsersQuery } from "@/modules/user-management/users/api/usersApi";
+import { useListAdminsQuery, useListSuperAdminsQuery, useListUsersQuery } from "@/modules/user-management/users/api/usersApi";
 import { TemporaryPasswordDialog } from "@/modules/user-management/users/components/form/TemporaryPasswordDialog";
-import type { UserStatus } from "@/modules/user-management/common/types";
+import type { ManagedRole, UserStatus } from "@/modules/user-management/common/types";
+import { UserManagementTabs } from "@/modules/user-management/manage/common/components/UserManagementTabs";
 import { ConfirmDialog, DataTable, EmptyState } from "@/shared/ui";
 
 /** "new" while adding, a user id while editing, null when the form is closed. */
@@ -20,15 +21,18 @@ type FormTarget = "new" | string | null;
 export function PeoplePage({ kind }: { kind: PersonKind }) {
   const screen = PERSON_SCREENS[kind];
   const isAdmins = screen.resource === "admins";
+  const isSuperAdmins = screen.resource === "super-admins";
+  const isUsers = screen.resource === "users";
   const { permissions } = usePermissions();
   const { params, update } = useListParams<Record<keyof ManageFilterValues | "add", string | undefined>>({ page: 1, per_page: 20 });
   // `?add=1` (from the home page buttons) opens the form straight away
   const { organization_label, add, ...apiParams } = params;
-  const listParams = { ...apiParams, status: apiParams.status as UserStatus | undefined, ...(isAdmins ? {} : { role: kind }) };
+  const listParams = { ...apiParams, status: apiParams.status as UserStatus | undefined, ...(isUsers ? { role: kind as ManagedRole } : {}) };
 
-  const usersQuery = useListUsersQuery(listParams, { skip: isAdmins });
+  const usersQuery = useListUsersQuery(listParams, { skip: !isUsers });
   const adminsQuery = useListAdminsQuery(listParams, { skip: !isAdmins });
-  const { data, isFetching, isError, refetch } = isAdmins ? adminsQuery : usersQuery;
+  const superAdminsQuery = useListSuperAdminsQuery(listParams, { skip: !isSuperAdmins });
+  const { data, isFetching, isError, refetch } = isSuperAdmins ? superAdminsQuery : isAdmins ? adminsQuery : usersQuery;
 
   const [formTarget, setFormTarget] = useState<FormTarget>(add ? "new" : null);
   const closeForm = () => {
@@ -39,12 +43,13 @@ export function PeoplePage({ kind }: { kind: PersonKind }) {
   const actions = usePeopleActions(screen.resource, (row) => setFormTarget(row.user_id));
   const columns = usePeopleColumns(kind, actions);
 
-  const canAdd = isAdmins ? permissions.admins.create : permissions.users.create_roles.includes(kind);
+  const canAdd = isUsers ? permissions.users.create_roles.includes(kind as ManagedRole) : permissions.admins.create;
   const activeFilters = [apiParams.search_text, apiParams.status, apiParams.organization_id].filter(Boolean).length;
   const plural = screen.title.toLowerCase();
 
   return (
     <>
+      <UserManagementTabs />
       <ManagePage
         title={screen.title}
         description={screen.description}
@@ -61,7 +66,7 @@ export function PeoplePage({ kind }: { kind: PersonKind }) {
           <ManageFilters
             values={{ ...apiParams, organization_label }}
             searchPlaceholder={screen.searchPlaceholder}
-            showInstitution={!isAdmins && permissions.users.filter_by_institution}
+            showInstitution={isUsers && permissions.users.filter_by_institution}
             update={update}
           />
         }

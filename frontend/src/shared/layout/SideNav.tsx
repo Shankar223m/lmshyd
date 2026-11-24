@@ -27,7 +27,7 @@ export interface SideNavProps {
 /**
  * Modern SaaS SideNav matching LMS UI Kit:
  * - Clean icon + label layout
- * - Lavender-tinted active pill container (#EAE8FF / #635BFF)
+ * - Lavender-tinted active pill container (#E8F6FE / #7DC8F7)
  * - Fixed bounds to strictly prevent horizontal overflow
  * - Integrated Settings and Help & Support footer links
  */
@@ -108,12 +108,12 @@ export function SideNav({
                         }}
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
-                          "relative flex items-center transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#635BFF]",
+                          "relative flex items-center transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7DC8F7]",
                           collapsed
                             ? "h-10 w-10 shrink-0 justify-center mx-auto rounded-xl"
                             : "flex-1 gap-3.5 px-3.5 py-2.5 rounded-xl text-[14px] font-medium",
                           isActive
-                            ? "bg-[#EAE8FF] font-semibold text-[#635BFF] shadow-xs"
+                            ? "bg-[#E8F6FE] font-semibold text-[#7DC8F7] shadow-xs"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
                         )}
                         title={collapsed ? item.label : undefined}
@@ -124,7 +124,7 @@ export function SideNav({
                           className={cn(
                             "shrink-0 transition-colors",
                             isActive
-                              ? "text-[#635BFF]"
+                              ? "text-[#7DC8F7]"
                               : "text-slate-400 group-hover/navitem:text-slate-700",
                           )}
                         />
@@ -165,7 +165,7 @@ export function SideNav({
                                 className={cn(
                                   "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
                                   isChildActive
-                                    ? "bg-[#EAE8FF]/70 font-semibold text-[#635BFF]"
+                                    ? "bg-[#E8F6FE]/70 font-semibold text-[#7DC8F7]"
                                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-950 font-medium",
                                 )}
                               >
@@ -175,13 +175,13 @@ export function SideNav({
                                     size={13}
                                     className={cn(
                                       "shrink-0",
-                                      isChildActive ? "text-[#635BFF]" : "text-slate-400",
+                                      isChildActive ? "text-[#7DC8F7]" : "text-slate-400",
                                     )}
                                   />
                                 )}
                                 <span className="truncate flex-1">{child.label}</span>
                                 {typeof child.badge === "number" && child.badge > 0 ? (
-                                  <span className="ml-auto shrink-0 rounded-full bg-[#635BFF] px-1.5 py-0.5 text-[10px] font-bold text-white tabular-nums">
+                                  <span className="ml-auto shrink-0 rounded-full bg-[#7DC8F7] px-1.5 py-0.5 text-[10px] font-bold text-white tabular-nums">
                                     {child.badge > 99 ? "99+" : child.badge}
                                   </span>
                                 ) : null}
@@ -221,7 +221,7 @@ export function SideNav({
                     ? "h-10 w-10 shrink-0 justify-center mx-auto rounded-xl"
                     : "flex-1 gap-3.5 px-3.5 py-2.5 rounded-xl text-[14px] font-medium",
                   isSettingsActive
-                    ? "bg-[#EAE8FF] font-semibold text-[#635BFF] shadow-xs"
+                    ? "bg-[#E8F6FE] font-semibold text-[#7DC8F7] shadow-xs"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
                 )}
                 title={collapsed ? "Settings" : undefined}
@@ -231,7 +231,7 @@ export function SideNav({
                   size={collapsed ? 20 : 19}
                   className={cn(
                     "shrink-0 transition-colors",
-                    isSettingsActive ? "text-[#635BFF]" : "text-slate-400 group-hover/navitem:text-slate-700",
+                    isSettingsActive ? "text-[#7DC8F7]" : "text-slate-400 group-hover/navitem:text-slate-700",
                   )}
                 />
                 {!collapsed && <span className="truncate flex-1">Settings</span>}

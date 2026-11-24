@@ -14,15 +14,19 @@ def get_student_profile(db: Session, user: User) -> StudentProfile | None:
 def job_visible_to_student(db: Session, job: Job, user: User) -> bool:
     channel = (job.posting_channel or JobPostingChannel.OPEN.value).upper()
     profile = get_student_profile(db, user)
+    targets = [str(x) for x in (job.target_institution_ids or []) if x]
+
+    if targets:
+        if not profile or not profile.institution_id:
+            return False
+        if profile.institution_id not in targets:
+            return False
 
     if channel == JobPostingChannel.OPEN.value:
         return True
 
     if channel != JobPostingChannel.CAMPUS.value:
         return True
-
-    if profile and profile.open_market_only:
-        return False
 
     campus_id = job.campus_institution_id or job.organization_id
     if not profile or not profile.institution_id:

@@ -1,8 +1,17 @@
 import { baseApi } from "@/core/api/baseApi";
 import type { PageContext } from "@/core/api/types";
-import type { BrowseCourse } from "@/modules/store/types/courseBrowse";
+import type {
+  BrowseCourse,
+  CourseCurriculumPreview,
+} from "@/modules/store/types/courseBrowse";
 
-export type { BrowseCourse, CourseAccessStatus } from "@/modules/store/types/courseBrowse";
+export type {
+  BrowseCourse,
+  CourseAccessStatus,
+  ChapterPreview,
+  ModulePreview,
+  CourseCurriculumPreview,
+} from "@/modules/store/types/courseBrowse";
 
 type BrowseParams = {
   page?: number;
@@ -23,7 +32,12 @@ export const studentSubscriptionsApi = baseApi.injectEndpoints({
       }),
       providesTags: ["CourseList"],
     }),
+    getCourseCurriculumPreview: build.query<CourseCurriculumPreview, string>({
+      query: (courseId) => ({ url: `/courses/${courseId}/curriculum-preview` }),
+      transformResponse: (response: { curriculum: CourseCurriculumPreview }) => response.curriculum,
+      providesTags: (_res, _err, courseId) => [{ type: "CourseVersion", id: courseId }],
+    }),
   }),
 });
 
-export const { useBrowsePublishedCoursesQuery } = studentSubscriptionsApi;
+export const { useBrowsePublishedCoursesQuery, useGetCourseCurriculumPreviewQuery } = studentSubscriptionsApi;

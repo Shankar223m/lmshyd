@@ -24,10 +24,9 @@ test.describe("Signing in and out", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test("the login page offers self sign-up", async ({ page }) => {
+  test("the login page directs students to their institution", async ({ page }) => {
     await page.goto("/login");
-    await page.getByRole("link", { name: "Create an account" }).click();
-    await expect(page).toHaveURL(/\/register/);
-    await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
+    await expect(page.getByText(/institution administrator/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /Register as an individual learner/i })).toHaveCount(0);
   });
 });

@@ -14,6 +14,6 @@ export function RequireSection({ section }: { section: Section }) {
   const { user } = useAuth();
   if (isLoading) return <PageLoader />;
   const isStudent = user?.role === "student" || permissions.role === "student";
-  const isAllowed = can(section) || (isStudent && section === "learning");
+  const isAllowed = can(section) || (isStudent && (section === "career" || section === "learning"));
   return isAllowed ? <Outlet /> : <Navigate to="/" replace />;
 }

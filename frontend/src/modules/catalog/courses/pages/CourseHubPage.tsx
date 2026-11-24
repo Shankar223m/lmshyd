@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import {
   useGetCourseQuery,
   useGetVersionQuery,
@@ -381,6 +381,17 @@ export function CourseHubPage() {
     return modules.reduce((acc, m) => acc + (m.topics?.length ?? 0), 0);
   }, [modules]);
 
+  const chapterTestsCount = useMemo(() => {
+    return modules.reduce(
+      (acc, m) => acc + (m.topics?.filter((t) => t.topic_test_id)?.length ?? 0),
+      0
+    );
+  }, [modules]);
+
+  const moduleTestsCount = useMemo(() => {
+    return modules.filter((m) => m.module_test_id).length;
+  }, [modules]);
+
   // Readiness Checklist
   const readiness = useMemo(() => {
     const hasBasicInfo = Boolean(course?.title && course?.slug);
@@ -401,13 +412,13 @@ export function CourseHubPage() {
   const tabs: TabDefinition[] = [
     { id: "overview", label: "Course Details", icon: BookOpen },
     { id: "curriculum", label: "Curriculum", icon: Layers, badge: modules.length },
-    { id: "chapter_exams", label: "Chapter Exams", icon: HelpCircle, badge: totalChapters },
-    { id: "module_tests", label: "Module Tests", icon: ClipboardCheck, badge: modules.length },
-    { id: "final_exam", label: "Final Exam", icon: ShieldAlert, badge: finalTestId ? "Active" : undefined },
+    { id: "chapter_exams", label: "Chapter Exams", icon: HelpCircle, badge: `${chapterTestsCount}/${totalChapters}` },
+    { id: "module_tests", label: "Module Tests", icon: ClipboardCheck, badge: `${moduleTestsCount}/${modules.length}` },
+    { id: "final_exam", label: "Final Exam", icon: ShieldAlert, badge: finalTestId ? "Ready" : undefined },
     { id: "certificate", label: "Certificate", icon: Award },
     { id: "pricing", label: "Pricing & History", icon: DollarSign },
     ...(canAssignColleges
-      ? [{ id: "institutions" as const, label: "College access", icon: Building2 }]
+      ? [{ id: "institutions" as const, label: "College Access", icon: Building2 }]
       : []),
     { id: "preview", label: "Preview & Publish", icon: Eye },
   ];
@@ -676,30 +687,55 @@ export function CourseHubPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-16">
-      {/* 1. Header Bar with Course Context and Quick Actions */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs">
+    <div className="max-w-7xl mx-auto space-y-5 pb-16">
+      {/* Breadcrumb: Courses > Course Title > Edit Course */}
+      <nav className="flex items-center gap-2 text-xs text-slate-500 font-medium pt-1">
+        <Link to="/courses" className="hover:text-[#635BFF] transition-colors">
+          Courses
+        </Link>
+        <ChevronRight size={13} className="text-slate-400" />
+        <span className="text-slate-700 max-w-[220px] truncate">{course.title}</span>
+        <ChevronRight size={13} className="text-slate-400" />
+        <span className="text-[#635BFF] font-bold">Edit Course</span>
+      </nav>
+
+      {/* 1. Header Bar: Title, Status, Metadata and Clean Actions */}
+      <div className="rounded-2xl border border-[#E6EAF2] bg-white p-5 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
-            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#10234B] to-[#1E3A8A] flex items-center justify-center text-white shrink-0 shadow-sm overflow-hidden border border-slate-200">
-              <BookOpen size={28} />
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#635BFF] to-[#4F46E5] flex items-center justify-center text-white shrink-0 shadow-sm overflow-hidden">
+              <BookOpen size={24} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
                   {course.slug.toUpperCase()}
                 </span>
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">{course.title}</h1>
+                <h1 className="text-xl font-bold text-[#172033] tracking-tight truncate">
+                  {course.title}
+                </h1>
                 <span
                   className={cn(
                     "px-2.5 py-0.5 rounded-full text-xs font-bold",
-                    isPublished ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                    isPublished
+                      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                      : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
                   )}
                 >
                   {isPublished ? "Published" : "Draft"}
                 </span>
+                {parsedSummary.level && (
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-[#635BFF] border border-purple-200">
+                    {parsedSummary.level}
+                  </span>
+                )}
+                {parsedSummary.category && (
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
+                    {parsedSummary.category}
+                  </span>
+                )}
               </div>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 font-medium mt-1.5">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-[#738096] font-medium mt-1.5">
                 <span className="flex items-center gap-1.5">
                   <Clock size={13} className="text-slate-400" />
                   {parsedSummary.duration || "Self-Paced"}
@@ -722,211 +758,188 @@ export function CourseHubPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 flex-wrap">
-            <Button
-              variant="primary"
-              size="sm"
+          {/* Clean Action Controls: Save Draft, Preview, Publish / Update Course */}
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <button
+              type="button"
               onClick={() => {
-                setEditingModule(null);
-                setIsAddModuleOpen(true);
+                notify.success("Draft state is synced and up to date.");
               }}
-              className="gap-1.5 text-xs font-semibold shadow-xs"
+              className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer"
             >
-              <Plus size={14} />
-              <span>Insert Module</span>
-            </Button>
+              Save Draft
+            </button>
 
-            {modules.length > 0 && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setAddingChapterToModule(modules[0] ?? null)}
-                className="gap-1.5 text-xs font-semibold"
-              >
-                <Plus size={14} />
-                <span>Insert Chapter</span>
-              </Button>
-            )}
-
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => handleSelectTab("chapter_exams")}
-              className="gap-1.5 text-xs font-semibold"
+            <button
+              type="button"
+              onClick={() => navigate(`/courses/${courseId}/preview`)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer"
             >
-              <HelpCircle size={14} />
-              <span>Chapter Tests</span>
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => handleSelectTab("module_tests")}
-              className="gap-1.5 text-xs font-semibold"
-            >
-              <ClipboardCheck size={14} />
-              <span>Module Tests</span>
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => handleSelectTab("final_exam")}
-              className="gap-1.5 text-xs font-semibold"
-            >
-              <ShieldAlert size={14} />
-              <span>Final Exam</span>
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate(`/courses/${courseId}/learn`)}
-              className="gap-1.5 text-xs font-semibold"
-            >
-              <Eye size={14} />
+              <Eye size={14} className="text-[#635BFF]" />
               <span>Preview</span>
-            </Button>
+            </button>
 
-            <Button
-              variant={isPublished ? "secondary" : "primary"}
-              size="sm"
+            <button
+              type="button"
               onClick={handleTogglePublish}
-              className="gap-1.5 text-xs font-semibold"
+              className={cn(
+                "inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-2xs cursor-pointer",
+                isPublished
+                  ? "bg-slate-800 hover:bg-slate-900"
+                  : "bg-[#635BFF] hover:bg-[#5348E2]"
+              )}
             >
-              {isPublished ? "Unpublish" : "Publish"}
-            </Button>
+              <span>{isPublished ? "Unpublish Course" : "Publish Course"}</span>
+            </button>
+
+            <Link
+              to={`/courses/${courseId}/builder`}
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-[#635BFF] text-xs font-semibold transition-all"
+              title="Open full-screen Visual Builder"
+            >
+              <Maximize2 size={13} />
+              <span className="hidden sm:inline">Visual Builder</span>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Visual Workflow Banner: Modules -> Chapters -> Chapter Tests -> Module Tests -> Final Exam */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+      {/* 2. Compact Course Structure & Assessments Pipeline */}
+      <div className="rounded-2xl border border-[#E6EAF2] bg-white p-4 shadow-xs">
+        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <Layers size={16} className="text-[#2563EB]" />
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <Layers size={15} className="text-[#635BFF]" />
+            <h3 className="text-xs font-bold text-[#172033] uppercase tracking-wider">
               Course Structure & Assessments Pipeline
             </h3>
           </div>
-          <span className="text-[11px] font-semibold text-slate-500">
-            {modules.length} Modules · {totalChapters} Chapters · {finalTestId ? "Final Exam Ready" : "Final Exam Pending"}
+          <span className="text-[11px] font-semibold text-[#738096]">
+            Progression: Curriculum → Chapter Tests → Module Tests → Final Exam
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3">
-          {/* Step 1: Modules & Chapters */}
-          <div className="p-3 rounded-xl border border-blue-100 bg-blue-50/40 flex flex-col justify-between">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-3">
+          {/* Step 1: Curriculum */}
+          <div
+            onClick={() => handleSelectTab("curriculum")}
+            className="p-3 rounded-xl border border-purple-100 bg-[#F0EFFF]/40 hover:bg-[#F0EFFF]/80 transition cursor-pointer flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-[#2563EB] uppercase tracking-wider">1. Curriculum</span>
-                <span className="text-xs font-bold text-slate-800">{modules.length} Modules</span>
+                <span className="text-[10px] font-bold text-[#635BFF] uppercase tracking-wider">1. Curriculum</span>
+                <span className={cn(
+                  "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                  modules.length > 0 ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                )}>
+                  {modules.length > 0 ? "Configured" : "Not configured"}
+                </span>
               </div>
-              <p className="text-xs font-bold text-slate-900 mt-1">Modules & Chapters</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                {totalChapters} chapter lectures with video & notes
+              <p className="text-xs font-bold text-[#172033] mt-1">Course Curriculum</p>
+              <p className="text-[11px] text-[#738096] mt-0.5">
+                {modules.length} Modules · {totalChapters} Chapters
               </p>
             </div>
-            <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-blue-100/80">
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingModule(null);
-                  setIsAddModuleOpen(true);
-                }}
-                className="flex-1 py-1 px-2 rounded-lg bg-[#2563EB] text-white text-[11px] font-bold hover:bg-blue-700 transition cursor-pointer"
-              >
-                + Module
-              </button>
-              {modules.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setAddingChapterToModule(modules[0] ?? null)}
-                  className="flex-1 py-1 px-2 rounded-lg bg-white border border-blue-300 text-[#2563EB] text-[11px] font-bold hover:bg-blue-50 transition cursor-pointer"
-                >
-                  + Chapter
-                </button>
-              )}
-            </div>
+            <span className="text-[11px] font-bold text-[#635BFF] mt-2 block">
+              Manage Curriculum →
+            </span>
           </div>
 
           {/* Step 2: Chapter Tests */}
-          <div className="p-3 rounded-xl border border-indigo-100 bg-indigo-50/40 flex flex-col justify-between">
+          <div
+            onClick={() => handleSelectTab("chapter_exams")}
+            className="p-3 rounded-xl border border-indigo-100 bg-indigo-50/40 hover:bg-indigo-50/80 transition cursor-pointer flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">2. Chapter Quizzes</span>
-                <span className="text-xs font-bold text-slate-800">
-                  {modules.reduce((acc, m) => acc + (m.topics?.filter((t) => t.topic_test_id)?.length ?? 0), 0)} / {totalChapters}
+                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">2. Chapter Tests</span>
+                <span className={cn(
+                  "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                  chapterTestsCount === totalChapters && totalChapters > 0
+                    ? "bg-emerald-50 text-emerald-700"
+                    : chapterTestsCount > 0
+                    ? "bg-blue-50 text-blue-700"
+                    : "bg-amber-50 text-amber-700"
+                )}>
+                  {chapterTestsCount === totalChapters && totalChapters > 0
+                    ? "Configured"
+                    : chapterTestsCount > 0
+                    ? "Draft"
+                    : "Not configured"}
                 </span>
               </div>
-              <p className="text-xs font-bold text-slate-900 mt-1">Chapter Tests</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Quick checkpoint quizzes after each chapter</p>
+              <p className="text-xs font-bold text-[#172033] mt-1">Chapter Tests</p>
+              <p className="text-[11px] text-[#738096] mt-0.5">
+                {chapterTestsCount} / {totalChapters} Quizzes configured
+              </p>
             </div>
-            <div className="mt-3 pt-2 border-t border-indigo-100/80">
-              <button
-                type="button"
-                onClick={() => handleSelectTab("chapter_exams")}
-                className="w-full py-1 px-2 rounded-lg bg-white border border-indigo-300 text-indigo-700 text-[11px] font-bold hover:bg-indigo-50 transition cursor-pointer"
-              >
-                Manage Chapter Tests →
-              </button>
-            </div>
+            <span className="text-[11px] font-bold text-indigo-600 mt-2 block">
+              Manage Chapter Tests →
+            </span>
           </div>
 
           {/* Step 3: Module Tests */}
-          <div className="p-3 rounded-xl border border-purple-100 bg-purple-50/40 flex flex-col justify-between">
+          <div
+            onClick={() => handleSelectTab("module_tests")}
+            className="p-3 rounded-xl border border-purple-100 bg-purple-50/40 hover:bg-purple-50/80 transition cursor-pointer flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider">3. Module Tests</span>
-                <span className="text-xs font-bold text-slate-800">
-                  {modules.filter((m) => m.module_test_id).length} / {modules.length}
+                <span className={cn(
+                  "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                  moduleTestsCount === modules.length && modules.length > 0
+                    ? "bg-emerald-50 text-emerald-700"
+                    : moduleTestsCount > 0
+                    ? "bg-purple-50 text-purple-700"
+                    : "bg-amber-50 text-amber-700"
+                )}>
+                  {moduleTestsCount === modules.length && modules.length > 0
+                    ? "Configured"
+                    : moduleTestsCount > 0
+                    ? "Draft"
+                    : "Not configured"}
                 </span>
               </div>
-              <p className="text-xs font-bold text-slate-900 mt-1">Module Tests</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">End-of-module assessment unlocking next module</p>
+              <p className="text-xs font-bold text-[#172033] mt-1">Module Tests</p>
+              <p className="text-[11px] text-[#738096] mt-0.5">
+                {moduleTestsCount} / {modules.length} Module Tests configured
+              </p>
             </div>
-            <div className="mt-3 pt-2 border-t border-purple-100/80">
-              <button
-                type="button"
-                onClick={() => handleSelectTab("module_tests")}
-                className="w-full py-1 px-2 rounded-lg bg-white border border-purple-300 text-purple-700 text-[11px] font-bold hover:bg-purple-50 transition cursor-pointer"
-              >
-                Manage Module Tests →
-              </button>
-            </div>
+            <span className="text-[11px] font-bold text-purple-600 mt-2 block">
+              Manage Module Tests →
+            </span>
           </div>
 
           {/* Step 4: Final Exam */}
-          <div className="p-3 rounded-xl border border-emerald-100 bg-emerald-50/40 flex flex-col justify-between">
+          <div
+            onClick={() => handleSelectTab("final_exam")}
+            className="p-3 rounded-xl border border-emerald-100 bg-emerald-50/40 hover:bg-emerald-50/80 transition cursor-pointer flex flex-col justify-between"
+          >
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">4. Final Exam</span>
                 <span className={cn(
-                  "text-[10px] font-bold px-1.5 py-0.2 rounded-full",
-                  finalTestId ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                  "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                  finalTestId ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                 )}>
-                  {finalTestId ? "Configured" : "Not Set"}
+                  {finalTestId ? (isPublished ? "Published" : "Configured") : "Not configured"}
                 </span>
               </div>
-              <p className="text-xs font-bold text-slate-900 mt-1">Final Proctored Exam</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Comprehensive graduation test with AI proctoring</p>
+              <p className="text-xs font-bold text-[#172033] mt-1">Final Proctored Exam</p>
+              <p className="text-[11px] text-[#738096] mt-0.5">
+                {finalTestId ? "Proctored Exam ready" : "Certification exam not configured"}
+              </p>
             </div>
-            <div className="mt-3 pt-2 border-t border-emerald-100/80">
-              <button
-                type="button"
-                onClick={() => handleSelectTab("final_exam")}
-                className="w-full py-1 px-2 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition cursor-pointer"
-              >
-                {finalTestId ? "Edit Final Exam →" : "Setup Final Exam →"}
-              </button>
-            </div>
+            <span className="text-[11px] font-bold text-emerald-700 mt-2 block">
+              {finalTestId ? "Edit Final Exam →" : "Setup Final Exam →"}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* 2. Udemy-Style Horizontal Workspace Tabs */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
-        <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar px-2 sm:px-4 bg-slate-50/60">
+      {/* 3. Responsive Course Management Navigation Tabs */}
+      <div className="rounded-2xl border border-[#E6EAF2] bg-white shadow-xs overflow-hidden">
+        <div className="flex border-b border-[#E6EAF2] overflow-x-auto no-scrollbar px-2 sm:px-4 bg-[#F7F8FC]/80 gap-1">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
             const isActive = activeTab === tab.id;
@@ -936,19 +949,21 @@ export function CourseHubPage() {
                 type="button"
                 onClick={() => handleSelectTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 cursor-pointer",
+                  "flex items-center gap-2 px-4 py-3 text-xs font-semibold whitespace-nowrap transition-all border-b-2 cursor-pointer",
                   isActive
-                    ? "border-[#2563EB] text-[#2563EB] bg-white font-bold shadow-2xs"
+                    ? "border-[#635BFF] text-[#635BFF] bg-white font-bold"
                     : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
                 )}
               >
-                <IconComponent size={15} className={isActive ? "text-[#2563EB]" : "text-slate-400"} />
+                <IconComponent size={15} className={isActive ? "text-[#635BFF]" : "text-slate-400"} />
                 <span>{tab.label}</span>
                 {tab.badge !== undefined && (
                   <span
                     className={cn(
                       "px-1.5 py-0.2 rounded-full text-[10px] font-bold",
-                      isActive ? "bg-blue-100 text-blue-800" : "bg-slate-200/80 text-slate-700"
+                      isActive
+                        ? "bg-[#F0EFFF] text-[#635BFF]"
+                        : "bg-slate-200/80 text-slate-700"
                     )}
                   >
                     {tab.badge}

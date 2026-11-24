@@ -28,6 +28,7 @@ function item(
 const jobsStudentChildren: NavSubItem[] = [
   { label: "Find jobs", to: "/jobs/student/jobs", icon: "search" },
   { label: "Applications", to: "/jobs/student/applications", icon: "fileText" },
+  { label: "AI Resume Builder", to: "/jobs/student/resume-builder", icon: "sparkles" },
   { label: "Campus interviews", to: "/jobs/student/interviews", icon: "calendar" },
   { label: "AI mock interviews", to: "/interviews", icon: "video" },
   { label: "Offers & placement", to: "/jobs/student/offers", icon: "check" },
@@ -47,13 +48,6 @@ const jobsEmployerChildren: NavSubItem[] = [
   { label: "Create job", to: "/jobs/employer/jobs/new", icon: "plus" },
 ];
 
-const placementsHeadChildren: NavSubItem[] = [
-  { label: "Companies", to: "/employers", icon: "building" },
-  { label: "Jobs", to: "/jobs/institution/placements", icon: "briefcase" },
-  { label: "Campus posting", to: "/jobs/institution/jobs/new", icon: "plus" },
-  { label: "Student applications", to: "/jobs/institution/students", icon: "fileText" },
-  { label: "Placement stats", to: "/jobs/institution/analytics", icon: "chart" },
-];
 
 export type SidebarOptions = {
   /** LMS admin with careers.manage (JCMS moderation). */
@@ -64,12 +58,16 @@ function studentNav(): NavItem[] {
   return [
     home,
     item({
-      menu: "my_learning",
-      label: "My courses",
+      section: "catalog",
+      label: "Courses",
       icon: "graduation",
-      to: "/courses/my",
+      to: "/courses",
       group: "learn",
-      hint: "Enrolled courses and progress",
+      hint: "Browse licensed courses and continue learning",
+      children: [
+        { label: "Browse courses", to: "/courses", icon: "search" },
+        { label: "My courses", to: "/courses/my", icon: "bookOpen" },
+      ],
     }),
     item({
       menu: "my_tests",
@@ -207,8 +205,7 @@ function institutionHeadNav(): NavItem[] {
       icon: "briefcase",
       to: "/jobs/institution/placements",
       group: "careers",
-      hint: "Campus hiring and placement drives",
-      children: placementsHeadChildren,
+      hint: "Assigned drives, applications and placement stats",
     }),
     item({
       menu: "certificates",
@@ -406,8 +403,6 @@ function superAdminNav(): NavItem[] {
       children: [
         { label: "Roles & permissions", to: "/permissions", icon: "key" },
         { label: "Audit logs", to: "/audit-logs", icon: "search" },
-        { label: "Data exports", to: "/downloads", icon: "download" },
-        { label: "Settings", to: "/ai", icon: "bot" },
       ],
     }),
   ];

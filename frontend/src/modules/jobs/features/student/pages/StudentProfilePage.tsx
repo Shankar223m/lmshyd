@@ -57,7 +57,7 @@ export function StudentProfilePage() {
   if (isLoading) {
     return (
       <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-[#635BFF] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#7DC8F7] border-t-transparent animate-spin" />
         <p className="text-xs text-slate-500">Loading profile data…</p>
       </div>
     );
@@ -79,7 +79,7 @@ export function StudentProfilePage() {
       {/* Header Profile Card */}
       <div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-xl font-bold text-[#635BFF] shrink-0">
+          <div className="w-16 h-16 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-xl font-bold text-[#7DC8F7] shrink-0">
             {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'N'}
           </div>
           <div>
@@ -102,11 +102,11 @@ export function StudentProfilePage() {
         <div className="w-full sm:w-52 space-y-1.5">
           <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500 font-medium">Profile Completeness</span>
-            <span className="font-bold text-[#635BFF]">{completenessPercent}%</span>
+            <span className="font-bold text-[#7DC8F7]">{completenessPercent}%</span>
           </div>
           <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
-              className="h-full bg-[#635BFF] rounded-full transition-all duration-500"
+              className="h-full bg-[#7DC8F7] rounded-full transition-all duration-500"
               style={{ width: `${completenessPercent}%` }}
             />
           </div>
@@ -171,7 +171,7 @@ export function StudentProfilePage() {
           {/* Section 1: Academic Information */}
           <div className="space-y-4">
             <h2 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-[#635BFF]" />
+              <GraduationCap className="w-4 h-4 text-[#7DC8F7]" />
               <span>Academic &amp; Personal Details</span>
             </h2>
 
@@ -238,7 +238,7 @@ export function StudentProfilePage() {
           {/* Section 2: Contact Info */}
           <div className="space-y-4 pt-2">
             <h2 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
-              <Phone className="w-4 h-4 text-[#635BFF]" />
+              <Phone className="w-4 h-4 text-[#7DC8F7]" />
               <span>Contact &amp; Location</span>
             </h2>
 
@@ -271,7 +271,7 @@ export function StudentProfilePage() {
           {/* Section 3: Technical Skills */}
           <div className="space-y-4 pt-2">
             <h2 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
-              <Code className="w-4 h-4 text-[#635BFF]" />
+              <Code className="w-4 h-4 text-[#7DC8F7]" />
               <span>Technical Skills</span>
             </h2>
 
@@ -294,7 +294,7 @@ export function StudentProfilePage() {
                   .map((sk) => (
                     <span
                       key={sk}
-                      className="px-2.5 py-1 rounded-md bg-indigo-50/70 text-[#635BFF] text-xs font-medium border border-indigo-100/60"
+                      className="px-2.5 py-1 rounded-md bg-indigo-50/70 text-[#7DC8F7] text-xs font-medium border border-indigo-100/60"
                     >
                       {sk}
                     </span>
@@ -307,7 +307,7 @@ export function StudentProfilePage() {
             <button
               type="submit"
               disabled={save.isPending}
-              className="h-10 px-6 rounded-lg bg-[#635BFF] hover:bg-[#5046E5] text-white text-xs font-semibold transition-colors shadow-xs disabled:opacity-50"
+              className="h-10 px-6 rounded-lg bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white text-xs font-semibold transition-colors shadow-xs disabled:opacity-50"
             >
               {save.isPending ? 'Saving…' : 'Save Changes'}
             </button>
@@ -318,7 +318,7 @@ export function StudentProfilePage() {
         <div className="lg:col-span-4 space-y-4">
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#635BFF]" />
+              <FileText className="w-4 h-4 text-[#7DC8F7]" />
               <span>Resume / Master CV</span>
             </h3>
 
@@ -329,7 +329,7 @@ export function StudentProfilePage() {
                   <button
                     type="button"
                     onClick={() => filesApi.openDownload(sp.resume_file_id!).catch(() => undefined)}
-                    className="p-1.5 rounded-lg text-[#635BFF] hover:bg-indigo-50"
+                    className="p-1.5 rounded-lg text-[#7DC8F7] hover:bg-indigo-50"
                     title="Download"
                   >
                     <Download className="w-4 h-4" />

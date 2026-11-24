@@ -1,6 +1,3 @@
-import { useEffect, useMemo } from "react";
-
-import { storage } from "@/core/lib/storage";
 import { useAuth } from "@/modules/user-management/auth/hooks/useAuth";
 import { useGetMyPermissionsQuery } from "@/modules/user-management/common/permissions/permissionsApi";
 import type { MenuKey, Permissions, Section } from "@/modules/user-management/common/permissions/types";
@@ -49,15 +46,15 @@ const SUPER_ADMIN_PERMISSIONS: Permissions = {
   sections: [
     "dashboard", "admins", "permissions", "institutions", "employers", "hierarchy",
     "academics", "users", "downloads", "audit_logs", "catalog", "subscriptions",
-    "learning", "code_execution", "assessments", "certificates",
-    "ai_tutor", "support", "job_portal", "ai_interview", "notifications",
+    "learning", "code_execution", "assessments", "proctoring", "certificates",
+    "ai_tutor", "support", "career", "job_portal", "ai_interview", "notifications",
     "analytics", "billing", "ai_gateway", "profile", "security"
   ],
   menu: [
     "batches", "courses", "learning_paths", "media_library", "course_requests",
     "subscriptions", "problems", "compiler", "ai_tutor", "question_bank",
-    "tests", "attempts", "grading", "certificates", "support",
-    "jobs", "ai_interviews", "analytics", "billing", "ai_settings"
+    "tests", "attempts", "grading", "proctoring", "certificates", "support",
+    "career", "jobs", "ai_interviews", "analytics", "billing", "ai_settings"
   ],
   users: {
     view_roles: ["institution_head", "staff", "student", "employer_admin", "recruiter"],
@@ -82,26 +79,17 @@ export function usePermissions(): { permissions: Permissions; isLoading: boolean
   const { user } = useAuth();
   const isSuperAdmin = user?.role === "super_admin";
   const { data, isLoading, isFetching, isUninitialized } = useGetMyPermissionsQuery(undefined, {
-    // During MFA enrolment, prefer login/refresh permissions + cache; endpoint still allows setup.
-    skip: !user || Boolean(user.mfa_setup_required),
+    skip: !user,
   });
 
-  const cached = storage.readPermissions(user?.user_id);
-  const fallback = isSuperAdmin ? SUPER_ADMIN_PERMISSIONS : cached ?? EMPTY;
+  const fallback = isSuperAdmin ? SUPER_ADMIN_PERMISSIONS : EMPTY;
   const permissions = data ?? fallback;
-  const loading = !data && !cached && !isSuperAdmin && (isLoading || isFetching || isUninitialized);
+  const loading = !data && (isLoading || isFetching || isUninitialized);
 
-  useEffect(() => {
-    if (data && user) storage.writePermissions(user.user_id, data);
-  }, [data, user]);
-
-  return useMemo(
-    () => ({
-      permissions,
-      isLoading: loading,
-      can: (section: Section) => (isSuperAdmin ? true : permissions.sections.includes(section)),
-      canOpen: (entry: MenuKey) => (isSuperAdmin ? true : permissions.menu.includes(entry)),
-    }),
-    [permissions, loading, isSuperAdmin],
-  );
+  return {
+    permissions,
+    isLoading: loading,
+    can: (section) => (isSuperAdmin ? true : permissions.sections.includes(section)),
+    canOpen: (entry) => (isSuperAdmin ? true : permissions.menu.includes(entry)),
+  };
 }

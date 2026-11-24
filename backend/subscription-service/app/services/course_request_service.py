@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from lms_common import devdb
+from lms_common.devdb import connect as devdb_connect
 from lms_common.pagination import paginate
 from redis.asyncio import Redis
 from sqlalchemy import select
@@ -63,9 +63,9 @@ class CourseRequestService:
 
         missing_courses = course_ids - set(course_names.keys())
         missing_orgs = org_ids - set(inst_names.keys())
-        try:
+        try:
             if missing_courses:
-                cat_conn = await devdb.connect("lms_catalog")
+                cat_conn = await devdb_connect("lms_catalog")
                 try:
                     c_rows = await cat_conn.fetch("SELECT public_id, title FROM courses WHERE public_id = ANY($1)", list(missing_courses))
                     for r in c_rows:
@@ -73,7 +73,7 @@ class CourseRequestService:
                 finally:
                     await cat_conn.close()
 
-            um_conn = await devdb.connect("lms_user_management")
+            um_conn = await devdb_connect("lms_user_management")
             try:
                 if missing_orgs:
                     i_rows = await um_conn.fetch("SELECT public_id, name FROM institutions WHERE public_id = ANY($1)", list(missing_orgs))

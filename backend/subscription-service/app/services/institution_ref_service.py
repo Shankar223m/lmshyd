@@ -1,6 +1,6 @@
 from typing import Any
 
-from lms_common import devdb
+from lms_common.devdb import connect as devdb_connect
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BadRequestError, NotFoundError
@@ -33,8 +33,8 @@ class InstitutionRefService:
     async def get_active(self, organization_id: int) -> InstitutionRef:
         ref = await self.db.get(InstitutionRef, organization_id)
         if ref is None:
-            try:
-                conn = await devdb.connect("lms_user_management")
+            try:
+                conn = await devdb_connect("lms_user_management")
                 try:
                     row = await conn.fetchrow(
                         "SELECT public_id, name, code, status FROM institutions WHERE public_id = $1 AND deleted_at IS NULL",

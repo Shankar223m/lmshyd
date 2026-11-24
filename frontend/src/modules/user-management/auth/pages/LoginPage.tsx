@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -33,6 +33,10 @@ export function LoginPage() {
 
   const activeDemo = DEMO_PRESETS[selectedDemoIndex] ?? DEMO_PRESETS[0]!;
 
+  useEffect(() => {
+    if (!challenge) form.setFocus("identifier");
+  }, [challenge, form]);
+
   const applyDemo = (index: number) => {
     setSelectedDemoIndex(index);
     const demo = DEMO_PRESETS[index];
@@ -47,13 +51,7 @@ export function LoginPage() {
 
   const finish = (response: LoginResponse) => {
     if (response.token && response.user) {
-      dispatch(
-        credentialsReceived({
-          token: response.token,
-          user: response.user,
-          permissions: response.permissions ?? undefined,
-        }),
-      );
+      dispatch(credentialsReceived({ token: response.token, user: response.user }));
       if (response.user.must_change_password) {
         navigate("/account/setup/password", { replace: true });
       } else if (response.user.mfa_setup_required) {
@@ -75,8 +73,14 @@ export function LoginPage() {
       }
       finish(response);
     } catch (error) {
-      setFormError(toApiError(error).message);
+      const problem = toApiError(error);
+      setFormError(
+        problem.code === "INVALID_CREDENTIALS"
+          ? "That email, username or password is not right. Please try again."
+          : problem.message,
+      );
       form.resetField("password");
+      form.setFocus("password");
     }
   });
 
@@ -94,19 +98,11 @@ export function LoginPage() {
       </span>
     </>
   ) : (
-    <>Contact your institution administrator for a student account.</>
+    <span className="text-xs text-slate-500">Studying with an institution? It creates your account for you.</span>
   );
 
   return (
-    <AuthCard
-      title="Welcome back"
-      description={`Sign in to ${env.appName} with your email address or username.`}
-      footer={
-        <>
-          {registerFooter}
-        </>
-      }
-    >
+    <AuthCard title="Welcome back" description={`Sign in to ${env.appName} with your email address or username.`} footer={registerFooter}>
       <FormProvider {...form}>
         <form onSubmit={onSubmit} className="space-y-5" noValidate>
           {formError && <Alert tone="error">{formError}</Alert>}
@@ -157,8 +153,14 @@ export function LoginPage() {
             </div>
           )}
 
-          <TextField<LoginValues> name="identifier" label="Email or username" autoComplete="username" required />
-          <PasswordField<LoginValues> name="password" label="Password" required />
+          <TextField<LoginValues>
+            name="identifier"
+            label="Email or username"
+            autoComplete="username"
+            required
+            rules={{ required: "Enter your email address or username", setValueAs: (value: string) => value.trim() }}
+          />
+          <PasswordField<LoginValues> name="password" label="Password" required rules={{ required: "Enter your password" }} />
           <div className="-mt-1 flex justify-end">
             <Link to="/forgot-password" className="rounded text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
               Forgot password?

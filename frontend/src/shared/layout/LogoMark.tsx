@@ -5,7 +5,7 @@ import { cn } from "@/core/lib/cn";
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
-      className={cn("h-7 w-7 text-[#635BFF]", className)}
+      className={cn("h-7 w-7 text-[#7DC8F7]", className)}
       viewBox="0 0 24 24"
       fill="currentColor"
       xmlns="http://www.w3.org/2000/svg"

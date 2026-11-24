@@ -1,5 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 
+import { SIGNUP_ENABLED } from "@/core/config/features";
 import { PublicOnly } from "@/modules/user-management/auth/guards/PublicOnly";
 import { lazyNamed, page } from "@/shared/routing/page";
 
@@ -15,7 +16,7 @@ export const authRoutes: RouteObject[] = [
     children: [
       { path: "/login", element: page(<LoginPage />) },
       { path: "/forgot-password", element: page(<ForgotPasswordPage />) },
-      { path: "/register", element: page(<SignupPage />) },
+      ...(SIGNUP_ENABLED ? [{ path: "/register", element: page(<SignupPage />) }] : []),
     ],
   },
   // Emailed links work whether or not someone is signed in on this device.

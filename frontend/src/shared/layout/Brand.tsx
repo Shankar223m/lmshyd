@@ -16,7 +16,7 @@ export function Brand({
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#635BFF] to-[#4F46E5] text-white shadow-xs">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-xs">
           <Icon name="graduation" size={20} className="text-white" />
         </span>
         {!collapsed && (

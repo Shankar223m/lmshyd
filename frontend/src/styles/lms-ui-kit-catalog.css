@@ -56,7 +56,7 @@
 
 .lms-ui-kit-catalog .course-search-banner,
 .lms-ui-kit-catalog .job-hero {
-  background: linear-gradient(105deg, #f0efff, #f7f6ff 58%, #e9efff);
+  background: linear-gradient(105deg, #E8F6FE, #f5fbfe 58%, #e8f4fe);
   border: 1px solid #e8e7ff;
   border-radius: 15px;
   padding: 26px 30px;
@@ -282,8 +282,8 @@
 }
 
 .lms-ui-kit-catalog .category-pill.selected {
-  background: #635bff;
-  border-color: #635bff;
+  background: #7DC8F7;
+  border-color: #7DC8F7;
   color: #fff;
 }
 
@@ -339,13 +339,13 @@
 }
 
 .lms-ui-kit-catalog .btn-primary {
-  background: #635bff;
+  background: #7DC8F7;
   color: white;
-  box-shadow: 0 4px 12px #635bff25;
+  box-shadow: 0 4px 12px #7DC8F725;
 }
 
 .lms-ui-kit-catalog .btn-primary:hover {
-  background: #5148e8;
+  background: #5CB8EC;
   transform: translateY(-1px);
 }
 
@@ -446,7 +446,7 @@
 }
 
 .lms-ui-kit-catalog .job-role:hover {
-  color: #635bff;
+  color: #7DC8F7;
 }
 
 .lms-ui-kit-catalog a.job-role {
@@ -526,7 +526,7 @@
 }
 
 .lms-ui-kit-catalog .bookmark-button.saved {
-  color: #635bff;
+  color: #7DC8F7;
 }
 
 .lms-ui-kit-catalog .bookmark-button.saved svg {
@@ -638,7 +638,7 @@
 }
 
 .lms-ui-kit-catalog .course-title:hover {
-  color: #635bff;
+  color: #7DC8F7;
 }
 
 .lms-ui-kit-catalog .instructor {
@@ -728,7 +728,7 @@
   align-items: center;
   gap: 7px;
   background: #f1f0ff;
-  color: #635bdb;
+  color: #6BC0F0;
   border-radius: 20px;
   padding: 8px 12px;
   font-size: 11px;
@@ -775,7 +775,7 @@
   height: 32px;
   margin: 0 auto 12px;
   border-radius: 50%;
-  border: 2px solid #635bff;
+  border: 2px solid #7DC8F7;
   border-top-color: transparent;
   animation: lms-kit-spin 0.8s linear infinite;
 }
@@ -1158,7 +1158,7 @@
 
 .lms-ui-kit-catalog .stat-icon.t0 {
   background: #efedff;
-  color: #635bff;
+  color: #7DC8F7;
 }
 .lms-ui-kit-catalog .stat-icon.t1 {
   background: #eaf4ff;
@@ -1286,7 +1286,7 @@
   width: 85px;
   height: 85px;
   border-radius: 50%;
-  background: #f0efff;
+  background: #E8F6FE;
   color: #756dff;
   display: grid;
   place-items: center;
@@ -1311,8 +1311,8 @@
 }
 
 .lms-ui-kit-catalog .tab-strip button.sel {
-  color: #635bff;
-  border-bottom: 2px solid #635bff;
+  color: #7DC8F7;
+  border-bottom: 2px solid #7DC8F7;
 }
 
 .lms-ui-kit-catalog .list-row {

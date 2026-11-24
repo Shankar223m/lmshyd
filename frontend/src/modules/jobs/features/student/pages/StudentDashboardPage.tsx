@@ -12,6 +12,8 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { JobThumbnail } from '../../../components/JobThumbnail';
+import { ApplicationStatusBadge } from '../../../lib/applicationStatus';
+import { LIVE_LIST_QUERY_OPTIONS } from '../../../lib/liveQueryOptions';
 import { apiFetch, authApi, type ApiResponse } from '../../../services/api';
 
 type StudentApplication = {
@@ -62,6 +64,7 @@ export function StudentDashboardPage() {
   const { data: appsData } = useQuery({
     queryKey: ['my-apps'],
     queryFn: () => apiFetch<ApiResponse<StudentApplication[]>>('/applications/me'),
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
   const apps = appsData?.data || [];
   const activeApps = apps.filter((a) => !['REJECTED', 'CLOSED', 'WITHDRAWN'].includes(a.status));
@@ -69,6 +72,7 @@ export function StudentDashboardPage() {
   const { data: interviewsData } = useQuery({
     queryKey: ['my-interviews'],
     queryFn: () => apiFetch<ApiResponse<StudentInterview[]>>('/interviews/me'),
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
   const interviews = interviewsData?.data || [];
   const upcomingInterviews = interviews.filter(
@@ -79,6 +83,7 @@ export function StudentDashboardPage() {
   const { data: offersData } = useQuery({
     queryKey: ['my-offers'],
     queryFn: () => apiFetch<ApiResponse<OfferItem[]>>('/offers/me'),
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
   const offers = offersData?.data || [];
   const topOffer = offers[0];
@@ -86,33 +91,11 @@ export function StudentDashboardPage() {
   const { data: placementData } = useQuery({
     queryKey: ['my-placement'],
     queryFn: () => apiFetch<ApiResponse<PlacementRecord | null>>('/placements/me'),
+    ...LIVE_LIST_QUERY_OPTIONS,
   });
   const placement = placementData?.data;
 
   const progressPercent = Math.min(100, Math.max(30, (activeApps.length > 0 ? 50 : 20) + (sp?.resume_file_id ? 30 : 0) + (sp?.skills?.length ? 20 : 0)));
-
-  const getStatusBadge = (status: string) => {
-    const s = status.toUpperCase();
-    if (['SHORTLISTED', 'SELECTED', 'OFFER_ISSUED'].includes(s)) {
-      return (
-        <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200/60">
-          Shortlisted
-        </span>
-      );
-    }
-    if (['REJECTED', 'WITHDRAWN'].includes(s)) {
-      return (
-        <span className="inline-flex items-center rounded-full bg-rose-50 px-3 py-0.5 text-xs font-medium text-rose-700 border border-rose-200/60">
-          Rejected
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-0.5 text-xs font-medium text-amber-700 border border-amber-200/60">
-        Under Review
-      </span>
-    );
-  };
 
   return (
     <div className="flex flex-col w-full space-y-7">
@@ -137,7 +120,7 @@ export function StudentDashboardPage() {
 
         <Link
           to="/jobs/student/jobs"
-          className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-[#635BFF] hover:bg-[#5046E5] text-white font-semibold text-sm transition-colors shadow-xs"
+          className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white font-semibold text-sm transition-colors shadow-xs"
         >
           <Briefcase className="w-4 h-4" />
           <span>Find Jobs</span>
@@ -165,7 +148,7 @@ export function StudentDashboardPage() {
               {nextInterview ? `Next: ${nextInterview.round_name}` : 'No upcoming rounds'}
             </div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-50 text-[#635BFF] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-purple-50 text-[#7DC8F7] flex items-center justify-center shrink-0">
             <Calendar className="w-5 h-5" />
           </div>
         </div>
@@ -201,11 +184,11 @@ export function StudentDashboardPage() {
       {nextInterview && (
         <div className="rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#635BFF] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#7DC8F7] text-white flex items-center justify-center shrink-0 shadow-xs">
               <Video className="w-5 h-5" />
             </div>
             <div>
-              <span className="inline-flex items-center rounded-full bg-indigo-100/80 px-2.5 py-0.5 text-[11px] font-semibold text-[#635BFF]">
+              <span className="inline-flex items-center rounded-full bg-indigo-100/80 px-2.5 py-0.5 text-[11px] font-semibold text-[#7DC8F7]">
                 UPCOMING INTERVIEW
               </span>
               <h2 className="text-base font-bold text-slate-900 mt-1">{nextInterview.round_name}</h2>
@@ -240,7 +223,7 @@ export function StudentDashboardPage() {
                 href={nextInterview.meeting_link}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2 rounded-lg bg-[#635BFF] hover:bg-[#5046E5] text-white text-xs font-semibold transition-colors shadow-xs"
+                className="px-4 py-2 rounded-lg bg-[#7DC8F7] hover:bg-[#5CB8EC] text-white text-xs font-semibold transition-colors shadow-xs"
               >
                 Join Call
               </a>
@@ -261,7 +244,7 @@ export function StudentDashboardPage() {
               </div>
               <Link
                 to="/jobs/student/applications"
-                className="text-xs font-semibold text-[#635BFF] hover:text-[#5046E5] flex items-center gap-1 hover:underline"
+                className="text-xs font-semibold text-[#7DC8F7] hover:text-[#5CB8EC] flex items-center gap-1 hover:underline"
               >
                 <span>View All</span>
                 <ChevronRight className="w-4 h-4" />
@@ -271,7 +254,7 @@ export function StudentDashboardPage() {
             {apps.length === 0 ? (
               <div className="py-12 px-6 text-center text-xs text-slate-500">
                 No applications submitted yet.{' '}
-                <Link to="/jobs/student/jobs" className="font-semibold text-[#635BFF] hover:underline">
+                <Link to="/jobs/student/jobs" className="font-semibold text-[#7DC8F7] hover:underline">
                   Find your dream job
                 </Link>
               </div>
@@ -303,7 +286,7 @@ export function StudentDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0">
-                      <div>{getStatusBadge(a.status)}</div>
+                      <ApplicationStatusBadge application={a} />
                       <Link
                         to="/jobs/student/applications"
                         className="p-1 text-slate-400 hover:text-slate-700"
@@ -323,13 +306,13 @@ export function StudentDashboardPage() {
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900">Profile Readiness</h3>
-              <span className="text-xs font-bold text-[#635BFF]">{progressPercent}%</span>
+              <span className="text-xs font-bold text-[#7DC8F7]">{progressPercent}%</span>
             </div>
 
             {/* Progress Bar */}
             <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
               <div
-                className="bg-[#635BFF] h-full rounded-full transition-all duration-500"
+                className="bg-[#7DC8F7] h-full rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>

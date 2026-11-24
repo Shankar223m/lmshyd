@@ -156,23 +156,9 @@ def upsert_user_from_lms_token(db: Session, token: str) -> User:
     if institution and not org_id_claim:
         org_id_claim = institution.get("organization_id") or institution.get("id")
 
-    org_type_claim = str(claims.get("organization_type") or "").strip().lower()
-    inst = institution if isinstance(institution, dict) else None
-    inst_type = str(inst.get("organization_type") or inst.get("org_type") or "").strip().lower() if inst else ""
-    scope_set = {str(s) for s in scopes}
-    student_open_market = (
-        role == UserRole.STUDENT.value
-        and (
-            org_type_claim == "individual"
-            or inst_type == "individual"
-            or "store.buy" in scope_set
-        )
-    )
-
     org: Organization | None = None
     needs_org = org_id_claim and (
-        role in {UserRole.EMPLOYER.value, UserRole.INSTITUTION.value}
-        or (role == UserRole.STUDENT.value and not student_open_market)
+        role in {UserRole.EMPLOYER.value, UserRole.INSTITUTION.value, UserRole.STUDENT.value}
     )
     if needs_org:
         org_key = f"lms-org-{org_id_claim}"
@@ -220,10 +206,10 @@ def upsert_user_from_lms_token(db: Session, token: str) -> User:
         if profile is None:
             profile = StudentProfile(user_id=user.id, skills=[])
             db.add(profile)
-        profile.open_market_only = student_open_market
-        if not open_market_only and org is not None:
+        profile.open_market_only = False
+        if org is not None:
             profile.institution_id = org.id
-        elif not open_market_only and org_id_claim:
+        elif org_id_claim:
             org_key = f"lms-org-{org_id_claim}"
             campus_org = db.query(Organization).filter(Organization.registration_number == org_key).one_or_none()
             if campus_org is not None:

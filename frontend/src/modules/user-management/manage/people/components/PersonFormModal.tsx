@@ -7,7 +7,9 @@ import { useGetUserFormOptionsQuery } from "@/modules/user-management/common/per
 import type { UserFormOptions } from "@/modules/user-management/common/permissions/types";
 import { PersonFields } from "@/modules/user-management/manage/people/components/PersonFields";
 import { capitalize, PERSON_SCREENS, type PersonKind } from "@/modules/user-management/manage/people/config";
-import { useCreateUserMutation, useGetUserQuery, useUpdateUserMutation } from "@/modules/user-management/users/api/usersApi";
+import { removeUserPhoto, uploadUserPhoto } from "@/modules/user-management/users/api/userPhoto";
+import type { PhotoChoice } from "@/modules/user-management/users/components/form/ProfilePhotoField";
+import { useCreateUserMutation, useGetUserQuery, useSetUserPasswordMutation, useUpdateUserMutation } from "@/modules/user-management/users/api/usersApi";
 import { toCreateBody, toUpdateBody } from "@/modules/user-management/users/form/userFormBody";
 import { emptyUserForm, userToForm } from "@/modules/user-management/users/form/userFormDefaults";
 import type { UserFormValues } from "@/modules/user-management/users/form/userFormValues";
@@ -47,6 +49,8 @@ export function PersonFormModal({ kind, userId, onClose, onTemporaryPassword }: 
     return emptyUserForm({ role: kind, organization_id: actor?.institution?.organization_id, organization_label: actor?.institution?.name });
   }, [actor, editing, kind, userQuery.data]);
 
+  // Adding: whenever the server allows an initial password. Editing: only for someone whose password this person may set.
+  const passwordBox = editing ? Boolean(userQuery.data?.allowed_actions?.includes("set_password")) : Boolean(optionsQuery.data?.initial_password.allowed);
   const failed = userQuery.isError || optionsQuery.isError;
   const ready = initial !== null && optionsQuery.data !== undefined;
 
@@ -56,24 +60,24 @@ export function PersonFormModal({ kind, userId, onClose, onTemporaryPassword }: 
       onClose={onClose}
       size="lg"
       title={`${editing ? "Edit" : "Add"} ${screen.one}`}
-      description={editing ? "Change the details and save." : screen.addHint}
     >
       {failed ? (
         <EmptyState icon="alert" title="Could not open the form" description="Close it and try again." />
       ) : !ready ? (
         <div className="flex justify-center py-12"><Spinner /></div>
       ) : (
-        <PersonForm kind={kind} userId={userId} initial={initial} options={optionsQuery.data} onDone={onClose} onTemporaryPassword={onTemporaryPassword} />
+        <PersonForm kind={kind} userId={userId} initial={initial} options={optionsQuery.data} passwordBox={passwordBox} onDone={onClose} onTemporaryPassword={onTemporaryPassword} />
       )}
     </Modal>
   );
 }
 
-function PersonForm({ kind, userId, initial, options, onDone, onTemporaryPassword }: {
+function PersonForm({ kind, userId, initial, options, passwordBox, onDone, onTemporaryPassword }: {
   kind: PersonKind;
   userId: string | null;
   initial: UserFormValues;
   options: UserFormOptions;
+  passwordBox: boolean;
   onDone: () => void;
   onTemporaryPassword: (created: TemporaryPassword) => void;
 }) {
@@ -84,6 +88,8 @@ function PersonForm({ kind, userId, initial, options, onDone, onTemporaryPasswor
   const form = useForm<UserFormValues>({ defaultValues: initial, mode: "onSubmit", reValidateMode: "onChange" });
   const [createUser, { isLoading: creating }] = useCreateUserMutation();
   const [updateUser, { isLoading: saving }] = useUpdateUserMutation();
+  const [setUserPassword] = useSetUserPasswordMutation();
+  const [photo, setPhoto] = useState<PhotoChoice>({ file: null, removed: false });
   const [formError, setFormError] = useState<string | null>(null);
   const handleError = useServerErrorHandler(setFormError);
 
@@ -95,7 +101,15 @@ function PersonForm({ kind, userId, initial, options, onDone, onTemporaryPasswor
         // /admins takes no role: everyone created there is an admin
         const result = await createUser({ resource: screen.resource, body: screen.resource === "admins" ? { ...body, role: undefined } : body }).unwrap();
         const name = result.user.personal_info.full_name;
+        if (photo.file) {
+          try {
+            await uploadUserPhoto(result.user.user_id, photo.file);
+          } catch (photoError) {
+            notify.error("Added, but the photo was not saved", photoError instanceof Error ? photoError.message : undefined);
+          }
+        }
         if (
+          result.credentials.delivery === "initial_password" ||
           result.credentials.delivery === "temporary_password" ||
           result.credentials.temporary_password ||
           (!result.credentials.email_sent && result.credentials.setup_link)
@@ -104,7 +118,7 @@ function PersonForm({ kind, userId, initial, options, onDone, onTemporaryPasswor
             name,
             username: result.user.account.username,
             email: result.user.account.email,
-            password: result.credentials.temporary_password,
+            password: result.credentials.temporary_password ?? values.account.password,
             delivery: result.credentials.delivery,
             emailSent: result.credentials.email_sent,
             setupLink: result.credentials.setup_link,
@@ -113,22 +127,28 @@ function PersonForm({ kind, userId, initial, options, onDone, onTemporaryPasswor
         } else {
           notify.success(
             `${capitalize(screen.one)} added`,
-            result.credentials.delivery === "initial_password"
-              ? "Share the password securely."
-              : `${name} gets an email to set a password.`
+            `${name} gets an email to set a password.`
           );
         }
         onDone();
         return;
       }
       const body = toUpdateBody(initial, values, options);
-      if (Object.keys(body).length === 0) {
+      const newPassword = passwordBox ? values.account.password?.trim() : "";
+      const photoChanged = Boolean(photo.file) || photo.removed;
+      if (Object.keys(body).length === 0 && !newPassword && !photoChanged) {
         notify.info("Nothing changed");
         onDone();
         return;
       }
-      await updateUser({ resource: screen.resource, userId, body }).unwrap();
-      notify.success("Changes saved", body.organization_id ? "They were signed out because their institution changed." : undefined);
+      if (Object.keys(body).length > 0) await updateUser({ resource: screen.resource, userId, body }).unwrap();
+      if (newPassword) await setUserPassword({ resource: screen.resource, userId, newPassword }).unwrap();
+      if (photo.file) await uploadUserPhoto(userId, photo.file);
+      else if (photo.removed) await removeUserPhoto(userId);
+      notify.success(
+        "Changes saved",
+        newPassword ? "The new password works now; they must change it at next sign-in." : body.organization_id ? "They were signed out because their institution changed." : undefined,
+      );
       onDone();
     } catch (error) {
       handleError(error, form);
@@ -139,7 +159,7 @@ function PersonForm({ kind, userId, initial, options, onDone, onTemporaryPasswor
     <FormProvider {...form}>
       <form id={formId} onSubmit={submit} noValidate className="space-y-6">
         {formError && <Alert tone="error">{formError}</Alert>}
-        <PersonFields kind={kind} options={options} editing={userId !== null} />
+        <PersonFields kind={kind} options={options} editing={userId !== null} passwordBox={passwordBox} userId={userId} photo={photo} onPhoto={setPhoto} />
         {/* pinned to the bottom of the pop-up while the fields scroll */}
         <div className="sticky bottom-0 -mx-6 -mb-5 flex flex-col-reverse gap-2 border-t border-slate-100 bg-white px-6 py-4 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onDone} disabled={creating || saving}>

@@ -115,7 +115,7 @@ export function OrganisationVerificationPage() {
 
       {isLoading && (
         <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[#635BFF] border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-[#7DC8F7] border-t-transparent animate-spin" />
           <p className="text-xs text-slate-500">Loading organisation verification queue…</p>
         </div>
       )}
@@ -172,7 +172,7 @@ export function OrganisationVerificationPage() {
                           href={o.website ? `https://${o.website}` : '#'}
                           target="_blank"
                           rel="noreferrer"
-                          className="font-medium text-[#635BFF] hover:underline flex items-center gap-1 truncate"
+                          className="font-medium text-[#7DC8F7] hover:underline flex items-center gap-1 truncate"
                         >
                           <span>{o.website || 'website.com'}</span>
                           <ExternalLink className="w-3 h-3 shrink-0" />
@@ -271,7 +271,7 @@ export function OrganisationVerificationPage() {
                   })
                 }
                 className={`rounded-lg px-5 py-2 text-xs font-semibold text-white shadow-xs ${
-                  actionType === 'reject' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#635BFF] hover:bg-[#5046E5]'
+                  actionType === 'reject' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#7DC8F7] hover:bg-[#5CB8EC]'
                 }`}
               >
                 {verifyMutation.isPending ? 'Submitting…' : 'Confirm'}

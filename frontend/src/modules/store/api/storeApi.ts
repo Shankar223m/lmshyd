@@ -26,9 +26,14 @@ export const storeApi = baseApi.injectEndpoints({
     confirmPurchase: build.mutation<CoursePurchase, { purchaseId: string; razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }>({
       query: ({ purchaseId, ...body }) => ({ url: `/store/purchases/${purchaseId}/confirm`, method: "POST", body }),
       transformResponse: (r: { purchase: CoursePurchase }) => r.purchase,
-      invalidatesTags: ["Store", "Enrollment", "EnrollmentList"],
+      invalidatesTags: ["Store", "Course", "CourseList", "Enrollment", "EnrollmentList"],
+    }),
+    testBuyCourse: build.mutation<{ message: string; purchase: CoursePurchase }, { courseId: string; name: string; email?: string | null }>({
+      query: ({ courseId, ...body }) => ({ url: `/store/courses/${courseId}/test-buy-and-confirm`, method: "POST", body }),
+      transformResponse: (r: { message: string; purchase: CoursePurchase }) => r,
+      invalidatesTags: ["Store", "Course", "CourseList", "Enrollment", "EnrollmentList"],
     }),
   }),
 });
 
-export const { useGetStoreOffersQuery, useGetMyPurchasesQuery, useGetMyCourseAccessQuery, useBuyCourseMutation, useConfirmPurchaseMutation } = storeApi;
+export const { useGetStoreOffersQuery, useGetMyPurchasesQuery, useGetMyCourseAccessQuery, useBuyCourseMutation, useConfirmPurchaseMutation, useTestBuyCourseMutation } = storeApi;

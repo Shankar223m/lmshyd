@@ -81,11 +81,11 @@ export function CourseFormPage() {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailMediaId, setThumbnailMediaId] = useState<string | null>(null);
   const [category, setCategory] = useState("Programming");
-  const [subcategory, setSubcategory] = useState("Python");
-  const [instructor, setInstructor] = useState("Dr. Sneha Reddy");
+  const [subcategory, setSubcategory] = useState("");
+  const [instructor, setInstructor] = useState("");
   const [difficulty, setDifficulty] = useState<"Beginner" | "Intermediate" | "Advanced">("Beginner");
   const [language, setLanguage] = useState("English");
-  const [duration, setDuration] = useState("42 Hours");
+  const [duration, setDuration] = useState("");
 
   // STEP 2: Course Pricing Fields
   const [individualPrice, setIndividualPrice] = useState("1999");

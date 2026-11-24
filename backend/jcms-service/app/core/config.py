@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     lms_jwt_audience: str = "lms"
     lms_jwks_cache_seconds: int = 300
     lms_jwks_timeout_seconds: float = 5.0
+    user_management_database_url: str | None = None
 
     smtp_enabled: bool = False
     smtp_host: str = ""

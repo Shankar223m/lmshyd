@@ -29,8 +29,8 @@ export function CourseInstitutionAccessPanel({ courseId }: Props) {
   const { can } = useCan();
   const canGrant = can("accounts.manage");
 
-  const { data: course, isLoading: courseLoading } = useGetCourseQuery(courseId);
-  const { data: subsData, isLoading: subsLoading, refetch } = useListSubscriptionsQuery(
+  const { data: course, isLoading: courseLoading, refetch: refetchCourse } = useGetCourseQuery(courseId);
+  const { data: subsData, isLoading: subsLoading, refetch: refetchSubs } = useListSubscriptionsQuery(
     { status: "active", per_page: 200 },
     { skip: !canGrant },
   );
@@ -56,14 +56,50 @@ export function CourseInstitutionAccessPanel({ courseId }: Props) {
     const orgNames = new Map(
       (accessFromCourse ?? []).map((r) => [String(r.organization_id), r.institution_name]),
     );
-    return fromSubs.map((s) => ({
-      subscription_id: s.subscription_id,
-      organization_id: s.organization_id,
-      institution_name: orgNames.get(String(s.organization_id)) ?? `Institution ${s.organization_id}`,
-      seats_total: s.seats_total,
-      seats_used: s.seats_used,
-      ends_at: s.ends_at,
-    }));
+    const byOrg = new Map<
+      string,
+      {
+        subscription_id: string;
+        organization_id: string;
+        institution_name: string;
+        seats_total: number;
+        seats_used: number;
+        ends_at?: string | null;
+      }
+    >();
+
+    for (const s of fromSubs) {
+      const oid = String(s.organization_id);
+      byOrg.set(oid, {
+        subscription_id: s.subscription_id,
+        organization_id: s.organization_id,
+        institution_name: orgNames.get(oid) ?? `Institution ${s.organization_id}`,
+        seats_total: s.seats_total,
+        seats_used: s.seats_used,
+        ends_at: s.ends_at,
+      });
+    }
+
+    for (const r of accessFromCourse ?? []) {
+      const oid = String(r.organization_id);
+      const existing = byOrg.get(oid);
+      if (existing) {
+        if (r.institution_name && existing.institution_name.startsWith("Institution ")) {
+          byOrg.set(oid, { ...existing, institution_name: r.institution_name });
+        }
+        continue;
+      }
+      byOrg.set(oid, {
+        subscription_id: `course-access-${oid}`,
+        organization_id: r.organization_id,
+        institution_name: r.institution_name,
+        seats_total: r.seats_total,
+        seats_used: 0,
+        ends_at: r.ends_at ?? null,
+      });
+    }
+
+    return Array.from(byOrg.values());
   }, [subsData, courseId, accessFromCourse]);
 
   const assignedOrgIds = useMemo(
@@ -87,7 +123,7 @@ export function CourseInstitutionAccessPanel({ courseId }: Props) {
       }).unwrap();
       notify.success("College assigned", "Students at this institution can now see and open this course.");
       setSelectedOrgId("");
-      void refetch();
+      await Promise.all([refetchSubs(), refetchCourse()]);
     } catch (e) {
       notify.apiError(e, "Could not assign college");
     }

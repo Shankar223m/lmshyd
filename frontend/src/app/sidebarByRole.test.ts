@@ -30,6 +30,13 @@ describe("sidebarByRole", () => {
     expect(jobs?.children?.some((c) => c.to === "/jobs/admin/postings")).toBe(true);
   });
 
+  it("student sees Courses with browse and my progress", () => {
+    const items = sidebarItemsForRole("student") ?? [];
+    const courses = items.find((i) => i.label === "Courses");
+    expect(courses?.to).toBe("/courses");
+    expect(courses?.children?.some((c) => c.to === "/courses/my")).toBe(true);
+  });
+
   it("student sees Compiler only without problems or submissions", () => {
     const items = sidebarItemsForRole("student") ?? [];
     const compiler = items.find((i) => i.to === "/compiler" || i.label === "Compiler");

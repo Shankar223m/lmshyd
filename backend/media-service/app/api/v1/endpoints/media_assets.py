@@ -1,23 +1,15 @@
 import logging
 import re
+import shutil
 from pathlib import Path
 from typing import Annotated, Any
 
 import anyio
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import RedirectResponse, Response, StreamingResponse
 from lms_common.envelopes import PageContext, SortOrder
 
-from app.api.deps import (
-    AssetIdParam,
-    CatalogDep,
-    CurrentAuth,
-    DbSession,
-    RequireAuthor,
-    SettingsDep,
-    ensure_may_play,
-    rate_limit,
-)
+from app.api.deps import AssetIdParam, CurrentAuth, DbSession, RequireAuthor, SettingsDep, rate_limit
 from app.api.responses import errors
 from app.core.exceptions import BadRequestError, NotFoundError
 from app.core.ids import new_public_id
@@ -25,7 +17,6 @@ from app.db.session import commit_or_conflict
 from app.domain.enums import AssetKind, AssetStatus
 from app.models.media_asset import MediaAsset
 from app.models.rendition import Rendition
-from app.pipeline.optimize import optimize_image
 from app.schemas.common import AssetListQuery
 from app.schemas.media_asset import (
     MediaAssetListResponse,
@@ -38,9 +29,7 @@ from app.schemas.media_asset import (
     UploadResponse,
 )
 from app.services.media_asset_service import MediaAssetService
-from app.services.media_optimizer import process_stored_asset
-from app.services.playback_service import PlaybackService
-from app.storage import s3
+from app.services.video_optimizer import optimize_video_file
 
 logger = logging.getLogger("app.media")
 router = APIRouter(prefix="/media", tags=["Media"])
@@ -53,12 +42,10 @@ _upload_rate_limit = rate_limit("media_upload", "UPLOAD_URL_RATE_LIMIT_PER_HOUR"
     response_model=dict[str, Any],
     status_code=201,
     summary="Direct upload for video lessons",
-    description="Uploads video via multipart/form-data. It plays at once, is compressed in the background and then stored in S3.",
+    description="Uploads video via multipart/form-data. Uses Cloudinary if configured; falls back to streaming storage.",
     responses=errors(400, 401, 403, 422),
 )
 async def upload_video(
-    request: Request,
-    background: BackgroundTasks,
     auth: RequireAuthor,
     db: DbSession,
     settings: SettingsDep,
@@ -98,9 +85,50 @@ async def upload_video(
                 raise BadRequestError(f"Video file exceeds {settings.MAX_UPLOAD_BYTES} bytes limit.", code="FILE_TOO_LARGE")
             out_f.write(chunk)
 
-    cloudinary_public_id = None  # Cloudinary is not used: files go to S3 (see services/media_optimizer)
-    playback_url = f"/api/v1/media/stream/{asset_public_id}"
+    total_bytes = temp_target.stat().st_size
     detected_duration = duration_seconds or 0
+
+    cloudinary_configured = bool(
+        settings.CLOUDINARY_URL
+        or (settings.CLOUDINARY_CLOUD_NAME and settings.CLOUDINARY_API_KEY and settings.CLOUDINARY_API_SECRET)
+    )
+    cloudinary_public_id = None
+    playback_url = None
+
+    if cloudinary_configured:
+        try:
+            import cloudinary
+            import cloudinary.uploader
+
+            if settings.CLOUDINARY_URL:
+                cloudinary.config(cloudinary_url=settings.CLOUDINARY_URL)
+            else:
+                cloudinary.config(
+                    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+                    api_key=settings.CLOUDINARY_API_KEY,
+                    api_secret=settings.CLOUDINARY_API_SECRET.get_secret_value() if settings.CLOUDINARY_API_SECRET else None,
+                    secure=True,
+                )
+
+            # Use chunked upload specifically for large videos (> 20 MB)
+            result = await anyio.to_thread.run_sync(
+                lambda: cloudinary.uploader.upload_large(
+                    str(temp_target),
+                    resource_type="video",
+                    folder="lms/videos",
+                    chunk_size=6_000_000,
+                )
+            )
+            playback_url = result.get("secure_url") or result.get("url")
+            cloudinary_public_id = result.get("public_id")
+            if result.get("duration"):
+                detected_duration = int(round(float(result["duration"])))
+        except Exception as e:
+            logger.warning(f"Cloudinary upload failed ({e}); falling back to local media streaming.")
+            playback_url = None
+
+    if not playback_url:
+        playback_url = f"/api/v1/media/stream/{asset_public_id}"
 
     resolved_context_id = None
     if context_id and context_id.isdigit():
@@ -114,6 +142,11 @@ async def upload_video(
         original_filename=filename,
         content_type=file.content_type or "video/mp4",
         byte_size=total_bytes,
+        original_byte_size=total_bytes,
+        original_resolution=None,
+        output_resolution=None,
+        compression_method=None,
+        savings_percent=0,
         storage_key=playback_url,
         status=AssetStatus.READY,
         duration_seconds=detected_duration,
@@ -132,7 +165,6 @@ async def upload_video(
     )
     db.add(rendition)
     await commit_or_conflict(db)
-    background.add_task(process_stored_asset, request.app.state.sessionmaker, settings, public_id=asset_public_id, path=temp_target, kind=AssetKind.VIDEO)
 
     return {
         "message": "Video uploaded successfully.",
@@ -142,6 +174,11 @@ async def upload_video(
             "status": "ready",
             "original_filename": asset.original_filename,
             "byte_size": asset.byte_size,
+            "original_byte_size": asset.original_byte_size,
+            "original_resolution": asset.original_resolution,
+            "output_resolution": asset.output_resolution,
+            "compression_method": asset.compression_method,
+            "savings_percent": asset.savings_percent,
             "playback_url": asset.storage_key,
             "public_id": cloudinary_public_id or str(asset.public_id),
             "duration_seconds": asset.duration_seconds,
@@ -149,6 +186,12 @@ async def upload_video(
         "url": asset.storage_key,
         "public_id": cloudinary_public_id or str(asset.public_id),
         "duration_seconds": asset.duration_seconds,
+        "original_byte_size": asset.original_byte_size,
+        "byte_size": asset.byte_size,
+        "original_resolution": asset.original_resolution,
+        "output_resolution": asset.output_resolution,
+        "compression_method": asset.compression_method,
+        "savings_percent": asset.savings_percent,
     }
 
 
@@ -162,8 +205,6 @@ async def upload_video(
     responses=errors(400, 401, 403, 422),
 )
 async def upload_document(
-    request: Request,
-    background: BackgroundTasks,
     auth: RequireAuthor,
     db: DbSession,
     settings: SettingsDep,
@@ -224,7 +265,6 @@ async def upload_document(
     )
     db.add(rendition)
     await commit_or_conflict(db)
-    background.add_task(process_stored_asset, request.app.state.sessionmaker, settings, public_id=asset_public_id, path=temp_target, kind=AssetKind.DOCUMENT)
 
     return {
         "message": "Document uploaded successfully.",
@@ -249,12 +289,10 @@ async def upload_document(
     response_model=dict[str, Any],
     status_code=201,
     summary="Direct upload for course thumbnails and images",
-    description="Uploads thumbnail image via multipart/form-data (PNG, JPG, WebP, up to 25 MB; stored compressed).",
+    description="Uploads thumbnail image via multipart/form-data (PNG, JPG, WebP, max 5 MB).",
     responses=errors(400, 401, 403, 422),
 )
 async def upload_image(
-    request: Request,
-    background: BackgroundTasks,
     auth: RequireAuthor,
     db: DbSession,
     settings: SettingsDep,
@@ -265,7 +303,7 @@ async def upload_image(
     lower_name = filename.lower()
     valid_exts = (".png", ".jpg", ".jpeg", ".webp")
     if not (any(lower_name.endswith(ext) for ext in valid_exts) or (file.content_type and file.content_type.startswith("image/"))):
-        raise BadRequestError("Only image files (.png, .jpg, .jpeg, .webp) up to 25 MB are allowed.", code="INVALID_IMAGE_FORMAT")
+        raise BadRequestError("Only image files (.png, .jpg, .jpeg, .webp) up to 5 MB are allowed.", code="INVALID_IMAGE_FORMAT")
 
     storage_dir = Path(settings.STORAGE_LOCAL_DIR) / "images"
     storage_dir.mkdir(parents=True, exist_ok=True)
@@ -281,14 +319,11 @@ async def upload_image(
             if not chunk:
                 break
             total_bytes += len(chunk)
-            if total_bytes > 25 * 1024 * 1024:
+            if total_bytes > 5 * 1024 * 1024:
                 out_f.close()
                 temp_target.unlink(missing_ok=True)
-                raise BadRequestError("Image exceeds 25 MB limit.", code="FILE_TOO_LARGE")
+                raise BadRequestError("Image exceeds 5 MB limit.", code="FILE_TOO_LARGE")
             out_f.write(chunk)
-
-    temp_target = await anyio.to_thread.run_sync(optimize_image, temp_target)  # resized and recompressed, same look
-    total_bytes = temp_target.stat().st_size
 
     playback_url = f"/api/v1/media/stream/{asset_public_id}"
     resolved_context_id = int(course_id) if course_id and course_id.isdigit() else None
@@ -317,7 +352,6 @@ async def upload_image(
     )
     db.add(rendition)
     await commit_or_conflict(db)
-    background.add_task(process_stored_asset, request.app.state.sessionmaker, settings, public_id=asset_public_id, path=temp_target, kind=AssetKind.IMAGE)
 
     return {
         "message": "Thumbnail uploaded successfully.",
@@ -341,26 +375,14 @@ async def upload_image(
     summary="Stream video with HTTP Range support",
     responses=errors(404),
 )
-async def stream_media(
-    asset_id: AssetIdParam, db: DbSession, settings: SettingsDep, request: Request, playback: str | None = None
-) -> Response:
+async def stream_media(asset_id: AssetIdParam, db: DbSession, settings: SettingsDep, request: Request) -> Response:
     asset = await MediaAssetService(db, settings).get(asset_id)
     if not asset or asset.archived_at is not None:
-        raise NotFoundError("Video not found or archived.", code="MEDIA_NOT_FOUND")
-    # Course thumbnails and other images are public. A video or a document is served only to someone holding a playback token
-    # that was issued to a viewer allowed to play it (POST /media/{id}/playback-tokens checks that).
-    if asset.kind != AssetKind.IMAGE and not (playback and await PlaybackService(db, settings).is_valid_for(asset, playback)):
         raise NotFoundError("Video not found or archived.", code="MEDIA_NOT_FOUND")
 
     # If it is an external URL (e.g. Cloudinary), redirect immediately
     if asset.storage_key.startswith("http://") or asset.storage_key.startswith("https://"):
         return RedirectResponse(asset.storage_key, status_code=307)
-
-    if not asset.storage_key.startswith("/"):  # an S3 object: hand the browser a short-lived link; it fetches (and seeks) from S3 itself
-        link = await s3.presign_get(
-            settings, asset.storage_key, expires_seconds=settings.S3_PLAYBACK_URL_EXPIRES_SECONDS, content_type=asset.content_type, disposition="inline"
-        )
-        return RedirectResponse(link, status_code=307)
 
     subfolder = "images" if asset.kind == AssetKind.IMAGE else ("documents" if asset.kind == AssetKind.DOCUMENT else "videos")
     storage_dir = Path(settings.STORAGE_LOCAL_DIR) / subfolder
@@ -405,6 +427,8 @@ async def stream_media(
                 "Accept-Ranges": "bytes",
                 "Content-Length": str(content_length),
                 "Content-Type": content_type,
+                "Content-Disposition": "inline",
+                "X-Content-Type-Options": "nosniff",
             }
             return StreamingResponse(chunk_generator(), status_code=206, headers=headers)
 
@@ -417,6 +441,8 @@ async def stream_media(
         "Accept-Ranges": "bytes",
         "Content-Length": str(file_size),
         "Content-Type": content_type,
+        "Content-Disposition": "inline",
+        "X-Content-Type-Options": "nosniff",
     }
     return StreamingResponse(full_generator(), status_code=200, headers=headers)
 
@@ -481,17 +507,14 @@ async def restore_asset(asset_id: AssetIdParam, auth: RequireAuthor, db: DbSessi
 
 
 @router.get("/{asset_id}", response_model=MediaAssetResponse, summary="Get a media asset", responses=errors(401, 404))
-async def get_asset(
-    asset_id: AssetIdParam, auth: CurrentAuth, db: DbSession, settings: SettingsDep, catalog: CatalogDep
-) -> MediaAssetResponse:
-    await ensure_may_play(auth, catalog, asset_id)
+async def get_asset(asset_id: AssetIdParam, auth: CurrentAuth, db: DbSession, settings: SettingsDep) -> MediaAssetResponse:
     asset = await MediaAssetService(db, settings).get(asset_id)
     return MediaAssetResponse(message="Media asset retrieved successfully.", asset=MediaAssetOut.model_validate(asset))
 
 
-@router.get("", response_model=MediaAssetListResponse, summary="List media assets (authors)", responses=errors(401, 403, 422))
+@router.get("", response_model=MediaAssetListResponse, summary="List media assets", responses=errors(401, 422))
 async def list_assets(
-    query: Annotated[AssetListQuery, Query()], auth: RequireAuthor, db: DbSession, settings: SettingsDep
+    query: Annotated[AssetListQuery, Query()], auth: CurrentAuth, db: DbSession, settings: SettingsDep
 ) -> MediaAssetListResponse:
     assets, total, is_exact = await MediaAssetService(db, settings).list_assets(query)
     return MediaAssetListResponse(

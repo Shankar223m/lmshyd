@@ -153,7 +153,7 @@ export function AdminReviewInboxPage() {
           type="button"
           onClick={() => setTab("jobs")}
           className={`rounded-xl px-3.5 py-2 text-sm font-semibold ${
-            tab === "jobs" ? "bg-[#635BFF] text-white" : "border border-slate-200 bg-white text-slate-700"
+            tab === "jobs" ? "bg-[#7DC8F7] text-white" : "border border-slate-200 bg-white text-slate-700"
           }`}
         >
           Jobs ({jobs.length})
@@ -162,7 +162,7 @@ export function AdminReviewInboxPage() {
           type="button"
           onClick={() => setTab("orgs")}
           className={`rounded-xl px-3.5 py-2 text-sm font-semibold ${
-            tab === "orgs" ? "bg-[#635BFF] text-white" : "border border-slate-200 bg-white text-slate-700"
+            tab === "orgs" ? "bg-[#7DC8F7] text-white" : "border border-slate-200 bg-white text-slate-700"
           }`}
         >
           Organisations ({orgs.length})
@@ -177,7 +177,7 @@ export function AdminReviewInboxPage() {
             <Link to="/jobs/admin/audit" className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">
               View activity log
             </Link>
-            <Link to="/jobs/admin/jobs/new" className="rounded-xl bg-[#635BFF] px-4 py-2 text-sm font-semibold text-white">
+            <Link to="/jobs/admin/jobs/new" className="rounded-xl bg-[#7DC8F7] px-4 py-2 text-sm font-semibold text-white">
               Create job
             </Link>
           </div>
@@ -193,7 +193,7 @@ export function AdminReviewInboxPage() {
                   onClick={() => setSelectedJobId(j.id)}
                   className={`w-full rounded-2xl border p-4 text-left transition ${
                     selectedJobId === j.id
-                      ? "border-[#635BFF] bg-[#635BFF]/5"
+                      ? "border-[#7DC8F7] bg-[#7DC8F7]/5"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
@@ -223,7 +223,7 @@ export function AdminReviewInboxPage() {
                   onClick={() => setSelectedOrgId(o.id)}
                   className={`w-full rounded-2xl border p-4 text-left transition ${
                     selectedOrgId === o.id
-                      ? "border-[#635BFF] bg-[#635BFF]/5"
+                      ? "border-[#7DC8F7] bg-[#7DC8F7]/5"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
@@ -489,7 +489,7 @@ function OrgReviewPanel({
           type="button"
           disabled={pending}
           onClick={onVerify}
-          className="rounded-xl bg-[#635BFF] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+          className="rounded-xl bg-[#7DC8F7] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
         >
           Verify organisation
         </button>

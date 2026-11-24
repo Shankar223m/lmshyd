@@ -28,7 +28,7 @@ export function ResumeTemplatesPage() {
       atsRating: "100% ATS Compliant",
       font: "Inter / Plus Jakarta Sans",
       layout: "Single-column structural hierarchy",
-      accent: "#4f46e5",
+      accent: "#5CB8EC",
       previewData: {
         name: "Alex Morgan",
         role: "Full Stack Engineer",

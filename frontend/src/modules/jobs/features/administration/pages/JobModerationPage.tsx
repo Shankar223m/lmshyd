@@ -136,7 +136,7 @@ export function JobModerationPage() {
 
       {isLoading && (
         <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[#635BFF] border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-[#7DC8F7] border-t-transparent animate-spin" />
           <p className="text-xs text-slate-500">Loading moderation queue…</p>
         </div>
       )}
@@ -363,7 +363,7 @@ export function JobModerationPage() {
                   })
                 }
                 className={`rounded-lg px-5 py-2 text-xs font-semibold text-white shadow-xs ${
-                  actionType === 'reject' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#635BFF] hover:bg-[#5046E5]'
+                  actionType === 'reject' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#7DC8F7] hover:bg-[#5CB8EC]'
                 }`}
               >
                 {moderateMutation.isPending ? 'Submitting…' : 'Confirm'}

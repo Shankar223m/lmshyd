@@ -48,14 +48,14 @@ export function ResumeCard({
         className="flex flex-1 flex-col focus-visible:outline-none"
         aria-label={`Open ${resume.title}`}
       >
-        <div className="relative flex h-36 justify-center overflow-hidden bg-gradient-to-b from-[#F0EFFF] to-slate-50 pt-3">
+        <div className="relative flex h-36 justify-center overflow-hidden bg-gradient-to-b from-[#E8F6FE] to-slate-50 pt-3">
           {/* Stylized Document Mockup */}
           <div
             aria-hidden="true"
             className="flex w-44 flex-col gap-1.5 rounded-t-lg bg-white p-3 shadow-md border border-slate-200/60"
           >
             <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5">
-              <div className="h-6 w-6 rounded-full bg-[#635BFF]/15 flex items-center justify-center text-[10px] font-bold text-[#635BFF]">
+              <div className="h-6 w-6 rounded-full bg-[#7DC8F7]/15 flex items-center justify-center text-[10px] font-bold text-[#7DC8F7]">
                 {resume.title.charAt(0)}
               </div>
               <div className="flex-1 space-y-1">
@@ -66,7 +66,7 @@ export function ResumeCard({
             <div className="space-y-1 pt-1">
               <div className="h-1 w-full rounded-sm bg-slate-200" />
               <div className="h-1 w-4/5 rounded-sm bg-slate-200" />
-              <div className="h-1 w-2/3 rounded-sm bg-[#635BFF]/40" />
+              <div className="h-1 w-2/3 rounded-sm bg-[#7DC8F7]/40" />
             </div>
           </div>
 
@@ -87,7 +87,7 @@ export function ResumeCard({
 
         <div className="flex flex-1 flex-col justify-between p-4 space-y-3">
           <div>
-            <h3 className="truncate text-base font-bold text-slate-900 group-hover:text-[#635BFF] transition-colors">
+            <h3 className="truncate text-base font-bold text-slate-900 group-hover:text-[#7DC8F7] transition-colors">
               {resume.title}
             </h3>
             <p className="mt-0.5 truncate text-xs text-slate-500">
@@ -111,7 +111,7 @@ export function ResumeCard({
               type="button"
               disabled={isExporting}
               onClick={handleDownloadPdf}
-              className="flex-1 rounded-xl bg-[#635BFF] py-2 text-center text-xs font-semibold text-white shadow-2xs hover:bg-[#5046E5] transition-colors disabled:opacity-50"
+              className="flex-1 rounded-xl bg-[#7DC8F7] py-2 text-center text-xs font-semibold text-white shadow-2xs hover:bg-[#5CB8EC] transition-colors disabled:opacity-50"
             >
               Download
             </button>
