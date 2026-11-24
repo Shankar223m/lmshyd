@@ -12,9 +12,9 @@ export default defineConfig(({ mode }) => {
     resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
     server: {
       host: "0.0.0.0",
-      port: Number(env.DEV_SERVER_PORT),
+      port: Number(env.DEV_SERVER_PORT || 3000),
       // Same-origin API calls in development: no CORS, and the refresh cookie stays first-party.
-      proxy: { "/api": { target: env.DEV_API_PROXY_TARGET, changeOrigin: true } },
+      proxy: { "/api": { target: env.DEV_API_PROXY_TARGET || "http://localhost:8000", changeOrigin: true } },
       // Playwright writes traces while it runs; watching them crashes the dev server on Windows (EBUSY).
       watch: { ignored: ["**/e2e/**"] },
     },
