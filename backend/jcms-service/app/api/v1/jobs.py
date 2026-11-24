@@ -48,6 +48,7 @@ class JobCreate(BaseModel):
     organization_id: str | None = None
     thumbnail_file_id: str | None = None
     posting_channel: str | None = None
+    target_institution_ids: list[str] = Field(default_factory=list)
 
 
 def _job_dict(db, job: Job, org_name: str | None = None) -> dict[str, Any]:
@@ -85,7 +86,7 @@ def _job_dict(db, job: Job, org_name: str | None = None) -> dict[str, Any]:
         "questions": job.questions or [],
         "organization_id": job.organization_id,
         "organization_name": org_name,
-        "thumbnail_file_id": job.thumbnail_file_id,
+        "thumbnail_file_id": getattr(job, "thumbnail_file_id", None),
         "applicant_count": applicant_count,
         "active_applicant_count": active_applicant_count,
         "recruiter_ids": recruiter_ids,
@@ -93,6 +94,7 @@ def _job_dict(db, job: Job, org_name: str | None = None) -> dict[str, Any]:
         "created_at": job.created_at.isoformat() if job.created_at else None,
         "posting_channel": job.posting_channel or JobPostingChannel.OPEN.value,
         "campus_institution_id": job.campus_institution_id,
+        "target_institution_ids": list(job.target_institution_ids or []),
         "posting_tagline": posting_channel_tagline(job.posting_channel),
     }
 
@@ -118,6 +120,49 @@ def create_job(
     return success_data(_job_dict(db, job, org.name if org else None), request)
 
 
+@router.get("/jobs/campus-institutions/options")
+def list_campus_institution_options(
+    db: DbSession,
+    user: CurrentUser,
+    request: Request,
+    _: str = Depends(attach_request_id),
+):
+    """Verified institutions for college assignment when creating campus-facing jobs."""
+    from app.models.entities import StudentProfile
+    from app.modules.organizations.lms_sync import ensure_campus_institution_orgs
+    from app.shared.enums import OrganizationType, VerificationStatus
+
+    require_roles(UserRole.EMPLOYER, UserRole.PLATFORM_ADMINISTRATOR, UserRole.INSTITUTION)(user)
+    ensure_campus_institution_orgs(db)
+    stmt = (
+        select(Organization)
+        .where(
+            Organization.org_type == OrganizationType.INSTITUTION.value,
+            Organization.verification_status == VerificationStatus.VERIFIED.value,
+        )
+        .order_by(Organization.name.asc())
+    )
+    orgs = db.scalars(stmt).all()
+    items = []
+    for org in orgs:
+        student_count = db.scalar(
+            select(func.count(User.id))
+            .join(StudentProfile, StudentProfile.user_id == User.id)
+            .where(
+                StudentProfile.institution_id == org.id,
+                User.role == UserRole.STUDENT.value,
+            )
+        ) or 0
+        items.append(
+            {
+                "id": org.id,
+                "name": org.name,
+                "student_count": int(student_count),
+            }
+        )
+    return success_data(items, request)
+
+
 @router.post("/institutions/me/campus-jobs")
 def create_campus_job(
     body: JobCreate,
@@ -127,16 +172,11 @@ def create_campus_job(
     _: str = Depends(attach_request_id),
 ):
     require_roles(UserRole.INSTITUTION)(user)
-    try:
-        job = job_service.create_campus_job(db, user, body.model_dump())
-        db.commit()
-    except ValueError as e:
-        db.rollback()
-        code = str(e)
-        status = 403 if code == "FORBIDDEN" else 400
-        raise AppError(code, code, status)
-    org = db.get(Organization, job.organization_id)
-    return success_data(_job_dict(db, job, org.name if org else None), request)
+    raise AppError(
+        "FORBIDDEN",
+        "Institution heads monitor assigned drives only; job posting is done by employers.",
+        403,
+    )
 
 
 @router.get("/jobs/discover")
@@ -162,20 +202,27 @@ def discover_jobs(
         stmt = stmt.where(Job.employment_type == employment_type.upper())
 
     jobs = db.scalars(stmt).all()
-    if q:
-        q_lower = q.lower()
-        jobs = [
-            j for j in jobs
-            if q_lower in j.title.lower()
-            or (j.description and q_lower in j.description.lower())
-            or (j.skills and any(q_lower in s.lower() for s in j.skills))
-        ]
+    q_clean = q.strip().lower() if q and q.strip() else None
+    q_words = [w for w in q_clean.split() if w] if q_clean else []
 
     out = []
     for job in jobs:
         if not is_admin and not job_visible_to_student(db, job, user):
             continue
         org = db.get(Organization, job.organization_id)
+        org_name = (org.name if org else "") or ""
+
+        if q_clean:
+            title = (job.title or "").lower()
+            desc = (job.description or "").lower()
+            skills_str = " ".join((job.skills or [])).lower()
+            loc = (job.location or "").lower()
+            company = org_name.lower()
+            blob = f"{title} {company} {desc} {skills_str} {loc}"
+
+            if q_clean not in blob and not all(w in blob for w in q_words):
+                continue
+
         item = _job_dict(db, job, org.name if org else None)
         if is_admin:
             out.append(item)
@@ -280,6 +327,14 @@ def patch_job(
     payload = body.model_dump(exclude_unset=True)
     eligibility = payload.pop("eligibility", None)
     payload.pop("organization_id", None)  # ownership org is fixed after create
+    if "target_institution_ids" in payload:
+        try:
+            payload["target_institution_ids"] = job_service._normalize_target_institution_ids(
+                db, payload.get("target_institution_ids")
+            )
+        except ValueError as e:
+            db.rollback()
+            raise AppError(str(e), str(e), 400)
     for k, v in payload.items():
         if k == "recruiter_ids":
             db.query(RecruiterAssignment).filter(RecruiterAssignment.job_id == job.id).delete()
